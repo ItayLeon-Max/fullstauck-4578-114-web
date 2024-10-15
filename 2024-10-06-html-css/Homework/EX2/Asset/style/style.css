@@ -1,0 +1,56 @@
+html, body {
+    background-image: url(https://png.pngtree.com/thumb_back/fh260/background/20220312/pngtree-wood-background-on-surface-image_995355.jpg);
+    background-size: contain;
+    direction: rtl;
+    margin: 0;
+}
+
+h1 { 
+    text-align: center;
+    color: brown;
+}
+
+.welcome-text {
+    text-align: center;
+}
+
+caption {
+    text-align: center;
+}
+
+.left {
+    text-align:  left;
+    float: left;
+}
+
+.login-table {
+    border: 1px solid black;
+    margin-left: 80%;
+}
+
+input[type="password"], input[type="text"] {
+    background-color: yellow;
+}
+
+
+
+#img-container {
+   display: flex;
+   justify-content: center;
+   flex-wrap: nowrap;
+   gap: 10px;
+   padding-top: 50px;
+}
+
+#img-container img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    margin-left: 10px;
+    vertical-align: top;
+}
+
+#copyrights {
+    padding: 100px;
+    text-align: center;
+}

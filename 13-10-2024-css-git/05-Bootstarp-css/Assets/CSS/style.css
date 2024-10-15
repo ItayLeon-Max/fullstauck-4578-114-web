@@ -1,0 +1,18 @@
+.my-button-design {
+    color:white;
+    background-color: green;
+    font-size: 26px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+}
+
+.btn-warning {
+    background-color: yellowgreen;
+}
+
+.HW {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}

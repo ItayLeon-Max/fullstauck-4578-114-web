@@ -1,0 +1,52 @@
+@font-face {
+    font-family: HelloSalmon;
+    src: url("/Assets/fonts/Hello\ Salmon.otf");
+}
+
+@keyframes rotateBackground {
+    0% {
+        background: linear-gradient(10deg, rgb(247, 255, 26) 18%, rgb(252, 168, 12) 30%, rgb(255,0,0) 60%, rgb(160,32,240) 70%, rgb(0,0,255)) 100%;
+    }
+    10% {
+        background: linear-gradient(80deg, rgb(247, 255, 26) 18%, rgb(252, 168, 12) 30%, rgb(255,0,0) 60%, rgb(160,32,240) 70%, rgb(0,0,255)) 100%;
+
+    }
+    30% {
+        background: linear-gradient(100deg, rgb(247, 255, 26) 18%, rgb(252, 168, 12) 30%, rgb(255,0,0) 60%, rgb(160,32,240) 70%, rgb(0,0,255)) 100%;
+    }
+    60% {
+        background: linear-gradient(150deg, rgb(247, 255, 26) 18%, rgb(252, 168, 12) 30%, rgb(255,0,0) 60%, rgb(160,32,240) 70%, rgb(0,0,255)) 100%;
+    }
+    100% {
+        background: linear-gradient(200deg, rgb(247, 255, 26) 18%, rgb(252, 168, 12) 30%, rgb(255,0,0) 60%, rgb(160,32,240) 70%, rgb(0,0,255)) 100%;
+
+    }
+}
+
+div {
+    border: 1px solid black;
+    font-family: HelloSalmon;
+    color: white;
+    text-align: center;
+    padding-left: 200px;
+    padding-right: 200px;
+    margin: 200px;
+    height: 150px;
+    width: 100px;
+    border-radius: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: linear-gradient(20deg, rgb(247, 255, 26) 18%, rgb(252, 168, 12) 30%, rgb(255,0,0) 60%, rgb(160,32,240) 70%, rgb(0,0,255)) 100%;
+    box-shadow: 0 20px 50px rgb(0 0 0 / 2);
+    transition: background 0.5s ease-in-out;
+}
+
+div:hover {
+    animation: rotateBackground 2s infinite linear forwards;
+}

@@ -1,0 +1,89 @@
+/* name selector */
+
+h1 {
+    color: green;
+    background-color: yellow;
+}
+
+p {
+    color: red;
+}
+
+/* class selector */
+
+.cool-design {
+    color: blue;
+    background-color: red;
+}
+
+.cool-design-big {
+    font-size: xx-large;
+    font-weight: bold;
+    color: white;
+}
+
+/* id selector */
+
+#last-paragraph {
+    font-size: xx-small;
+    text-decoration: underline;
+    font-style: italic;
+}
+
+/* attribute selector */
+
+input[placeholder] {
+    background-color: yellow;
+}
+
+input[placeholder="first name"] {
+    border: 3px dashed;
+}
+
+/* pseudo selector */
+
+a {
+    color: yellow;
+}
+
+a:hover {
+    color: green;
+    font-size: xx-large;
+}
+
+a:visited {
+    color: red;
+}
+
+p::first-letter {
+    font-size: x-large;
+    color: cyan;
+}
+
+p::first-line {
+    background-color: bisque;
+}
+
+/* combination of selectors */
+
+p.cool-design {
+    text-decoration: underline;
+}
+
+
+html, body {
+    border: 1px solid blue;
+    margin: 0px;
+    padding: 0px;
+}
+
+/* all a tags that have a p tag as a parent somewh */
+
+p a {
+    color: black;
+}
+
+p > a {
+    border: 3px dashed green
+}
+
