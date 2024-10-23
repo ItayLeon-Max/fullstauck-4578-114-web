@@ -1,0 +1,1 @@
+alert("First TypeScript page");
