@@ -1,1 +1,1 @@
-alert("First TypeScript page");
+alert("First TypeScript");
