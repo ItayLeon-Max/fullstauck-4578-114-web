@@ -16,11 +16,29 @@
 // document.write("<br>");
 // document.write(`Hello ${fName} ${lName}`);
 
-var fName = prompt("What is your first name?");
-var lName = prompt("What is your last name?");
-var age = prompt("What is your age?");
-if (age < 18) {
-    alert("You are not allowed to enter this website");
+// var fName = prompt("What is your first name?");
+// var lName = prompt("What is your last name?");
+// var age = prompt("What is your age?");
+// if (age < 18) {
+//     alert("You are not allowed to enter this website");
+// } else {
+//     alert(`Hello ${fName} ${lName}` + "\n" + `You are ${age} years old`);
+// }
+
+//ex1
+var grade = prompt("What is your grade?");
+if (garde >= 60) {
+    alert("You passed");
 } else {
-    alert(`Hello ${fName} ${lName}` + "\n" + `You are ${age} years old`);
+    alert("You failed");
+}
+
+//ex2
+var num = prompt("Enter a number");
+if(num > 0) {
+    alert("Positive number");
+} else if(num < 0) {
+    alert("Negative number");
+} else {
+    alert("Zero");
 }
