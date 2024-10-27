@@ -94,10 +94,38 @@
 //     i++;    
 // }
 
-// ex7
-let i = 1;
+// // ex7
+// let i = 1;
+// let num = prompt("Enter a number");
+// while(i <= num){
+//     document.write(i + "<br>");
+//     i++;
+// }
+
+// // // ex8
+// let number1 = parseInt(prompt("Enter a first number"));
+// let number2 = parseInt(prompt("Enter a second number"));
+// let i = number1;
+// while(i <= number2){
+//     document.write(i + "<br>");
+//     i++;
+// }
+
+// // // ex9
+// let num = prompt("Enter a number"); 
+// let i = 2;
+// while(i <= num){
+//     document.write(i + "<br>");
+//     i=i+2;
+// }
+
 let num = prompt("Enter a number");
-while(i <= num){
-    document.write(i + "<br>");
-    i++;
-}
+while(num != 0){
+    if(num > 0){
+        document.write("Positive number");
+    } else if(num < 0){
+        document.write("Negative number");
+    } else {
+        document.write("Zero");
+    }
+}   
