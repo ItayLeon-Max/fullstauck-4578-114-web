@@ -22,7 +22,6 @@ var age = prompt("What is your age?");
 if (age < 18) {
     alert("You are not allowed to enter this website");
 } else {
-    document.write(`Hello ${fName} ${lName}`);
-    document.write("<br>");
+    document.write(`Hello ${fName} ${lName}` + "<br>");
     document.write(`You are ${age} years old`);
 }
