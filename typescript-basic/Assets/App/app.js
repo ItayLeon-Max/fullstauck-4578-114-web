@@ -119,13 +119,21 @@
 //     i=i+2;
 // }
 
-let num = prompt("Enter a number");
-while(num != 0){
-    if(num > 0){
-        document.write("Positive number");
-    } else if(num < 0){
-        document.write("Negative number");
-    } else {
-        document.write("Zero");
-    }
-}   
+// let num = parseInt(prompt("Enter a number"));
+// while(num !== 0){
+//         if(num > 0){
+//             document.write( num + "Positive number<br>");
+//         } else{
+//             document.write( num + "Negative number<br>");
+//         } 
+//     num = parseInt(prompt("Enter a number"));
+// }
+
+// // ex10
+let num = parseInt(prompt("Enter a number"));
+for(let i = 1; i <= num; i++){
+    for(let j = 1; j <= num; j++){
+        document.write("*");
+}
+    document.write("<br>");
+}
