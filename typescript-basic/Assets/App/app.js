@@ -81,7 +81,7 @@
 //     document.write("<br>");
 // }
 
-// let i = 0;
+let i = 0;
 while(i < 4){
     document.write("*");
     document.write("<br>");
