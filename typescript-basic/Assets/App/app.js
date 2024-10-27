@@ -28,17 +28,27 @@
 //ex1
 var grade = prompt("What is your grade?");
 if (grade >= 60) {
-    document.body("You passed");
+    document.write("You passed");
 } else {
-    document.body("You failed");
+    document.write("You failed");
 }
+document.write("<br>");
 
 //ex2
 var num = prompt("Enter a number");
 if(num > 0) {
-    document.body("Positive number");
+    document.write("Positive number");
 } else if(num < 0) {
     alert("Negative number");
 } else {
-    document.body("Zero");
+    document.write("Zero");
+}
+document.write("<br>");
+
+//ex3
+var grade1 = prompt("Enter grade 1");
+if(grade1 >=0 && grade <=100) {
+    document.write("Valid grade");
+} else {
+    document.write("Invalid grade");
 }
