@@ -27,7 +27,7 @@
 
 //ex1
 var grade = prompt("What is your grade?");
-if (garde >= 60) {
+if (grade >= 60) {
     alert("You passed");
 } else {
     alert("You failed");
