@@ -53,11 +53,37 @@
 //     document.write("Invalid grade");
 // }
 
-//ex4
-let price = prompt("Enter the price");
-if(price >= 1000 && price <= 2000) {
-    document.write("Getting a height discount " + (price * 90)/100);
-} else {
-    document.write("No discount today");
-}
+// //ex4
+// let price = prompt("Enter the price");
+// if(price >= 1000 && price <= 2000) {
+//     document.write("Getting a height discount " + (price * 90)/100);
+// } else {
+//     document.write("No discount today");
+// }
 
+// // //ex5
+// let days = prompt("Enter day of the week");
+// if(days === "Friday" || days === "Saturday") {
+//     document.write("It's a weekend");
+// } else {
+//     document.write("It's a weekday");
+// }
+
+// // //ex6
+// let R = prompt("Enter the radius of the circle");
+// let h = 3.14 * R * 2;
+// let S = 3.14 * R * R;
+// document.write(`The circumference of the circle is ${h}` + "<br>");
+// document.write(`The area of the circle is ${S}`);
+
+// for(let i = 0 ; i < 4 ; i++){
+//     document.write("*");
+//     document.write("<br>");
+// }
+
+// let i = 0;
+while(i < 4){
+    document.write("*");
+    document.write("<br>");
+    i++;
+}
