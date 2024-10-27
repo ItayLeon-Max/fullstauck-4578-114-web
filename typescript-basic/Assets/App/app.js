@@ -52,3 +52,11 @@ if(grade1 >=0 && grade <=100) {
 } else {
     document.write("Invalid grade");
 }
+
+//ex4
+var price = prompt("Enter the price");
+if(price >= 1000 && price <= 2000) {
+    document.write("Getting a height discount " + price * 0.1);
+} else {
+    document.write("No discount today");
+}
