@@ -81,9 +81,23 @@
 //     document.write("<br>");
 // }
 
-let i = 0;
-while(i < 4){
-    document.write("*");
-    document.write("<br>");
+// let i = 0;
+// while(i < 4){
+//     document.write("*");
+//     document.write("<br>");
+//     i++;
+// }
+
+// let i = 1;
+// while(i<=1000){
+//     document.write(i + "<br>");
+//     i++;    
+// }
+
+// ex7
+let i = 1;
+let num = prompt("Enter a number");
+while(i <= num){
+    document.write(i + "<br>");
     i++;
 }
