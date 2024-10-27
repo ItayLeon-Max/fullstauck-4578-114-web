@@ -54,9 +54,10 @@
 // }
 
 //ex4
-var price = prompt("Enter the price");
+let price = prompt("Enter the price");
 if(price >= 1000 && price <= 2000) {
     document.write("Getting a height discount " + (price * 90)/100);
 } else {
     document.write("No discount today");
 }
+
