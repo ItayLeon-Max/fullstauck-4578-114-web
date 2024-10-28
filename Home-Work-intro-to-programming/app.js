@@ -121,17 +121,64 @@
 // document.write(`the sum of the digits of the number ${num} is ${sum}`);
 
 //EXP 23
-let _length = parseInt(prompt("Enter the length of the square: "));
-let _with = parseInt(prompt("Enter the with of the square: "));
-for(let i = 1 ; i <= _length ; i++){
-    for(let j = 1 ; j <= _with ; j++){
-        if(i === 1 || i === _length || j === 1 || j === _with){
-            document.write("*");
-            document.write(" ");
-        } else {
-            document.write("*");
-            document.write(" ");
+// let _length = parseInt(prompt("Enter the length of the square: "));
+// let _with = parseInt(prompt("Enter the with of the square: "));
+// for(let i = 1 ; i <= _length ; i++){
+//     for(let j = 1 ; j <= _with ; j++){
+//         if(i === 1 || i === _length || j === 1 || j === _with){
+//             document.write("*");
+//             document.write(" ");
+//         } else {
+//             document.write("*");
+//             document.write(" ");
+//         }
+//     }
+//     document.write("<br>");
+// }   
+
+//EXP 24
+// n = 5
+// *****
+// ****
+// ***
+// **
+// *
+// let n = parseInt(prompt("Enter the number of rows: "));
+// for(let i = n ; i >= 1 ; i--){
+//     for(let j = 1 ; j <= i ; j++){
+//         document.write("*");
+//     }
+//     document.write("<br>");
+// }
+
+//EXP 25
+// let n = parseInt(prompt("Enter the number of rows: "));
+// for(let i = 1 ; i <= n ; i++){
+//     for(let j = 1 ; j <= i ; j++){
+//         document.write(j + " ,");
+//     }
+//     document.write("<br>");
+// }
+
+//EXP 26
+// n = 5
+// 54321
+// 54321
+// 54321
+// 54321
+// 54321
+//  let n = parseInt(prompt("Enter the number of rows: "));
+//     for(let i = 1 ; i <= n ; i++){
+//         for(let j = n ; j >= 1 ; j--){
+//             document.write(j);
+//         }
+//         document.write("<br>");
+//     }
+
+ let n = parseInt(prompt("Enter the number of rows: "));
+    for(let i = 1 ; i <= n ; i++){
+        for(let j = 1 ; j <= n ; j++){
+            document.write(j);
         }
+        document.write("<br>");
     }
-    document.write("<br>");
-}   
