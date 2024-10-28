@@ -137,3 +137,4 @@ for(let i = 1; i <= num; i++){
 }
     document.write("<br>");
 }
+
