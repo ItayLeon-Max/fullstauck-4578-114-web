@@ -167,6 +167,7 @@
 // 54321
 // 54321
 // 54321
+// (A)
 //  let n = parseInt(prompt("Enter the number of rows: "));
 //     for(let i = 1 ; i <= n ; i++){
 //         for(let j = n ; j >= 1 ; j--){
@@ -175,10 +176,11 @@
 //         document.write("<br>");
 //     }
 
- let n = parseInt(prompt("Enter the number of rows: "));
-    for(let i = 1 ; i <= n ; i++){
-        for(let j = 1 ; j <= n ; j++){
-            document.write(j);
-        }
-        document.write("<br>");
-    }
+// (B)
+//  let n = parseInt(prompt("Enter the number of rows: "));
+//     for(let i = 1 ; i <= n ; i++){
+//         for(let j = 1 ; j <= n ; j++){
+//             document.write(j);
+//         }
+//         document.write("<br>");
+//     }
