@@ -273,7 +273,7 @@
 
 // Class EXP 7
 // enter 100 numbers and print the max of numbers with array
-// let arr = []
+// let arr = [];
 // for(let i = 0 ; i < 100 ; i++){
 //     let num = parseInt(prompt("Enter a number: "));
 //     arr.push(num);
@@ -287,11 +287,31 @@
 // document.write(`the max number is ${max}`);
 
 //enter 100 numbers and print the max of numbers with only For loop
-let max = 0;
-for(let i = 0 ; i < 100 ; i++){
-    let num = parseInt(prompt("Enter a number: "));
-    if(num > max){
-        max = num;
+// let max = 0;
+// for(let i = 0 ; i < 100 ; i++){
+//     let num = parseInt(prompt("Enter a number: "));
+//     if(num > max){
+//         max = num;
+//     }
+// }
+// document.write(`the max number is ${max}`);
+
+// Class EXP 8
+//input: 5
+//now: 6 random numbers
+//if input inside on the random numbers print "you min" else print "you dont win"
+let num = parseInt(prompt("Enter a number: "));
+let flag = false;
+for(let i = 1 ; i <= 6 ; i++){
+    let randomNum = Math.floor(Math.random() * 10) + 1;
+    if(num === randomNum){
+        flag = true;
+        break;
     }
 }
-document.write(`the max number is ${max}`);
+if(flag){
+    document.write("you win");
+}
+else{
+    document.write("you dont win");
+}
