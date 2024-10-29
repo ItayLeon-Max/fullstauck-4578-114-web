@@ -334,16 +334,16 @@
 // if(flag){
 //     myDiv.style.color = "white";
 //     myDiv.style.backgroundColor = "green";
+//     myDiv.style.fontSize = "90px";
 //     myDiv.innerHTML = "you win";
 //     document.body.appendChild(myDiv);
-//     // document.write("you win");
 // }
 // else{
 //     myDiv.style.color = "white";    
 //     myDiv.style.backgroundColor = "red";
+//     myDiv.style.fontSize = "90px";
 //     myDiv.innerHTML = "you don't win";
 //     document.body.appendChild(myDiv);
-//     // document.write("you don't win");
 // }
 
 // Class EXP 9
@@ -410,10 +410,10 @@
 //     document.write("<br>");
 // }
 
-let n2 = parseInt(prompt("Enter the number of rows: "));
-for(let i = n2 ; i >= 1 ; i--){
-    for(let j = 1 ; j <= i ; j++){
-        document.write("*");
-    }
-    document.write("<br>");
-}
+// let n2 = parseInt(prompt("Enter the number of rows: "));
+// for(let i = n2 ; i >= 1 ; i--){
+//     for(let j = 1 ; j <= i ; j++){
+//         document.write("*");
+//     }
+//     document.write("<br>");
+// }
