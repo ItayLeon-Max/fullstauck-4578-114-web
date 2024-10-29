@@ -11,13 +11,18 @@
 let num = parseInt(prompt("Enter a number: "));
 let i = 1;
 while(i <= num){
+    let span = document.createElement("span");
     //Integer: 47 ToString ---> String: "47" (.includes 7) test if have 7 on it or not on the string string
     if(i % 7 == 0 || i.toString().includes("7")){ 
         //if the number is divisible by 7 or contains 7
-        document.write(" BOOM ");
+        span.style.color = "red";
+        span.innerHTML += " BOOM ";
+        document.body.appendChild(span);
     }else{
         //if the number is not divisible by 7 or contains 7
-        document.write(i + " ");
+        span.style.color = "green";
+        span.innerHTML += i + " ";
+        document.body.appendChild(span);
     }
     i++;
 }
