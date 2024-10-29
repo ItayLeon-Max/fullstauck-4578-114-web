@@ -230,6 +230,68 @@
 
 // class EXP 3
 // 2,4,8,16,32,64,128,256,512,1024,2048,4096
-for(let i = 2 ; i <= 4096 ; i *= 2){
-    document.write(i + " ");
+// for(let i = 2 ; i <= 4096 ; i *= 2){
+//     document.write(i + " ");
+// }
+
+// class EXP 4
+//sum candles on Hanukkah
+// let sumCandle = 0;
+// for(let candlesPerDay = 2 ; candlesPerDay <= 9 ; candlesPerDay++){
+//     sumCandle += candlesPerDay;
+// }
+// document.write(`the sum of candles on Hanukkah is ${sumCandle}`);
+
+// class EXP 5
+// sum candles on Hanukkah per avg
+// let sumCandle = 0;
+// let avgCandle = 0;
+// for(let candlesPerDay = 2 ; candlesPerDay <= 9 ; candlesPerDay++){
+//     sumCandle += candlesPerDay;
+// }
+// document.write(`the sum of candles on Hanukkah is ${sumCandle}` + "<br>");
+// avgCandle = sumCandle / 8;
+// document.write(`the avg of candles on Hanukkah is ${avgCandle}`);
+
+// class EXP 6
+//10 20 30 40 50 60 70 80 90 100 = 550/10 = 55
+// let randomNum = Math.floor(Math.random() * 10) + 10;
+// let plusOfRandomNum = 0;
+// let avgOfRandomNum = 0;
+// for(let i = 1 ; i <= randomNum ; i++){
+//     plusOfRandomNum += i;
+// }
+// avgOfRandomNum = plusOfRandomNum / randomNum;
+// document.write(`the avg randoms numbers is ${avgOfRandomNum}` + "<br>");
+
+// let price = parseInt(prompt("Enter the price: "));
+// let sum = 0;
+// for(let i = 1 ; i <= 12 ; i++){
+//     sum += price;
+// }
+// document.write(`the sum of the price is ${sum}` + "<br>");
+
+// Class EXP 7
+// enter 100 numbers and print the max of numbers with array
+// let arr = []
+// for(let i = 0 ; i < 100 ; i++){
+//     let num = parseInt(prompt("Enter a number: "));
+//     arr.push(num);
+// }
+// let max = arr[0];
+// for(let i = 1 ; i < arr.length ; i++){
+//     if(arr[i] > max){
+//         max = arr[i];
+//     }
+// }
+// document.write(`the max number is ${max}`);
+
+//enter 100 numbers and print the max of numbers with only For loop
+let max = 0;
+for(let i = 0 ; i < 100 ; i++){
+    let num = parseInt(prompt("Enter a number: "));
+    if(num > max){
+        max = num;
+    }
 }
+document.write(`the max number is ${max}`);
