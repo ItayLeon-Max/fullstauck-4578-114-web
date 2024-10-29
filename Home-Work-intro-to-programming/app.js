@@ -299,19 +299,49 @@
 // Class EXP 8
 //input: 5
 //now: 6 random numbers
-//if input inside on the random numbers print "you min" else print "you dont win"
+//if input inside on the random numbers print "you min" else print "you don't win"
+// let num = parseInt(prompt("Enter a number: "));
+// let flag = false;
+// for(let i = 1 ; i <= 6 ; i++){
+//     let randomNum = Math.floor(Math.random() * 10) + 1;
+//     if(num === randomNum){
+//         flag = true;
+//         break;
+//     }
+// }
+// if(flag){
+//     document.write("you win");
+// }
+// else{
+//     document.write("you don't win");
+// }
+
+//input: 5
+//now: 6 random numbers
+//if input inside on the random numbers print "you min" else print "you don't win" with while loop
+let myDiv = document.createElement("div");
 let num = parseInt(prompt("Enter a number: "));
 let flag = false;
-for(let i = 1 ; i <= 6 ; i++){
+let i = 1;
+while(i <= 6){
     let randomNum = Math.floor(Math.random() * 10) + 1;
     if(num === randomNum){
         flag = true;
         break;
     }
+    i++;
 }
 if(flag){
-    document.write("you win");
+    myDiv.style.color = "white";
+    myDiv.style.backgroundColor = "green";
+    myDiv.innerHTML = "you win";
+    document.body.appendChild(myDiv);
+    // document.write("you win");
 }
 else{
-    document.write("you dont win");
+    myDiv.style.color = "white";    
+    myDiv.style.backgroundColor = "red";
+    myDiv.innerHTML = "you don't win";
+    document.body.appendChild(myDiv);
+    // document.write("you don't win");
 }
