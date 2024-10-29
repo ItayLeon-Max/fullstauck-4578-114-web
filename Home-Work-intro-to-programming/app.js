@@ -80,13 +80,13 @@
 
 //EXP 9
 // for(let i = -300 ; i <= 300 ; i++){
-//     document.write(`${i} `);
+//     document.write(i + " , ");
 // }
 
 //EXP 10
 // let num = parseInt(prompt("Enter a number: "));
 // for(let i = 1 ; i <= num ; i++){
-//     document.write(`${i} `);
+//     document.write(`${i} `); 
 // }
 
 //EXP 11
@@ -186,15 +186,50 @@
 //     }
 
 
-let first = prompt("Enter the first number: ");
-let second = prompt("Enter the second number: ");
-if(first > second){
-    let temp = first;
-    first = second;
-    second = temp;
-    for(let i = first ; i <= second ; i++){
-        if(i % num === 0){
-            document.write(i);
-        }
-    }
-} 
+// let first = prompt("Enter the first number: ");
+// let second = prompt("Enter the second number: ");
+// if(first > second){
+//     let temp = first;
+//     first = second;
+//     second = temp;
+//     for(let i = first ; i <= second ; i++){
+//         if(i % num === 0){
+//             document.write(i);
+//         }
+//     }
+// } 
+
+// let num = parseInt(prompt("Enter a number: "));
+// let sum = 0;
+// for(let i = 1 ; i <= num ; i++){
+//     sum += i;
+//     document.write(`${i} `  + " ,");
+// }
+// document.write(` the sum is: ${sum} `);
+
+// class EXP 1
+// let _length = parseInt(prompt("Enter the length of the square: "));
+// let _with = parseInt(prompt("Enter the with of the square: "));
+// for(let i = 1 ; i <= _length ; i++){
+//     for(let j = 1 ; j <= _with ; j++){
+//         if(i === 1 || i === _length || j === 1 || j === _with){
+//             document.write("*");
+//             document.write(" ");
+//         } else {
+//             document.write("*");
+//             document.write(" ");
+//         }
+//     }
+//     document.write("<br>");
+// } 
+
+// class EXP 2
+// for(let i = 7 ; i <= 700 ; i=i+7){
+//     document.write(i + " ");
+// }
+
+// class EXP 3
+// 2,4,8,16,32,64,128,256,512,1024,2048,4096
+for(let i = 2 ; i <= 4096 ; i *= 2){
+    document.write(i + " ");
+}
