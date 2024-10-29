@@ -355,16 +355,47 @@
 //     }
 // }   
 // document.write(`the sum of all numbers from 1 to 50 but not the numbers that divisible by 7 is ${sum}`);
-
+//
 // sum all number from 1 to 50 but not the numbers that divisible by 7 with while loop with  continue
+// let sum = 0;
+// let i = 1;
+// while(i <= 50){
+//     if(i % 7 === 0){
+//         i++;
+//         continue;
+//     }
+//     sum += i;
+//     i++;
+// }
+// document.write(`the sum of all numbers from 1 to 50 but not the numbers that divisible by 7 is ${sum}`);
+
+// Class EXP 10
+// let num = parseInt(prompt("Enter a number: ")); // 465
+// let digits = num.toString().split(""); // ['4', '6', '5']
+// if(digits[digits.length -1] === '5'){ 
+//     document.write("the number ends with 5");
+// } else {
+//     document.write("the number does not end with 5");
+// }
+
+// Class EXP 11
+// input:584 output: 5+8+4=17
+// let num = parseInt(prompt("Enter a number: "));
+// let sum = 0;
+// let digits = num.toString().split("");
+// for(let i = 0 ; i < digits.length ; i++){
+//     sum += parseInt(digits[i]);
+// }
+// document.write(`the sum of the digits of the number ${num} is ${sum}`);
+
+// input:584 output: 5+8+4=17 with not using array
+let num = parseInt(prompt("Enter a number: "));
 let sum = 0;
-let i = 1;
-while(i <= 50){
-    if(i % 7 === 0){
-        i++;
-        continue;
-    }
-    sum += i;
-    i++;
+while(num > 0){
+    sum += num % 10;
+    num = Math.floor(num / 10);
 }
-document.write(`the sum of all numbers from 1 to 50 but not the numbers that divisible by 7 is ${sum}`);
+document.write(`the sum of the digits of the number is ${sum}`);
+
+
+
