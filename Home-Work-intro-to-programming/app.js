@@ -389,13 +389,31 @@
 // document.write(`the sum of the digits of the number ${num} is ${sum}`);
 
 // input:584 output: 5+8+4=17 with not using array
-let num = parseInt(prompt("Enter a number: "));
-let sum = 0;
-while(num > 0){
-    sum += num % 10;
-    num = Math.floor(num / 10);
+// let num = parseInt(prompt("Enter a number: "));
+// let sum = 0;
+// while(num > 0){
+//     sum += num % 10;
+//     num = Math.floor(num / 10);
+// }
+// document.write(`the sum of the digits of the number is ${sum}`);
+
+// Class EXP 11
+// input: 5
+//output:
+//*
+//**
+// let n = parseInt(prompt("Enter the number of rows: "));
+// for(let i = 1 ; i <= n ; i++){
+//     for(let j = 1 ; j <= i ; j++){
+//         document.write("*");
+//     }
+//     document.write("<br>");
+// }
+
+let n2 = parseInt(prompt("Enter the number of rows: "));
+for(let i = n2 ; i >= 1 ; i--){
+    for(let j = 1 ; j <= i ; j++){
+        document.write("*");
+    }
+    document.write("<br>");
 }
-document.write(`the sum of the digits of the number is ${sum}`);
-
-
-
