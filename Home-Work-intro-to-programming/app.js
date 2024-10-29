@@ -184,3 +184,17 @@
 //         }
 //         document.write("<br>");
 //     }
+
+
+let first = prompt("Enter the first number: ");
+let second = prompt("Enter the second number: ");
+if(first > second){
+    let temp = first;
+    first = second;
+    second = temp;
+    for(let i = first ; i <= second ; i++){
+        if(i % num === 0){
+            document.write(i);
+        }
+    }
+} 
