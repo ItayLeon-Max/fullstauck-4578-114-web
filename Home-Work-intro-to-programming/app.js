@@ -319,29 +319,52 @@
 //input: 5
 //now: 6 random numbers
 //if input inside on the random numbers print "you min" else print "you don't win" with while loop
-let myDiv = document.createElement("div");
-let num = parseInt(prompt("Enter a number: "));
-let flag = false;
+// let myDiv = document.createElement("div");
+// let num = parseInt(prompt("Enter a number: "));
+// let flag = false;
+// let i = 1;
+// while(i <= 6){
+//     let randomNum = Math.floor(Math.random() * 10) + 1;
+//     if(num === randomNum){
+//         flag = true;
+//         break;
+//     }
+//     i++;
+// }
+// if(flag){
+//     myDiv.style.color = "white";
+//     myDiv.style.backgroundColor = "green";
+//     myDiv.innerHTML = "you win";
+//     document.body.appendChild(myDiv);
+//     // document.write("you win");
+// }
+// else{
+//     myDiv.style.color = "white";    
+//     myDiv.style.backgroundColor = "red";
+//     myDiv.innerHTML = "you don't win";
+//     document.body.appendChild(myDiv);
+//     // document.write("you don't win");
+// }
+
+// Class EXP 9
+// sum all number from 1 to 50 but not the numbers that divisible by 7
+// let sum = 0;
+// for(let i = 1 ; i <= 50 ; i++){
+//     if(i % 7 !== 0){
+//         sum += i;
+//     }
+// }   
+// document.write(`the sum of all numbers from 1 to 50 but not the numbers that divisible by 7 is ${sum}`);
+
+// sum all number from 1 to 50 but not the numbers that divisible by 7 with while loop with  continue
+let sum = 0;
 let i = 1;
-while(i <= 6){
-    let randomNum = Math.floor(Math.random() * 10) + 1;
-    if(num === randomNum){
-        flag = true;
-        break;
+while(i <= 50){
+    if(i % 7 === 0){
+        i++;
+        continue;
     }
+    sum += i;
     i++;
 }
-if(flag){
-    myDiv.style.color = "white";
-    myDiv.style.backgroundColor = "green";
-    myDiv.innerHTML = "you win";
-    document.body.appendChild(myDiv);
-    // document.write("you win");
-}
-else{
-    myDiv.style.color = "white";    
-    myDiv.style.backgroundColor = "red";
-    myDiv.innerHTML = "you don't win";
-    document.body.appendChild(myDiv);
-    // document.write("you don't win");
-}
+document.write(`the sum of all numbers from 1 to 50 but not the numbers that divisible by 7 is ${sum}`);
