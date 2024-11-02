@@ -92,7 +92,7 @@ for(let i = 0; i < grideSizeArr ; i++){
 }
 
 let avgOfGrades = sumOfGrades / grideSizeArr;
-document.write(`the grade is: [${grade}] <br>`)
+document.write(`The grade is: [${grade}] <br>`)
 document.write(`The avg of grade is: ${avgOfGrades} <br>`);
 
 let span = document.createElement('span');
