@@ -5,3 +5,4 @@ alert(companyName + "\n" + ' is a great company');
 console.log(companyName + "\n" + ' is a great company');
 
 document.write(companyName + " is a great company" + '<br>');
+document.write(`${companyName} is a great company` + '<br>');
