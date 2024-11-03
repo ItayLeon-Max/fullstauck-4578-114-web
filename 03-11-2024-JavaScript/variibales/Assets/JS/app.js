@@ -11,3 +11,11 @@ document.write(`${companyName} is a great company` + '<br>');
 // inputText.setAttribute('type', 'text');
 // document.body.appendChild(inputText);   
 // document.write('<br>');
+
+let aVariableThatMayToChange = 1;
+aVariableThatMayToChange +=3;
+
+document.write(`${aVariableThatMayToChange}` + '<br>');
+
+const a = 6;
+document.write(`${a}` + '<br>');
