@@ -19,3 +19,4 @@ document.write(`${aVariableThatMayToChange}` + '<br>');
 
 const a = 6;
 document.write(`${a}` + '<br>');
+

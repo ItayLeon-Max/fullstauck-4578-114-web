@@ -1,24 +1,13 @@
-const num = +prompt('Enter a number: ');
-switch(num) {
-    case 1:
-        document.write('one');
-        break;
-    case 2:
-        document.write('two');
-        break;
-    case 3:
-        document.write('three');
-        break;
-    case 4:
-        document.write('four');
-        break;
-    case 5:
-        document.write('five');
-        break;
-    default:
-        document.write('Invalid number');
-}
+// const grade = +prompt("Enter your grade: ");
+// let message;
+// if(grade >= 60){
+//     message = "You passed!";
+// } else {
+//     message = "You failed!";
+// }
 
-    
+// document.write(message);
 
-
+//ternary operator
+const grade = +prompt("Enter your grade: ");
+const message = grade >= 60 ? "You passed!" : "You failed!";

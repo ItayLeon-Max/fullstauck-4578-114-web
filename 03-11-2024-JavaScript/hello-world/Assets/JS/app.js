@@ -6,3 +6,4 @@ document.write("Hello World!");
 
 //3. console.log
 console.log("Hello World!");
+

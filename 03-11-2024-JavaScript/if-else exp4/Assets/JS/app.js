@@ -17,8 +17,8 @@ switch(num) {
         break;
     default:
         document.write('Invalid number');
-        break;
 }
+
     
 
 
