@@ -82,10 +82,10 @@
 // document.write(`The array is: [${arr}] <br>`);
 // document.write(`The sum of the numbers is: ${result}`);
 
-let grade = [];
 let grideSizeArr = parseInt(prompt("Enter the amount of grades you want to calculate: "));
 let sumOfGrades = 0;
-for(let i = 0; i < grideSizeArr ; i++){
+let grade = [sumOfGrades];
+for(let i = 0; i < grade.length ; i++){
     var userInputGrade = parseInt(prompt(`Please enter ${grideSizeArr} grades: `));
     grade.push(userInputGrade);
     sumOfGrades += grade[i];
