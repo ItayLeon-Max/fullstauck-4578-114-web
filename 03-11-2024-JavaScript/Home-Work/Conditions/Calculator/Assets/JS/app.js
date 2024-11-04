@@ -8,25 +8,25 @@ switch (operator) {
     case "+":
         let sum = 0;
         size = +prompt("How much numbers do you want to add?");
-        let numbers = [size];
+        let numbersSum = [size];
         for(let i = 0; i < size; i++){
-            numbers[i] = +prompt("Enter the numbers: ");
-            numbers.push(numbers[i]);
-            sum += numbers[i];
+            numbersSum[i] = +prompt("Enter the numbers: ");
+            numbersSum.push(numbersSum[i]);
+            sum += numbersSum[i];
         }
         alert(`The sum of the numbers is ${sum}`);
         alert(`Thanks for using this calculator app!`);
         break;
     case "-":
         size = +prompt("How much numbers do you want to subtract?");
-        let numbers2 = [size];
+        let numbersDiff = [size];
         for(let i = 0; i < size; i++){
-            numbers2[i] = +prompt("Enter the numbers: ");
+            numbersDiff[i] = +prompt("Enter the numbers: ");
         }
         if(size > 0){
-            diff = numbers2[0];
+            diff = numbersDiff[0];
             for(let i = 1; i < size; i++){
-                diff -= numbers2[i];
+                diff -= numbersDiff[i];
             }
         }
         alert(`The difference of the numbers is ${diff}`);
@@ -35,11 +35,11 @@ switch (operator) {
     case "*":
         let product = 1;
         size = +prompt("How much numbers do you want to multiply?");
-        let numbers3 = [size];
+        let numbersMultiply = [size];
         for(let i = 0; i < size; i++){
-            numbers3[i] = +prompt("Enter the numbers: ");
-            numbers3.push(numbers3[i]);
-            product *= numbers3[i];
+            numbersMultiply[i] = +prompt("Enter the numbers: ");
+            numbersMultiply.push(numbers3[i]);
+            product *= numbersMultiply[i];
         }
         alert(`The product of the numbers is ${product}`);
         alert(`Thanks for using this calculator app!`);
