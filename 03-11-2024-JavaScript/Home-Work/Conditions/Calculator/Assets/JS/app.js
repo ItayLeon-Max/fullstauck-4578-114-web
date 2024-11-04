@@ -31,9 +31,6 @@ switch (operator) {
         alert(`The difference of the numbers is ${diff}`);
         break;
     case "*":
-        // num1 = +prompt("Enter the first number: ");
-        // num2 = +prompt("Enter the second number: ");
-        // alert(`${num1} * ${num2} ${num1 * num2}`);
         let product = 1;
         size = +prompt("How much numbers do you want to multiply?");
         let numbers3 = [size];
