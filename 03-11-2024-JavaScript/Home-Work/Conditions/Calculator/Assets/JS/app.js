@@ -14,7 +14,8 @@ switch (operator) {
             numbers.push(numbers[i]);
             sum += numbers[i];
         }
-        alert(`The sum of the numbers is ${sum}`);      
+        alert(`The sum of the numbers is ${sum}`);
+        alert(`Thanks for using this calculator app!`);
         break;
     case "-":
         size = +prompt("How much numbers do you want to subtract?");
@@ -29,6 +30,7 @@ switch (operator) {
             }
         }
         alert(`The difference of the numbers is ${diff}`);
+        alert(`Thanks for using this calculator app!`);
         break;
     case "*":
         let product = 1;
@@ -40,6 +42,7 @@ switch (operator) {
             product *= numbers3[i];
         }
         alert(`The product of the numbers is ${product}`);
+        alert(`Thanks for using this calculator app!`);
         break;
     case "/":
         num1 = +prompt("Enter the first number: ");
@@ -49,24 +52,29 @@ switch (operator) {
             break;
         } else {
             alert(`${num1} / ${num2} ${num1 / num2}`);
+            alert(`Thanks for using this calculator app!`);
             break;  
         }
     case "%":
         num1 = +prompt("Enter the first number: ");
         num2 = +prompt("Enter the second number: ");
         alert(`${num1} % ${num2} = ${num1 % num2}`);
+        alert(`Thanks for using this calculator app!`);
         break; 
     case "cos":
         num1 = +prompt("Enter the number: ");
         alert(`cos(${num1}) = ${Math.cos(num1)}`);
+        alert(`Thanks for using this calculator app!`);
         break;       
     case "sin":
         num1 = +prompt("Enter the number: ");
         alert(`sin(${num1}) = ${Math.sin(num1)}`);
+        alert(`Thanks for using this calculator app!`);
         break;
     case "tan":
         num1 = +prompt("Enter the number: ");
         alert(`tan(${num1}) = ${Math.tan(num1)}`);
+        alert(`Thanks for using this calculator app!`);
         break;
     case "log":
         num1 = +prompt("Enter the number: ");
@@ -75,6 +83,7 @@ switch (operator) {
             break;
         } else {
             alert(`log(${num1}) = ${Math.log(num1)}`);
+            alert(`Thanks for using this calculator app!`);
             break;
         }
     case "sqrt^2":
@@ -84,20 +93,24 @@ switch (operator) {
             break;
         } else {
             alert(`sqrt(${num1}) = ${Math.sqrt(num1)}`);
+            alert(`Thanks for using this calculator app!`);
             break; 
         }
     case "2power":
         num1 = +prompt("Enter the number: ");
         alert(`${num1}^2 = ${Math.pow(num1, 2)}`);
+        alert(`Thanks for using this calculator app!`);
         break;
     case "3power":
         num1 = +prompt("Enter the number: ");
         alert(`${num1}^3 = ${Math.pow(num1, 3)}`);
+        alert(`Thanks for using this calculator app!`);
         break;
     case "power":
         num1 = +prompt("Enter the number: ");
         num2 = +prompt("Enter the power: ");
         alert(`${num1}^${num2} = ${Math.pow(num1, num2)}`);
+        alert(`Thanks for using this calculator app!`);
         break;                       
     default:
         alert("Invalid operator");
