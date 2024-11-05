@@ -45,16 +45,23 @@ switch (operator) {
         alert(`Thanks for using this calculator app!`);
         break;
     case "/":
-        num1 = +prompt("Enter the first number: ");
-        num2 = +prompt("Enter the second number: ");
-        if(num2 === 0) {
-            alert("Cannot divide by zero");
-            break;
-        } else {
-            alert(`${num1} / ${num2} ${num1 / num2}`);
-            alert(`Thanks for using this calculator app!`);
-            break;  
+        let divideProduct;
+        size = +prompt("How much numbers do you want to divide?");
+        let numbersDivide = [size];
+        for(let i = 0 ; i < size ; i++){
+            numbersDivide[i] = +prompt("Enter the numbers: ");
         }
+        if(size > 0){
+            divideProduct = numbersDivide[0];
+            for(let i = 1 ; i < size ; i++){
+                divideProduct /= numbersDivide[i];
+            }
+            alert(`The result of the division is ${product}`);
+        } else {
+            alert("No numbers to divide.");
+        }
+        alert(`Thanks for using this calculator app!`);
+        break;
     case "%":
         num1 = +prompt("Enter the first number: ");
         num2 = +prompt("Enter the second number: ");
