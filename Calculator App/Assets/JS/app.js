@@ -10,9 +10,12 @@
 let resultDiv = document.createElement("div");
 document.body.appendChild(resultDiv);
 resultDiv.innerText = 0;
-let divContainer = document.createElement("div");
-divContainer.className = "button-container";
-document.body.appendChild(divContainer);
+let divBtnNumbersContainer = document.createElement("div");
+divBtnNumbersContainer.className = "button-container";
+document.body.appendChild(divBtnNumbersContainer);
+let divBtnOperatorsContainer = document.createElement("div");
+divBtnOperatorsContainer.className = "button-Operator-container";
+document.body.appendChild(divBtnOperatorsContainer);
 //im want to create a calculator with buttons inside the divContainer
 for(let i = 0; i < 10; i++){
     let button = document.createElement("button");
@@ -20,34 +23,32 @@ for(let i = 0; i < 10; i++){
     button.addEventListener("click", function(){
         resultDiv.innerText += i;
     });
-    divContainer.appendChild(button);
+    divBtnNumbersContainer.appendChild(button);
 }
-// for(let i = 0; i < 10; i++){
-//     let button = document.createElement("button");
-//     button.innerText = i;
-//     button.addEventListener("click", function(){
-//         resultDiv.innerText += i;
-//     });
-//     document.body.appendChild(button);
-// }
-let clearButton = document.createElement("button");
-clearButton.innerText = "C";
-clearButton.addEventListener("click", function(){
-    resultDiv.innerText = "";
-});
-document.body.appendChild(clearButton);
+//added clear button to button operator container
+//this is my clear button
+for(let i = 0; i < 1; i++){
+    let button = document.createElement("button");
+    button.innerText = "C";
+    button.addEventListener("click", function(){
+        resultDiv.innerText = "";
+    });
+    divBtnOperatorsContainer.appendChild(button);
+}
 
 //operator buttons with createEelement with for loop
 //this is my operator buttons (+, -, *, /, %, cos, sin, tan, log, sqrt^2, 2power, 3power, power, !, A system of linear equations(LE), quadratic equation(QE), Third degree equation(TE))
 document.body.appendChild(document.createElement("br"));
+
+//div container for the operator buttons
 for(let i = 0 ; i < 17 ; i++){
     let operatorButton = document.createElement("button");
     let operator = ["+", "-", "*", "/", "%", "cos", "sin", "tan", "log", "sqrt^2", "2power", "3power", "power", "!", "LE", "QE", "TE"];
     operatorButton.innerText = operator[i];
     operatorButton.addEventListener("click", function(){
-        resultDiv.innerText += operator[i];
+    resultDiv.innerText += operator[i];
     });
-    document.body.appendChild(operatorButton);
+    divBtnOperatorsContainer.appendChild(operatorButton);
 }
 document.body.appendChild(document.createElement("br"));
 // = button with createElement and addEventListener 

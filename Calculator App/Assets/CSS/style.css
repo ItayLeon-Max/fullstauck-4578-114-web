@@ -21,6 +21,11 @@ div {
     display: flex;
     flex-wrap: wrap;
 }
+
+.button-Operator-container{
+    display: flex;
+    flex-wrap: wrap;
+}
  
 button {
     background-color: #4CAF50;
