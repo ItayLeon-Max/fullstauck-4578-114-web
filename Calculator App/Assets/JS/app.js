@@ -13,6 +13,7 @@ const operator = prompt("Enter the operator: ");
 let num1;
 let num2;
 let size = 0;
+//this will check the operator entered by the user
 switch (operator) {
     case "+":
         let sum = 0;
