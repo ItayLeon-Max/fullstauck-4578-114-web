@@ -141,17 +141,20 @@ switch (operator) {
         }
     case "2power":
         num1 = +prompt("Enter the number: ");
+        //this will calculate the square of the number
         alert(`${num1}^2 = ${Math.pow(num1, 2)}`);
         alert(`Thanks for using this calculator app!`);
         break;
     case "3power":
         num1 = +prompt("Enter the number: ");
+        //this will calculate the cube of the number
         alert(`${num1}^3 = ${Math.pow(num1, 3)}`);
         alert(`Thanks for using this calculator app!`);
         break;
     case "power":
         num1 = +prompt("Enter the number: ");
         num2 = +prompt("Enter the power: ");
+        //this will calculate the power of the number
         alert(`${num1}^${num2} = ${Math.pow(num1, num2)}`);
         alert(`Thanks for using this calculator app!`);
         break; 
