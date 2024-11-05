@@ -56,11 +56,8 @@ switch (operator) {
             for(let i = 1 ; i < size ; i++){
                 divideProduct /= numbersDivide[i];
             }
-            if(numbersDivide[size - 1] === 0){
-                alert("You can't divide by zero.");
-            } else {
-                alert(`The result of the division is ${divideProduct}`);
-            }
+            let answer = numbersDivide[size - 1] === 0 ? "You can't divide by zero." : `The result of the division is ${divideProduct}`;
+            alert(answer);
         } else {
             alert("No numbers to divide.");
         }
