@@ -7,20 +7,59 @@
 //The user can enter the operator and the numbers to perform the operation.
 //*******************************************************************************
 
-// add input this body to get the operator and the numbers to perform the operation
-// let input = document.createElement("input");
-// input.setAttribute("type", "text");
-// document.body.appendChild(input);
-// let button = document.createElement("button");
-// button.innerHTML = "Submit";
-// document.body.appendChild(button);
 let resultDiv = document.createElement("div");
 document.body.appendChild(resultDiv);
 resultDiv.innerText = 0;
-//im wont the user to enter the operator and the numbers in input and click the button to get the result
-//and the result will be displayed in div
+let divContainer = document.createElement("div");
+divContainer.className = "button-container";
+document.body.appendChild(divContainer);
+//im want to create a calculator with buttons inside the divContainer
+for(let i = 0; i < 10; i++){
+    let button = document.createElement("button");
+    button.innerText = i;
+    button.addEventListener("click", function(){
+        resultDiv.innerText += i;
+    });
+    divContainer.appendChild(button);
+}
+// for(let i = 0; i < 10; i++){
+//     let button = document.createElement("button");
+//     button.innerText = i;
+//     button.addEventListener("click", function(){
+//         resultDiv.innerText += i;
+//     });
+//     document.body.appendChild(button);
+// }
+let clearButton = document.createElement("button");
+clearButton.innerText = "C";
+clearButton.addEventListener("click", function(){
+    resultDiv.innerText = "";
+});
+document.body.appendChild(clearButton);
 
- 
+//operator buttons with createEelement with for loop
+//this is my operator buttons (+, -, *, /, %, cos, sin, tan, log, sqrt^2, 2power, 3power, power, !, A system of linear equations(LE), quadratic equation(QE), Third degree equation(TE))
+document.body.appendChild(document.createElement("br"));
+for(let i = 0 ; i < 17 ; i++){
+    let operatorButton = document.createElement("button");
+    let operator = ["+", "-", "*", "/", "%", "cos", "sin", "tan", "log", "sqrt^2", "2power", "3power", "power", "!", "LE", "QE", "TE"];
+    operatorButton.innerText = operator[i];
+    operatorButton.addEventListener("click", function(){
+        resultDiv.innerText += operator[i];
+    });
+    document.body.appendChild(operatorButton);
+}
+document.body.appendChild(document.createElement("br"));
+// = button with createElement and addEventListener 
+let equalButton = document.createElement("button");
+equalButton.className = "equal";
+equalButton.innerText = "=";
+document.body.appendChild(equalButton);
+
+
+
+
+
 alert("Hello, welcome to this calculator app!");
 alert("Enter the operator: +, -, *, /, %, cos, sin, tan, log, sqrt^2, 2power, 3power, power, !, A system of linear equations(LE), quadratic equation(QE), Third degree equation(TE)");
 const operator = prompt("Enter the operator: ");
