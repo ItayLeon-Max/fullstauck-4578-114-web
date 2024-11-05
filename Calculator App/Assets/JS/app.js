@@ -7,6 +7,20 @@
 //The user can enter the operator and the numbers to perform the operation.
 //*******************************************************************************
 
+// add input this body to get the operator and the numbers to perform the operation
+// let input = document.createElement("input");
+// input.setAttribute("type", "text");
+// document.body.appendChild(input);
+// let button = document.createElement("button");
+// button.innerHTML = "Submit";
+// document.body.appendChild(button);
+let resultDiv = document.createElement("div");
+document.body.appendChild(resultDiv);
+resultDiv.innerText = 0;
+//im wont the user to enter the operator and the numbers in input and click the button to get the result
+//and the result will be displayed in div
+
+ 
 alert("Hello, welcome to this calculator app!");
 alert("Enter the operator: +, -, *, /, %, cos, sin, tan, log, sqrt^2, 2power, 3power, power, !, A system of linear equations(LE), quadratic equation(QE), Third degree equation(TE)");
 const operator = prompt("Enter the operator: ");
@@ -26,7 +40,7 @@ switch (operator) {
             numbersSum.push(numbersSum[i]);
             sum += numbersSum[i];
         }
-        alert(`The sum of the numbers is ${sum}`);
+        resultDiv.innerText = `The sum of the numbers is ${sum}`;
         alert(`Thanks for using this calculator app!`);
         break;
     case "-":
@@ -45,7 +59,7 @@ switch (operator) {
                 diff -= numbersDiff[i];
             }
         }
-        alert(`The difference of the numbers is ${diff}`);
+        resultDiv.innerText = `The difference of the numbers is ${diff}`;
         alert(`Thanks for using this calculator app!`);
         break;
     case "*":
@@ -56,10 +70,9 @@ switch (operator) {
         for(let i = 0; i < size; i++){
             //this will calculate the product of the numbers
             numbersMultiply[i] = +prompt("Enter the numbers: ");
-            numbersMultiply.push(numbers3[i]);
             product *= numbersMultiply[i];
         }
-        alert(`The product of the numbers is ${product}`);
+        resultDiv.innerText = `The product of the numbers is ${product}`;
         alert(`Thanks for using this calculator app!`);
         break;
     case "/":
@@ -78,7 +91,7 @@ switch (operator) {
                 divideProduct /= numbersDivide[i];
             }
             let answer = numbersDivide[size - 1] === 0 ? "You can't divide by zero." : `The result of the division is ${divideProduct}`;
-            alert(answer);
+            resultDiv.innerText = answer;
         } else {
             //this else statement will alert the user if there are no numbers to divide
             alert("No numbers to divide.");
@@ -90,28 +103,28 @@ switch (operator) {
         num1 = +prompt("Enter the first number: ");
         num2 = +prompt("Enter the second number: ");
         //this will calculate the modulo of the two numbers
-        alert(`${num1} % ${num2} = ${num1 % num2}`);
+        resultDiv.innerText = (`${num1} % ${num2} = ${num1 % num2}`);
         alert(`Thanks for using this calculator app!`);
         break; 
     case "cos":
         //this case will calculate the cosine of a number
         num1 = +prompt("Enter the number: ");
         //this will calculate the cosine of the number
-        alert(`cos(${num1}) = ${Math.cos(num1)}`);
+        resultDiv.innerText = (`cos(${num1}) = ${Math.cos(num1)}`);
         alert(`Thanks for using this calculator app!`);
         break;       
     case "sin":
         //this case will calculate the sine of a number
         num1 = +prompt("Enter the number: ");
         //this will calculate the sine of the number
-        alert(`sin(${num1}) = ${Math.sin(num1)}`);
+        resultDiv.innerText = (`sin(${num1}) = ${Math.sin(num1)}`);
         alert(`Thanks for using this calculator app!`);
         break;
     case "tan": 
         //this case will calculate the tangent of a number
         num1 = +prompt("Enter the number: ");
         //this will calculate the tangent of the number
-        alert(`tan(${num1}) = ${Math.tan(num1)}`);
+        resultDiv.innerText = (`tan(${num1}) = ${Math.tan(num1)}`);
         alert(`Thanks for using this calculator app!`);
         break;
     case "log":
@@ -119,11 +132,13 @@ switch (operator) {
         num1 = +prompt("Enter the number: ");
         if(num1 <= 0) {
             //this will alert the user if the input is invalid
-            alert("Invalid input for log");
+            resultDiv.innerText = ("Invalid input for log");
+            resultDiv.style.color = "red";
+            resultDiv.style.fontSize = "20px";
             break;
         } else {
             //this will calculate the logarithm of the number
-            alert(`log(${num1}) = ${Math.log(num1)}`);
+            resultDiv.innerText = (`log(${num1}) = ${Math.log(num1)}`);
             alert(`Thanks for using this calculator app!`);
             break;
         }
@@ -132,31 +147,33 @@ switch (operator) {
         num1 = +prompt("Enter the number: ");
         if (num1 < 0) {
             //this will alert the user if the input is invalid
-            alert("Invalid input for sqrt");
+            resultDiv.innerText = ("Invalid input for sqrt");
+            resultDiv.style.color = "red";
+            resultDiv.style.fontSize = "20px";
             break;
         } else {
             //this will calculate the square root of the number
-            alert(`sqrt(${num1}) = ${Math.sqrt(num1)}`);
+            resultDiv.innerText = (`sqrt(${num1}) = ${Math.sqrt(num1)}`);
             alert(`Thanks for using this calculator app!`);
             break; 
         }
     case "2power":
         num1 = +prompt("Enter the number: ");
         //this will calculate the square of the number
-        alert(`${num1}^2 = ${Math.pow(num1, 2)}`);
+        resultDiv.innerText = (`${num1}^2 = ${Math.pow(num1, 2)}`);
         alert(`Thanks for using this calculator app!`);
         break;
     case "3power":
         num1 = +prompt("Enter the number: ");
         //this will calculate the cube of the number
-        alert(`${num1}^3 = ${Math.pow(num1, 3)}`);
+        resultDiv.innerText = (`${num1}^3 = ${Math.pow(num1, 3)}`);
         alert(`Thanks for using this calculator app!`);
         break;
     case "power":
         num1 = +prompt("Enter the number: ");
         num2 = +prompt("Enter the power: ");
         //this will calculate the power of the number
-        alert(`${num1}^${num2} = ${Math.pow(num1, num2)}`);
+        resultDiv.innerText = (`${num1}^${num2} = ${Math.pow(num1, num2)}`);
         alert(`Thanks for using this calculator app!`);
         break; 
     case "!":
@@ -166,7 +183,9 @@ switch (operator) {
         let factorial = 1;
         if(num1 < 0) {
             //this will alert the user if the input is invalid
-            alert("Invalid input for factorial");
+            resultDiv.innerText = ("Invalid input for factorial");
+            resultDiv.style.color = "red";
+            resultDiv.style.fontSize = "20px";
             break;
         } else {
             //this will calculate the factorial of the number
@@ -174,7 +193,7 @@ switch (operator) {
                 factorial *= i;
             }
             //this will alert the user the factorial of the number
-            alert(`${num1}! = ${factorial}`);
+            resultDiv.innerText = (`${num1}! = ${factorial}`);
             alert(`Thanks for using this calculator app!`);
             break;
         }   
@@ -194,12 +213,14 @@ switch (operator) {
         //this will check if the determinant is equal to zero
         if(det === 0) {
             //this will alert the user if the determinant is equal to zero
-            alert("The system of linear equations has no solution.");
+            resultDiv.innerText = ("The system of linear equations has no solution.");
+            resultDiv.style.color = "red";
+            resultDiv.style.fontSize = "20px";
         } else {
             //this will calculate the values of x and y
             let x = detX / det;
             let y = detY / det;
-            alert(`The solution of the system of linear equations is x = ${x} and y = ${y}`);
+            resultDiv.innerText = (`The solution of the system of linear equations is x = ${x} and y = ${y}`);
         }
         alert(`Thanks for using this calculator app!`);
         break; 
@@ -216,18 +237,18 @@ switch (operator) {
             //this will calculate the values of x1 and x2
             let x1 = (-b + Math.sqrt(discriminant)) / (2 * a);
             let x2 = (-b - Math.sqrt(discriminant)) / (2 * a);
-            alert(`The solutions of the quadratic equation are x1 = ${x1} and x2 = ${x2}`);
+            resultDiv.innerText = (`The solutions of the quadratic equation are x1 = ${x1} and x2 = ${x2}`);
         } else if(discriminant === 0) {
             //this will calculate the value of x
             let x = -b / (2 * a);
-            alert(`The solution of the quadratic equation is x = ${x}`);
+            resultDiv.innerText = (`The solution of the quadratic equation is x = ${x}`);
         } else {
             //this will calculate the real and imaginary parts of x1 and x2
             let realPart = -b / (2 * a);
             let imaginaryPart = Math.sqrt(-discriminant) / (2 * a);
             let x1 = `${realPart} + ${imaginaryPart}i`;
             let x2 = `${realPart} - ${imaginaryPart}i`;
-            alert(`The solutions of the quadratic equation are x1 = ${x1} and x2 = ${x2}`);
+            resultDiv.innerText = (`The solutions of the quadratic equation are x1 = ${x1} and x2 = ${x2}`);
         }
         alert(`Thanks for using this calculator app!`);
         break;   
@@ -258,11 +279,13 @@ switch (operator) {
         root2 = 2 * temp6 * Math.cos((temp5 + 2 * Math.PI) / 3) - b / (3 * a);
         root3 = 2 * temp6 * Math.cos((temp5 + 4 * Math.PI) / 3) - b / (3 * a);
         //this will alert the user the values of x1, x2, and x3
-        alert(`The solutions of the third degree equation are x1 = ${root1}, x2 = ${root2}, and x3 = ${root3}`);
+        resultDiv.innerText = (`The solutions of the third degree equation are x1 = ${root1}, x2 = ${root2}, and x3 = ${root3}`);
         alert(`Thanks for using this calculator app!`);
         break;                   
     default:
         //this will alert the user if the operator is invalid
-        alert("Invalid operator");
+        resultDiv.innerText = ("Invalid operator");
+        resultDiv.style.color = "red";
+        resultDiv.style.fontSize = "20px";
         break;                  
 }
