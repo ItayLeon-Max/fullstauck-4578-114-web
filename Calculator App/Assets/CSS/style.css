@@ -26,6 +26,15 @@ div {
     display: flex;
     flex-wrap: wrap;
 }
+
+.equal-button-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.equal-button{
+    width: 100%;
+}
  
 button {
     background-color:aliceblue;

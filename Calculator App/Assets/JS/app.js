@@ -16,6 +16,9 @@ document.body.appendChild(divBtnNumbersContainer);
 let divBtnOperatorsContainer = document.createElement("div");
 divBtnOperatorsContainer.className = "button-Operator-container";
 document.body.appendChild(divBtnOperatorsContainer);
+let equalButtonContainer = document.createElement("div");
+equalButtonContainer.className = "equal-button-container";
+document.body.appendChild(equalButtonContainer);
 //im want to create a calculator with buttons inside the divContainer
 for(let i = 0; i < 10; i++){
     let button = document.createElement("button");
@@ -51,15 +54,17 @@ for(let i = 0 ; i < 17 ; i++){
     divBtnOperatorsContainer.appendChild(operatorButton);
 }
 document.body.appendChild(document.createElement("br"));
-// = button with createElement and addEventListener 
-let equalButton = document.createElement("button");
-equalButton.className = "equal";
-equalButton.innerText = "=";
-document.body.appendChild(equalButton);
 
-
-
-
+//add equal button to the equalButtonContainer
+for(let i = 0; i < 1; i++){
+    let equalButton = document.createElement("button");
+    equalButton.className = "equal-button";
+    equalButton.innerText = "=";
+    equalButton.addEventListener("click", function(){
+        resultDiv.innerText = eval(resultDiv.innerText);
+    });
+    equalButtonContainer.appendChild(equalButton);
+}
 
 alert("Hello, welcome to this calculator app!");
 alert("Enter the operator: +, -, *, /, %, cos, sin, tan, log, sqrt^2, 2power, 3power, power, !, A system of linear equations(LE), quadratic equation(QE), Third degree equation(TE)");
