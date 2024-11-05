@@ -1,3 +1,11 @@
+//Created by: Itay Leon
+//Date: 2021-09-30
+//Description: This is a simple calculator app that can perform basic arithmetic operations and some scientific operations.
+//The user is prompted to enter the operator and the numbers to perform the operation.
+//The user can perform the following operations: addition, subtraction, multiplication, division, modulo, cosine, sine, tangent, logarithm, square root, square, cube, and power.
+//The user can enter the operator and the numbers to perform the operation.
+//*******************************************************************************
+
 alert("Hello, welcome to this calculator app!");
 alert("Enter the operator: +, -, *, /, %, cos, sin, tan, log, sqrt^2, 2power, 3power, power");
 const operator = prompt("Enter the operator: ");
