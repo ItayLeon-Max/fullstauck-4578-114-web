@@ -1,8 +1,9 @@
 //Created by: Itay Leon
-//Date: 2021-09-30
+//Date: 2024-11-04
 //Description: This is a simple calculator app that can perform basic arithmetic operations and some scientific operations.
 //The user is prompted to enter the operator and the numbers to perform the operation.
-//The user can perform the following operations: addition, subtraction, multiplication, division, modulo, cosine, sine, tangent, logarithm, square root, square, cube, and power, factorial, and a system of linear equations.
+//The user can perform the following operations: addition, subtraction, multiplication, division, modulo, cosine, sine, tangent, logarithm, square root, square, cube, and power
+//, factorial, and a system of linear equations, quadratic equation, and third degree equation.
 //The user can enter the operator and the numbers to perform the operation.
 //*******************************************************************************
 
