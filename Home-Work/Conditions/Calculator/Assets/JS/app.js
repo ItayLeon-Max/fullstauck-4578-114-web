@@ -31,9 +31,6 @@ switch (operator) {
         alert(`The difference of the numbers is ${diff}`);
         break;
     case "*":
-        // num1 = +prompt("Enter the first number: ");
-        // num2 = +prompt("Enter the second number: ");
-        // alert(`${num1} * ${num2} ${num1 * num2}`);
         let product = 1;
         size = +prompt("How much numbers do you want to multiply?");
         let numbers3 = [size];
@@ -45,18 +42,23 @@ switch (operator) {
         alert(`The product of the numbers is ${product}`);
         break;
     case "/":
-        num1 = +prompt("Enter the first number: ");
-        num2 = +prompt("Enter the second number: ");
-        if(num2 === 0) {
-            alert("Cannot divide by zero");
-            break;
-        } else {
-            alert(`${num1} / ${num2} ${num1 / num2}`);
-            break;  
+        size = +prompt("How much numbers do you want to divide?");
+        let numbers4 = [size];
+        let quotient = numbers4[0];
+        for(let i = 1; i < size; i++){
+            numbers4[i] = +prompt("Enter the numbers: ");
+            if(numbers4[i] === 0){
+                alert("Cannot divide by zero");
+                break;
+            } else {
+                quotient /= numbers4[i];
+            }
         }
+        alert(`The quotient of the numbers is ${quotient}`);
+        break;
     case "%":
-        num1 = +prompt("Enter the first number: ");
-        num2 = +prompt("Enter the second number: ");
+        num1 = +prompt("Enter the number: ");
+        num2 = +prompt("Enter the modulo: ");
         alert(`${num1} % ${num2} = ${num1 % num2}`);
         break; 
     case "cos":
