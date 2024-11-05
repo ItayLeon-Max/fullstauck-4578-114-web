@@ -66,21 +66,14 @@ for(let i = 0; i < 1; i++){
     equalButtonContainer.appendChild(equalButton);
 }
 
-alert("Hello, welcome to this calculator app!");
-alert("Enter the operator: +, -, *, /, %, cos, sin, tan, log, sqrt^2, 2power, 3power, power, !, A system of linear equations(LE), quadratic equation(QE), Third degree equation(TE)");
-const operator = prompt("Enter the operator: ");
-let num1;
-let num2;
-let size = 0;
-//this will check the operator entered by the user
+//enter to input the numbers button and select the operator and click the equal button to get the result
+//this is the code for the calculator app
 switch (operator) {
-    case "+":
+    case operator['+']:
         let sum = 0;
         size = +prompt("How much numbers do you want to add?");
         let numbersSum = [size];
-        //this loop will prompt the user to enter the numbers to add
         for(let i = 0; i < size; i++){
-            //this will calculate the sum of the numbers
             numbersSum[i] = +prompt("Enter the numbers: ");
             numbersSum.push(numbersSum[i]);
             sum += numbersSum[i];
@@ -88,6 +81,45 @@ switch (operator) {
         resultDiv.innerText = `The sum of the numbers is ${sum}`;
         alert(`Thanks for using this calculator app!`);
         break;
+    case operator['-']:
+        size = +prompt("How much numbers do you want to subtract?");
+        let numbersDiff = [size];
+        for(let i = 0; i < size; i++){
+            numbersDiff[i] = +prompt("Enter the numbers: ");
+        }
+        if(size > 0){
+            diff = numbersDiff[0];
+            for(let i = 1; i < size; i++){
+                diff -= numbersDiff[i];
+            }
+        }
+        resultDiv.innerText = `The difference of the numbers is ${diff}`;
+        alert(`Thanks for using this calculator app!`);
+        break;    
+}
+
+// alert("Hello, welcome to this calculator app!");
+// alert("Enter the operator: +, -, *, /, %, cos, sin, tan, log, sqrt^2, 2power, 3power, power, !, A system of linear equations(LE), quadratic equation(QE), Third degree equation(TE)");
+// const operator = prompt("Enter the operator: ");
+// let num1;
+// let num2;
+// let size = 0;
+//this will check the operator entered by the user
+switch (operator) {
+    // case "+":
+    //     let sum = 0;
+    //     size = +prompt("How much numbers do you want to add?");
+    //     let numbersSum = [size];
+    //     //this loop will prompt the user to enter the numbers to add
+    //     for(let i = 0; i < size; i++){
+    //         //this will calculate the sum of the numbers
+    //         numbersSum[i] = +prompt("Enter the numbers: ");
+    //         numbersSum.push(numbersSum[i]);
+    //         sum += numbersSum[i];
+    //     }
+    //     resultDiv.innerText = `The sum of the numbers is ${sum}`;
+    //     alert(`Thanks for using this calculator app!`);
+    //     break;
     case "-":
         size = +prompt("How much numbers do you want to subtract?");
         let numbersDiff = [size];
