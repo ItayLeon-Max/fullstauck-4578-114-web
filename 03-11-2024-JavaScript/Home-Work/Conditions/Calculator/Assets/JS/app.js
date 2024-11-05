@@ -51,12 +51,16 @@ switch (operator) {
         for(let i = 0 ; i < size ; i++){
             numbersDivide[i] = +prompt("Enter the numbers: ");
         }
-        if(size > 0){
+        if(size > 1){
             divideProduct = numbersDivide[0];
             for(let i = 1 ; i < size ; i++){
                 divideProduct /= numbersDivide[i];
             }
-            alert(`The result of the division is ${product}`);
+            if(numbersDivide[size - 1] === 0){
+                alert("You can't divide by zero.");
+            } else {
+                alert(`The result of the division is ${divideProduct}`);
+            }
         } else {
             alert("No numbers to divide.");
         }
