@@ -261,6 +261,7 @@ switch (operator) {
         alert(`Thanks for using this calculator app!`);
         break;                   
     default:
+        //this will alert the user if the operator is invalid
         alert("Invalid operator");
         break;                  
 }
