@@ -18,7 +18,9 @@ switch (operator) {
         let sum = 0;
         size = +prompt("How much numbers do you want to add?");
         let numbersSum = [size];
+        //this loop will prompt the user to enter the numbers to add
         for(let i = 0; i < size; i++){
+            //this will calculate the sum of the numbers
             numbersSum[i] = +prompt("Enter the numbers: ");
             numbersSum.push(numbersSum[i]);
             sum += numbersSum[i];
@@ -29,12 +31,16 @@ switch (operator) {
     case "-":
         size = +prompt("How much numbers do you want to subtract?");
         let numbersDiff = [size];
+        //this loop will prompt the user to enter the numbers to subtract
         for(let i = 0; i < size; i++){
+            //this will calculate the difference of the numbers
             numbersDiff[i] = +prompt("Enter the numbers: ");
         }
         if(size > 0){
+            //this if statement will check if there are numbers to subtract
             diff = numbersDiff[0];
             for(let i = 1; i < size; i++){
+                //this loop will subtract the numbers
                 diff -= numbersDiff[i];
             }
         }
@@ -44,8 +50,10 @@ switch (operator) {
     case "*":
         let product = 1;
         size = +prompt("How much numbers do you want to multiply?");
+        //this loop will prompt the user to enter the numbers to multiply
         let numbersMultiply = [size];
         for(let i = 0; i < size; i++){
+            //this will calculate the product of the numbers
             numbersMultiply[i] = +prompt("Enter the numbers: ");
             numbersMultiply.push(numbers3[i]);
             product *= numbersMultiply[i];
