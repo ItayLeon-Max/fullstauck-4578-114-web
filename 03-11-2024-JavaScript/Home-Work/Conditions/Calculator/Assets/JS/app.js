@@ -77,42 +77,56 @@ switch (operator) {
         alert(`Thanks for using this calculator app!`);
         break;
     case "%":
+        //this case will calculate the modulo of two numbers
         num1 = +prompt("Enter the first number: ");
         num2 = +prompt("Enter the second number: ");
+        //this will calculate the modulo of the two numbers
         alert(`${num1} % ${num2} = ${num1 % num2}`);
         alert(`Thanks for using this calculator app!`);
         break; 
     case "cos":
+        //this case will calculate the cosine of a number
         num1 = +prompt("Enter the number: ");
+        //this will calculate the cosine of the number
         alert(`cos(${num1}) = ${Math.cos(num1)}`);
         alert(`Thanks for using this calculator app!`);
         break;       
     case "sin":
+        //this case will calculate the sine of a number
         num1 = +prompt("Enter the number: ");
+        //this will calculate the sine of the number
         alert(`sin(${num1}) = ${Math.sin(num1)}`);
         alert(`Thanks for using this calculator app!`);
         break;
-    case "tan":
+    case "tan": 
+        //this case will calculate the tangent of a number
         num1 = +prompt("Enter the number: ");
+        //this will calculate the tangent of the number
         alert(`tan(${num1}) = ${Math.tan(num1)}`);
         alert(`Thanks for using this calculator app!`);
         break;
     case "log":
+        //this case will calculate the logarithm of a number
         num1 = +prompt("Enter the number: ");
         if(num1 <= 0) {
+            //this will alert the user if the input is invalid
             alert("Invalid input for log");
             break;
         } else {
+            //this will calculate the logarithm of the number
             alert(`log(${num1}) = ${Math.log(num1)}`);
             alert(`Thanks for using this calculator app!`);
             break;
         }
     case "sqrt^2":
+        //this case will calculate the square root of a number
         num1 = +prompt("Enter the number: ");
         if (num1 < 0) {
+            //this will alert the user if the input is invalid
             alert("Invalid input for sqrt");
             break;
         } else {
+            //this will calculate the square root of the number
             alert(`sqrt(${num1}) = ${Math.sqrt(num1)}`);
             alert(`Thanks for using this calculator app!`);
             break; 
