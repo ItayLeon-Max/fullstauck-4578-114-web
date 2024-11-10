@@ -24,4 +24,3 @@ console.log(`the type os alert is ${typeof alert}`);
 
 const bigNum = BigInt(1234567890);
 console.log(`The type of is ${typeof bigNum}`);
-
