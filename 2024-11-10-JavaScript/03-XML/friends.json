@@ -1,0 +1,30 @@
+[
+    {
+        "id":1,
+        "name": "Itay",
+        "age": 25,
+        "email": "itayleonconceot14@gmail.com",
+        "gender": "male"
+    },
+    {
+        "id":2,
+        "name": "Yossi",
+        "age": 18,
+        "email": "yossi_c@gmail.com",
+        "gender": "male"
+    },
+    {
+        "id":3,
+        "name": "Yoav",
+        "age": 20,
+        "email": "yoav@gmail.com",
+        "gender": "male"
+    },
+    {
+        "id":4,
+        "name": "Yael",
+        "age": 22,
+        "email": "yale_81@gmail.com",
+        "gender": "female"
+    }
+]
