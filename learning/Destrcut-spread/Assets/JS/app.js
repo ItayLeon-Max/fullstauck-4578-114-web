@@ -16,8 +16,6 @@ const student = {
 const {grades: [firstGrade, secondGrade]} = student;
 console.log(firstGrade, secondGrade);
 
-//Destruct-spread on objects with (...Name) to print the rest of the object keys
-//Syntax: const {prop1, prop2, ...nameKey} = object;
 const {firstName, lastName, ...otherKey} = student;
 console.log(firstName, lastName, otherKey);
 
