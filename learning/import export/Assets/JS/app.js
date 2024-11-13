@@ -2,7 +2,8 @@
 // Syntax: import variableName from "path/to/file.js";
 // import countries from './data.js';
 import { countries } from "./data.js";
-import { findCountriesByName } from "./findCountries.js";
+import { findCountriesByName } from "./findeCountries.js";
 
 
-console.log(findCountriesByName(countries, "Algeria"));
+console.log(findCountriesByName(countries, "Israel"));
+
