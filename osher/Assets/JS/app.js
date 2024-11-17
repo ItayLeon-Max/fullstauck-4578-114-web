@@ -459,3 +459,244 @@ if(x > y){
 // console.log(nameArr[0]); // i = 0
 // console.log(nameArr[1]); // i = 1
 // console.log(nameArr[2]); // i = 2
+
+
+// function getRandomNumbersOfArr(arr) {
+//     for(let i = 0 ; i < 10 ; i++){
+//        arr.push(Math.floor(Math.random() * 101));
+//     }
+//     return arr;
+// }
+
+// const getReverseArr = arrInFunc => {
+//     let reverse = [];
+//     for(let i = arrInFunc.length - 1 ; i >= 0 ; i--){
+//         reverse.push(arrInFunc[i]);
+//     }
+//     return reverse;
+// }
+
+// const evenNumbersOfArr = arr => {
+//     let even = [];
+//     for(let i = 0 ; i < arr.length ; i++){
+//         if(arr[i] % 2 === 0){
+//             even.push(arr[i]);
+//         }
+//     }
+//     return even;
+// }
+
+// let arrOut = [];
+// console.log(getRandomNumbersOfArr(arrOut));
+// console.log(getReverseArr(arrOut));
+// console.log(evenNumbersOfArr(arrOut));
+
+//EX - Perfect number
+//----------------------------------------------------------*
+// Example: 6, 28, 496, 8128....                            *
+// 1+2+3 = 6   6 === 6 perfect                                             *
+// 1+2+4+7+14 = 28                                          *
+// 1+2+4+8+16+31+62+124+248 = 496                           *
+// 1+2+4+8+16+32+64+127+254+508+1016+2032+4064 = 8128       *
+// ---------------------------------------------------------*
+
+// function isPerfectNumber(num){ // num = 6
+//     let sum = 0;
+//     for(let i = 1 ; i < num ; i++){
+//         if(num % i === 0) sum += i;
+//     }
+//     if(sum === num)  return true;
+//     else return false;
+// }
+
+// console.log(isPerfectNumber(6)); 
+// console.log(isPerfectNumber(100));
+
+// //return 
+
+// function sum (x, y){
+//     return x + y; //number
+// }
+
+// number 
+// string (String)
+// boolean (Boolean)
+// object (Object)
+
+
+// let x = 5;
+// console.log(typeof x); 
+
+// let y = "Itay";
+// console.log(typeof y);
+
+// let z = true;
+// console.log(typeof z);
+
+// console.log(typeof "hello");
+
+// let num = +prompt('Enter a number');
+// if(typeof num === 'number' && !isNaN(num)){
+//     console.log('number');
+// } else {
+//     console.log('not a number');
+// }
+
+// const student = [
+//     {
+//         name: {
+//             firstName: "0",
+//             lastName: "Levi"
+//         },
+//         age: {
+//             age: 24,
+//             year: 2000
+//         }
+//     },
+//     {
+//         name: {
+//             firstName: "1",
+//             lastName: "Cohen"
+//         },
+//         age: {
+//             age: 30,
+//             year: 1990
+//         }
+//     },
+//     {
+//         name: {
+//             firstName: "2",
+//             lastName: "Levi"
+//         },
+//         age: {
+//             age: 30,
+//             year: 1990
+//         }
+//     },
+//     {
+//         name: {
+//             firstName: "3",
+//             lastName: "Levi"
+//         },
+//         age: {
+//             age: 30,
+//             year: 1990
+//         }
+//     },
+//     {
+//         name: {
+//             firstName: "4",
+//             lastName: "Levi"
+//         },
+//         age: {
+//             age: 30,
+//             year: 1990
+//         }
+//     }
+// ];
+
+
+// function addStudent(student, name, age){
+//     student.push({name, age});
+// }
+
+// function removeStudent(student, index){
+//     student.splice(index, 1);
+//     //Syntax: splice(index, how many elements)
+//     //splice(1, 1) --> remove 1 element from index 1
+//     //and create a new array without the removed element (from 0 to 1 and from 2 to end)
+// }
+
+// console.log(student);
+
+
+// // addStudent(student, "Itay", 24);
+
+// for(let i = 0 ; i < 2 ; i++){
+//     let name = prompt(`Add student number ${i+1} name`);
+//     let lastName = prompt(`Add student number ${i+1} last name`);
+//     let age = prompt(`Add student number ${i+1} age`);
+//     let year = prompt(`Add student number ${i+1} year`);
+//     addStudent(student, student[i].name.firstName);
+//     addStudent(student, student[i].name.lastName);
+//     addStudent(student, student[i].age.age);
+//     addStudent(student, student[i].age.year);
+// }
+
+// for(let i = 0 ; i < student.length ; i++){
+//     console.log(student[i]);
+// }
+ 
+// const car = {
+//     car1: {
+//         name: "Tesla",
+//         model: "Model S",
+//         year: 2021,
+//         color: "black",
+//         price: 100000,
+//         speed: 250
+//     },
+//     car2: {
+//         name: "BMW",
+//         model: "X6",
+//         year: 2021,
+//         color: "white",
+//         price: 80000,
+//         speed: 220
+//     },
+//     car3: {
+//         name: "Audi",
+//         model: "A8",
+//         year: 2021,
+//         color: "blue",
+//         price: 90000,
+//         speed: 240
+//     }
+// };
+
+// let carsArr = [];
+// for(let index in car){
+//     carsArr.push(car[index]);
+// }
+
+// console.log(carsArr);
+
+// const random = (min, max) => {
+//     let randomNumber = Math.floor(Math.random() * (max - min + 1) + min);
+//     return randomNumber;
+// }
+
+// function testPrimeNumbersOnArr(arr) {
+//     let primeNumbers = [];
+//     for(let i = 0 ; i < arr.length ; i++){
+//         let isPrime = true;
+//         for(let j = 2 ; j < arr[i] ; j++){
+//             if(arr[i] % j === 0){
+//                 isPrime = false;
+//                 break;
+//             }
+//         }
+//         if(isPrime) primeNumbers.push(arr[i]);
+//     }
+//     return primeNumbers;
+// }
+
+// function avgOfArr(arr) {
+//     let sum = 0;
+//     let avg = 0;
+//     for(let i = 0 ; i < arr.length ; i++){
+//         sum += arr[i];
+//     }
+//     return avg = sum / arr.length;
+// }
+
+// function printHello(){
+//     console.log('Hello World');
+// }
+
+// console.log(avgOfArr([1, 2, 3, 45, 5, 66, 73, 8, 9, 10]));
+// console.log(avgOfArr([1, 2, 3, 4, 5, 6, 7, 8, 9, 89]));
+
+
+
+
