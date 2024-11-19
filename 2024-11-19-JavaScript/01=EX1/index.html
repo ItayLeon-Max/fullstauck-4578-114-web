@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="Assets/CSS/style.css">
+    <script defer src="Assets/JS/app.js"></script>  
+    <title>Document</title>
+</head>
+<body>
+    <form>
+        <label for="carName">Enter car name:</label>
+        <input type="text" id="carName" name="carName"> <br>
+        <label for="carColor">car color:</label>
+        <input type="color" id="carColor" name="carColor"> <br>
+        <label for="carURL">Enter car image URL:</label>
+        <input type="text" id="carURL" name="carURL"> <br>
+        <span id="error"></span>
+        </form>
+        <button onclick="addCarToTable()" id="addCar">Add Car</button>
+
+        <table id="carTable">
+            <thead>
+                <tr>
+                    <th>Car Name</th>
+                    <th>Car Color</th>
+                    <th>Car Image</th>
+                </tr>
+            </thead>
+            <tbody id="carTable">
+
+            </tbody>
+        </table>  
+</body>
+</html>
