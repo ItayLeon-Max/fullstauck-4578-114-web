@@ -36,11 +36,8 @@ export default class Leptop extends Computer {
     }
 
     isBatteryFull(){
-        if(this.batteryPercentage === 100){
-            console.log('Battery is full');
-        } else {
-            console.log('Battery is not full');
-        }
+        if(this.batteryPercentage === 100)console.log('Battery is full');
+        else console.log('Battery is not full');
     }
 
     print(){
