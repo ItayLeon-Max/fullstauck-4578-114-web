@@ -21,6 +21,3 @@
         console.error(error.message);
     }
 })();
-
-
-
