@@ -1,4 +1,5 @@
 "use strict";
+
 (()=>{
     const getAvg = (arr) => {
         if(typeof arr === 'undefined') throw new Error('Array is required');
