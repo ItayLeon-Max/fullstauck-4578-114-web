@@ -28,10 +28,4 @@
             result.style.color = 'red';
         }
     });
-
-    const promise = new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve('Promise resolved');
-        }, 3000);
-    });
 })();
