@@ -6,6 +6,31 @@
         return fetch(URL).then(response => response.json());
     }
 
+    const generateUsersTable = todo => {
+       const result = todo.reduce((cumulative, current) => { 
+        const {userId, completed} = current;
+        let existingUser = cumulative.find(user => user.userId === userId);
+        if(!cumulative.find(user => user.userId === userId)) {
+            cumulative.push({
+                userId, 
+                completed: 0,
+                incompleted: 0
+            });
+            existingUser = cumulative[cumulative.length - 1];
+        }
+        existingUser.completed += completed ? 1 : 0;
+        existingUser.incompleted += completed ? 0 : 1;
+        return cumulative;
+       },[]);
+       return result.map(user => `
+        <tr>
+            <td>${user.userId}</td>
+            <td>${user.completed}</td>
+            <td>${user.incompleted}</td>
+        </tr>
+    `).join('');
+    }
+
     const generateStatsTable = todo => {
         const totalToDos = todo.length;
         const completedToDos = todo.filter(todo => todo.completed).length;
@@ -63,6 +88,10 @@
         document.getElementById('stats').innerHTML = html;
     }
 
+    const renderUsers = html => {
+        document.getElementById('user').innerHTML = html;
+    }
+
     document.getElementById('btn').addEventListener('click', async () => {
         try {
             //get data from the server
@@ -71,11 +100,13 @@
             //generate HTML
             const todoTableHTML = generateHTML(todo);
             const statsTableHTML = generateStatsTable(todo);
+            const userTableHTML = generateUsersTable(todo);
 
             //render HTML
             renderHTML(todoTableHTML);
             renderStats(statsTableHTML);
-
+            renderUsers(userTableHTML);
+            
         } catch (error) {
             console.error(error);
         }
