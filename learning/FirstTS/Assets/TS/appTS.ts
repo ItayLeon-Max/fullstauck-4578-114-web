@@ -10,4 +10,5 @@ const avgOfArray = (arr: number[]): number => {
 const arr = [90, 67, 100, 40, 90];
 console.log(avgOfArray(arr));
 
+
  
