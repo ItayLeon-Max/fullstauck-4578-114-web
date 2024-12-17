@@ -14,21 +14,20 @@ if number in first half, search in first half else search in second half
 with O(log n) time complexity
  */
 
-    const binarySearch = (grades, input) => {
-        let start = 0;
-        let end = grades.length - 1;
-        while (start <= end) {
-        const mid = Math.floor((start + end) / 2);
-        if (grades[mid] === input) return true;
-        if (grades[mid] < input) start = mid + 1;
-        else end = mid - 1;
-        }
-        return false;
-    };
-    
-    console.log(isInGrade(grades));
-    console.log(binarySearch(grade2, input2));
+const isGradeInGrade = (grades, input) => {
+  let startIndex = 0;
+  let finishIndex = grade2.length - 1;
+do {
+  let currentIndex = Math.floor((startIndex + finishIndex) / 2);
+  if(grades[currentIndex] === input) return true;
+  if(grades[currentIndex] > input) {
+    finishIndex = currentIndex - 1;
+  }else{
+    startIndex = currentIndex + 1;
+  }
+} while (finishIndex >= startIndex);
+}
 
+  console.log(isGradeInGrade(grade2, input2));
 
-  
 })();
