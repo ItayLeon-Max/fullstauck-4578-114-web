@@ -14,5 +14,5 @@ const randomImage = myImages[Math.floor(Math.random() * myImages.length)];
             <p>I have experience in web development</p>
             <img src={randomImage} alt='MyPhotos' />
         </div>
-    );
+    ); 
 }
