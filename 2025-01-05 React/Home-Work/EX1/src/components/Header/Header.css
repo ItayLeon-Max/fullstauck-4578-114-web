@@ -1,0 +1,12 @@
+.HeaderContainer {
+  align-items: center;
+  padding: 0 20px;
+  background-color: #333;
+  color: #fff;
+}
+
+.HeaderContainer > h1 {
+    text-align: center;
+    margin: 0;
+    font-size: xx-large;
+}

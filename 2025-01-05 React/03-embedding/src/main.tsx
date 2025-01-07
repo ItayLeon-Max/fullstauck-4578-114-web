@@ -1,14 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import PetStore from './components/pet-store/PetStore'
+import Demo from './components/demo/Demo'
 
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <p>welcome to my website</p>
-    <PetStore />
+    <Demo />
   </StrictMode>,
-
 )
-
