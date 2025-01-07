@@ -1,19 +1,13 @@
 import './Skills.css';
 
 export default function Skills() {
+    const liSkills = ['HTML', 'CSS', 'TypeScript', 'React', 'Node.js', 'Express', 'PostgreSQL', 'Git'];
     return (
      <div className="skillsContainer">
     <h2>Skills</h2>
     <p>I have experience with the following technologies:</p>
     <ul>
-        <li>HTML</li>
-        <li>CSS</li>
-        <li>TypeScript</li>
-        <li>React</li>
-        <li>Node.js</li>
-        <li>Express</li>
-        <li>PostgreSQL</li>
-        <li>Git</li>
+        {liSkills.map((skill, index) => (<li key={index}>{skill}</li>))}
     </ul>
     </div>
     );
