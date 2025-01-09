@@ -7,8 +7,11 @@ export default function Profile(): JSX.Element {
 
     const [posts, setPosts] = useState<Post[]>([]);
 
+    //use effect disallows async functions so we need to create a function inside the useEffect
+    //to call the async function and set the state with the response data
     useEffect(()=> {
-        profile.getProfile().then(setPosts);
+        profile.getProfile().then(setPosts)
+        .catch(alert)
     }, [])
 
     return (
