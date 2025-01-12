@@ -1,9 +1,219 @@
 .Post {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 700px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.Post:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.Post div:first-child {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333333;
+    line-height: 1.4;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.Post div:nth-child(2) {
+    font-size: 0.9rem;
+    color: #666666;
     display: flex;
-    flex-direction: column;
-    border: 1px dashed lightgreen;
-    box-shadow: 2px;
-    padding: 4px;
-    margin: 8px;
-    border-radius: 4px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.Post div:nth-child(2) span {
+    font-weight: bold;
+    color: #007bff;
+    transition: color 0.3s ease;
+}
+
+.Post div:nth-child(2) span:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.Post div:nth-child(3) {
+    font-size: 1.1rem;
+    color: #555555;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    word-wrap: break-word;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 15px;
+    margin-top: 10px;
+    flex-wrap: nowrap;
+}
+
+.like-button {
+    background: #e0f7fa;
+    border: 1px solid #00bcd4;
+    color: #00796b;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.like-button:hover {
+    background: #00bcd4;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 188, 212, 0.3);
+    transform: scale(1.1);
+}
+
+.like-button:before {
+    content: '❤️';
+    margin-right: 5px;
+    transition: transform 0.3s ease;
+}
+
+.like-button:hover:before {
+    transform: rotate(-10deg) scale(1.2);
+}
+
+.like-button.liked {
+    background: #f44336;
+    border: 1px solid #b71c1c;
+    color: white;
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+.like-button.liked:hover {
+    background: #d32f2f;
+}
+
+.heart-animation {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.5);
+    font-size: 24px;
+    color: #f44336;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    user-select: none;
+}
+
+.heart-animation.animate {
+    opacity: 1;
+    transform: translateX(-50%) scale(2) translateY(-20px);
+}
+
+.like-count {
+    font-size: 0.9rem;
+    color: #555;
+    align-self: center;
+}
+
+.comment-button {
+    background: #f3e5f5;
+    border: 1px solid #9c27b0;
+    color: #6a1b9a;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.comment-button:hover {
+    background: #9c27b0;
+    color: white;
+    box-shadow: 0 4px 8px rgba(156, 39, 176, 0.3);
+    transform: scale(1.1);
+}
+
+.comment-button:before {
+    content: '💬';
+    margin-right: 5px;
+}
+
+.share-button {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.share-button:hover {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    transform: scale(1.1);
+}
+
+.share-button:before {
+    content: '🔗';
+    margin-right: 5px;
+    transition: transform 0.3s ease;
+}
+
+.share-button:hover:before {
+    transform: rotate(20deg);
+}
+
+.delete-button {
+    background: #ffebee;
+    border: 1px solid #f44336;
+    color: #b71c1c;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.delete-button:hover {
+    background: #f44336;
+    color: white;
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+    transform: scale(1.1);
+}
+
+.delete-button:before {
+    content: '🗑️';
+    margin-right: 5px;
+}
+
+@media (max-width: 768px) {
+    .actions {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
 }

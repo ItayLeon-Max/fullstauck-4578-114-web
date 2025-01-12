@@ -27,11 +27,22 @@ export default function Profile(): JSX.Element {
         // })()
     }, [])
 
+    function remove(id: string): void {
+        // remove the post from the state
+        const index = posts.findIndex(p => p.id === id)
+        if(index > -1){
+            posts.splice(index, 1)
+            setPosts([...posts])
+        }
+    }
+
     return (
         <div className='Profile'>
             {posts.map(p => <Post 
                             key={p.id} 
                             post={p}
+                            remove={remove}
+                            isAllowActions={false}
                             >
                             </Post>)}
         </div>
