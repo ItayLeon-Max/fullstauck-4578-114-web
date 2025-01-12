@@ -3,8 +3,13 @@ import './Profile.css'
 import PostModel from '../../../models/post/Post'
 import profile from '../../../services/profile'
 import Post from '../post/Post'
+import NewPost from '../new/NewPost'
 
 export default function Profile(): JSX.Element {
+
+    useEffect(() => {
+        document.title = 'Profile'
+    }, [])
 
     // posts: Post[]
     const [posts, setPosts] = useState<PostModel[]>([])
@@ -15,16 +20,6 @@ export default function Profile(): JSX.Element {
         profile.getProfile()
             .then(setPosts)
             .catch(alert)
-
-        // or an async IIFE:            
-        // (async () => {
-        //     try {
-        //         const profilePosts = await profile.getProfile()
-        //         setPosts(profilePosts)
-        //     } catch (e) {
-        //         alert(e)
-        //     }
-        // })()
     }, [])
 
     function remove(id: string): void {
@@ -36,9 +31,15 @@ export default function Profile(): JSX.Element {
         }
     }
 
+    function addPost(post: PostModel): void {
+        setPosts([post, ...posts])
+    }
+
     return (
         <div className='Profile'>
-            {posts.map(p => <Post 
+            <NewPost addPost={addPost} />
+            {posts.map(p => 
+                        <Post 
                             key={p.id} 
                             post={p}
                             remove={remove}

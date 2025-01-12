@@ -4,8 +4,13 @@ import PostModel from '../../../models/post/Post'
 import feed from '../../../services/feed'
 import Post from '../post/Post'
 
+
 export default function Feed() {
     const [posts, setPosts] = useState<PostModel[]>([])
+
+    useEffect(() => {
+        document.title = 'Feed'
+    }, [])
 
     useEffect(() => {
         feed.getFeed()

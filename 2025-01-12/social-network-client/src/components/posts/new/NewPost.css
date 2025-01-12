@@ -1,0 +1,69 @@
+.NewPost {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 700px;
+    box-sizing: border-box; /* חשוב */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.NewPost:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.NewPost form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-sizing: border-box; /* חשוב */
+}
+
+.NewPost input[type="text"],
+.NewPost textarea {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    box-sizing: border-box; /* חשוב */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: #f9f9f9;
+    font-family: 'Arial', sans-serif;
+}
+
+.NewPost input[type="text"]:focus,
+.NewPost textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    outline: none;
+    background-color: #ffffff;
+}
+
+.NewPost textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.NewPost button[type="submit"] {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+
+.NewPost button[type="submit"]:hover {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    transform: scale(1.05);
+}

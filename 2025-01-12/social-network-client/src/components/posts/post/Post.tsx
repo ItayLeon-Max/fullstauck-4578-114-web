@@ -40,29 +40,29 @@ export default function Post(props: PostProps): JSX.Element {
     }
 
     return (
-<div className="Post">
-    <div>{title}</div>
-    <div>
-        by {name} at {createdAt}
-    </div>
-    <div>{body}</div>
-    <div className="actions">
-        <button
-            className={`like-button ${liked ? 'liked' : ''}`}
-            onClick={toggleLike}
-        >
-            <div className={`heart-animation ${animateHeart ? 'animate' : ''}`}>
-                ❤️
-            </div>
-            {liked ? 'Unlike' : 'Like'}
-        </button>
+        <div className="Post">
+        <div>{title}</div>
+        <div>
+            by {name} at {createdAt}
+        </div>
+        <div>{body}</div>
+        <div className="actions">
+            <button
+                className={`like-button ${liked ? 'liked' : ''}`}
+                onClick={toggleLike}
+            >
+                <div className={`heart-animation ${animateHeart ? 'animate' : ''}`}>
+                    ❤️
+                </div>
+                {liked ? 'Unlike' : 'Like'}
+            </button>
             <span className="like-count">{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</span>
             <button className="comment-button">Comment</button>
             <button className="share-button">Share</button>
             <button className="delete-button" onClick={deleteMe}>
                 Delete
             </button>
-            </div>
-            </div>
+        </div>
+    </div>
     )
 }

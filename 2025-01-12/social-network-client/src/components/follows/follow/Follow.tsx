@@ -1,22 +1,33 @@
-import User from '../../../models/user/User'
 import './Follow.css'
-import profilePicSource from '../../../assets/images/profile.jpg'
+import User from '../../../models/user/User'
+import { useState } from 'react'
 
 interface FollowProps {
     user: User
 }
-export default function Follow(props: FollowProps): JSX.Element {
 
-    const { name } = props.user
+export default function Follow({ user }: FollowProps) {
+    const [isFollowing, setIsFollowing] = useState(false)
+
+    function toggleFollow() {
+        setIsFollowing(!isFollowing)
+    }
 
     return (
-        <div className='Follow'>
-            <div>
-                <img src={profilePicSource} />
+        <div className="Follow">
+            <div className="user-avatar">
+                <span className="user-icon">👤</span>
             </div>
-            <div>
-                {name}
+            <div className="user-info">
+                <span className="user-name">{user.name}</span>
+                <span className="user-email">{user.email}</span>
             </div>
+            <button
+                className={`follow-toggle-button ${isFollowing ? 'unfollow' : ''}`}
+                onClick={toggleFollow}
+            >
+                {isFollowing ? 'Unfollow' : 'Follow'}
+            </button>
         </div>
     )
 }

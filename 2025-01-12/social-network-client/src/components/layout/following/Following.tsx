@@ -2,7 +2,7 @@ import './Following.css'
 import { useEffect, useState } from 'react'
 import User from '../../../models/user/User'
 import followingService from '../../../services/following'
-import Follow from '../follow/Follow'
+import Follow from '../../follows/follow/Follow'
 
 export default function Following() {
     const [following, setFollowing] = useState<User[]>([])
