@@ -1,0 +1,16 @@
+.title {
+    font-size: 2em;
+    color: #222;
+    margin: 0;
+    padding: 10px 0;
+    display: inline-block;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+    width: 100%;
+    border-bottom: 1px solid #ddd;
+    background-color: #fa7373;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    
+}
