@@ -20,7 +20,7 @@ export default function Followers() {
             const user = followersList.find(f => f.id === userId);
             if (user) {
                 setFollowingList(prev => [...prev, user]);
-                setFollowersList(prev => prev.filter(f => f.id !== userId)); 
+                setFollowersList(prev => prev.filter(f => f.id !== userId)); // להסיר מ-followers
             }
         } catch (e) {
             alert('Failed to follow user');

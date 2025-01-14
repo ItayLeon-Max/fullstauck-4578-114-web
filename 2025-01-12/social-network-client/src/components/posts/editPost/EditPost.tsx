@@ -16,7 +16,7 @@ export default function EditPost() {
             .then(reset)
             .catch(alert)
         }
-    },[])
+    },)
 
     async function submit(draft: PostDraft) {
         try{

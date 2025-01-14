@@ -5,6 +5,7 @@ import profile from '../../../services/profile'
 import Post from '../post/Post'
 import NewPost from '../new/NewPost'
 import Comment from '../../../models/comment/Comment'
+import Loading from '../../common/loading/Loading'
 
 export default function Profile(): JSX.Element {
 
@@ -48,16 +49,24 @@ export default function Profile(): JSX.Element {
 
     return (
         <div className='Profile'>
-            <NewPost addPost={addPost} />
-            {posts.map(p => 
-                        <Post 
-                            key={p.id} 
-                            post={p}
-                            remove={remove}
-                            isAllowActions={true}
-                            addComment={addComment}
-                            >
-                            </Post>)}
-        </div>
+
+        { posts.length === 0 && <Loading />}
+
+        { posts.length > 0 && <>
+            <NewPost 
+                addPost={addPost} 
+            />
+            {posts.map(p =>
+                <Post
+                    key={p.id}
+                    post={p}
+                    isAllowActions={true}
+                    remove={remove}
+                    addComment={addComment}
+                />
+            )}
+        </>}
+
+    </div>
     )
 }
