@@ -1,3 +1,4 @@
+
 import CommentModel from '../../../models/comment/Comment'
 import Comment from '../comment/Comment'
 import NewComment from '../new-comment/NewComment'
@@ -5,10 +6,11 @@ import NewComment from '../new-comment/NewComment'
 interface CommentsProps {
     comments: CommentModel[]
     postId: string
+    addComment(comment: CommentModel): void
 }
 export default function Comments(props: CommentsProps): JSX.Element {
 
-    const { comments, postId } = props
+    const { comments, postId, addComment} = props
 
     return (
         <div className='Comments'>
@@ -18,6 +20,7 @@ export default function Comments(props: CommentsProps): JSX.Element {
             <div>
                 <NewComment 
                     postId={postId}
+                    addComment={addComment}
                 />
             </div>
             {comments.map(c =>

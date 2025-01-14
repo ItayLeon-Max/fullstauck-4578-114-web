@@ -4,17 +4,24 @@ import profileService from '../../../services/profile';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Comments from '../comments/Comments';
+import CommentModel from '../../../models/comment/Comment';
 
 interface PostProps {
     post: PostModel;
     isAllowActions?: boolean;
     remove?(id: string): void;
+    addComment(comment: CommentModel): void
+    
 }
 
 export default function Post(props: PostProps): JSX.Element {
     const { title, body, createdAt, id } = props.post;
     const { name } = props.post.user;
     const navigate = useNavigate();
+
+    const {addComment} = props;
+
+    const {isAllowActions} = props;
 
     const [liked, setLiked] = useState(false);
     const [animateHeart, setAnimateHeart] = useState(false);
@@ -58,29 +65,34 @@ export default function Post(props: PostProps): JSX.Element {
                 by {name} at {new Date(createdAt).toLocaleString()}
             </div>
             <div>{body}</div>
-            <div className="actions">
-                <button
-                    className={`like-button ${liked ? 'liked' : ''}`}
-                    onClick={toggleLike}
-                >
-                    <div className={`heart-animation ${animateHeart ? 'animate' : ''}`}>
-                        ❤️
-                    </div>
-                    {liked ? 'Unlike' : 'Like'}
-                </button>
-                <span className="like-count">{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</span>
-                <button className="comment-button" onClick={toggleComments}>
-                    {showComments ? 'Hide Comments' : 'Show Comments'}
-                </button>
-                <button className="edit-button" onClick={editPost}>Edit</button>
-                <button className="delete-button" onClick={deleteMe}>
-                    Delete
-                </button>
-            </div>
-            {showComments && <Comments 
-                             comments={props.post.comments} 
-                             postId={id}
-            />}
+            {isAllowActions && (
+                <div className="actions">
+                    <button
+                        className={`like-button ${liked ? 'liked' : ''}`}
+                        onClick={toggleLike}
+                    >
+                        <div className={`heart-animation ${animateHeart ? 'animate' : ''}`}>
+                            ❤️
+                        </div>
+                        {liked ? '👎 Unlike ' : '👍 Like'}
+                    </button>
+                    <span className="like-count">{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</span>
+                    <button className="comment-button" onClick={toggleComments}>
+                        {showComments ? 'Hide Comments' : 'Show Comments'}
+                    </button>
+                    <button className="edit-button" onClick={editPost}>Edit</button>
+                    <button className="delete-button" onClick={deleteMe}>
+                        Delete
+                    </button>
+                </div>
+            )}
+              {showComments && props.post?.comments && (
+                                                        <Comments 
+                                                        comments={props.post.comments} 
+                                                        postId={id} 
+                                                        addComment={addComment} 
+                                                         />
+                         )}
         </div>
     );
 }

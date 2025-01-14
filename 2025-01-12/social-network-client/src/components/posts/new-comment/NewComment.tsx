@@ -2,21 +2,23 @@ import { useForm } from 'react-hook-form';
 import './NewComment.css';
 import CommentDraft from '../../../models/comment/commentDraft';
 import CommentService from '../../../services/comments';
+import Comment from '../../../models/comment/Comment';
 
 interface NewCommentProps {
     postId: string;
+    addComment(comment: Comment): void
 }
 export default function NewComment(props: NewCommentProps): JSX.Element {
 
-    const {postId} = props;
+    const {postId, addComment} = props;
 
     const {register, handleSubmit, formState, reset} = useForm<CommentDraft>();
 
     async function submit(draft: CommentDraft) {
         try {
-            await CommentService.create(postId, draft);
+            const newComment = await CommentService.create(postId, draft);
             reset();
-            //update state
+            addComment(newComment);
         } catch (error) {
             alert('Failed to add comment');
         }

@@ -35,10 +35,15 @@ export default interface Post extends PostDraft {
     user: User
     comments: Comment[]
 }
+# models/comment/commentDraft.ts
+export default interface CommentDraft {
+    body: string;
+}
 # models/comment/Comment.ts
 import User from "../user/User";
+import CommentDraft from "./commentDraft";
 
-export default interface Comment {
+export default interface Comment extends CommentDraft {
     id: string,
     postId: string,
     userId: string,
@@ -63,20 +68,30 @@ export default interface User {
 # components/posts/comments/Comments.css
 
 # components/posts/comments/Comments.tsx
+
 import CommentModel from '../../../models/comment/Comment'
 import Comment from '../comment/Comment'
+import NewComment from '../new-comment/NewComment'
 
 interface CommentsProps {
     comments: CommentModel[]
+    postId: string
+    addComment(comment: CommentModel): void
 }
 export default function Comments(props: CommentsProps): JSX.Element {
 
-    const { comments } = props
+    const { comments, postId, addComment} = props
 
     return (
         <div className='Comments'>
             <div>
                 total comments: {comments.length}   
+            </div>
+            <div>
+                <NewComment 
+                    postId={postId}
+                    addComment={addComment}
+                />
             </div>
             {comments.map(c =>
                 <Comment
@@ -94,17 +109,21 @@ import profileService from '../../../services/profile';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Comments from '../comments/Comments';
+import CommentModel from '../../../models/comment/Comment';
 
 interface PostProps {
     post: PostModel;
     isAllowActions?: boolean;
     remove?(id: string): void;
+    addComment(comment: CommentModel): void
 }
 
 export default function Post(props: PostProps): JSX.Element {
     const { title, body, createdAt, id } = props.post;
     const { name } = props.post.user;
     const navigate = useNavigate();
+
+    const {addComment} = props;
 
     const [liked, setLiked] = useState(false);
     const [animateHeart, setAnimateHeart] = useState(false);
@@ -167,7 +186,11 @@ export default function Post(props: PostProps): JSX.Element {
                     Delete
                 </button>
             </div>
-            {showComments && <Comments comments={props.post.comments} />}
+            {showComments && <Comments 
+                             comments={props.post.comments} 
+                             postId={id}
+                             addComment={addComment}
+            />}
         </div>
     );
 }
@@ -453,6 +476,126 @@ export default function Comment(props: CommentProps): JSX.Element {
     background-color: #e9ecef;
     color: #343a40;
 }
+# components/posts/new-comment/NewComment.css
+.NewComment {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 700px; 
+    width: 100%; 
+    box-sizing: border-box;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.NewComment:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.NewComment h2 {
+    font-size: 1.5rem;
+    color: #333333;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+}
+
+.NewComment form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.NewComment textarea {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-family: 'Arial', sans-serif;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.NewComment textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    outline: none;
+    background-color: #ffffff;
+}
+
+.NewComment button {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+
+.NewComment button:hover {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    transform: scale(1.05);
+}
+# components/posts/new-comment/NewComment.tsx
+import { useForm } from 'react-hook-form';
+import './NewComment.css';
+import CommentDraft from '../../../models/comment/commentDraft';
+import CommentService from '../../../services/comments';
+import Comment from '../../../models/comment/Comment';
+
+interface NewCommentProps {
+    postId: string;
+    addComment(comment: Comment): void
+}
+export default function NewComment(props: NewCommentProps): JSX.Element {
+
+    const {postId, addComment} = props;
+
+    const {register, handleSubmit, formState, reset} = useForm<CommentDraft>();
+
+    async function submit(draft: CommentDraft) {
+        try {
+            const newComment = await CommentService.create(postId, draft);
+            reset();
+            addComment(newComment);
+        } catch (error) {
+            alert('Failed to add comment');
+        }
+    }
+
+    return (
+        <div className="NewComment">
+            <h2>New Comment</h2>
+            <form onSubmit={handleSubmit(submit)}>
+                <textarea {...register('body', {
+                    required: {
+                        value: true,
+                        message: 'Comment is required'
+                    },
+                    minLength: {
+                        value: 20,
+                        message: 'Comment must be at least 20 characters'
+                    }
+                })} placeholder="Enter your comment here"></textarea>
+                <span>{formState.errors.body?.message}</span>
+                <button>Add Comment</button>
+            </form>
+        </div>
+    )
+}
 # components/posts/profile/Profile.tsx
 import { useEffect, useState } from 'react'
 import './Profile.css'
@@ -460,6 +603,7 @@ import PostModel from '../../../models/post/Post'
 import profile from '../../../services/profile'
 import Post from '../post/Post'
 import NewPost from '../new/NewPost'
+import Comment from '../../../models/comment/Comment'
 
 export default function Profile(): JSX.Element {
 
@@ -491,6 +635,16 @@ export default function Profile(): JSX.Element {
         setPosts([post, ...posts])
     }
 
+    function addComment(comment: Comment): void {
+        const postsWithNewComment = [...posts]
+        const postToAddCommentTo = postsWithNewComment.find(post => post.id === comment.postId)
+        if(postToAddCommentTo){
+            postToAddCommentTo.comments.unshift(comment)
+        }
+
+        setPosts(postsWithNewComment)
+    }
+
     return (
         <div className='Profile'>
             <NewPost addPost={addPost} />
@@ -500,6 +654,7 @@ export default function Profile(): JSX.Element {
                             post={p}
                             remove={remove}
                             isAllowActions={false}
+                            addComment={addComment}
                             >
                             </Post>)}
         </div>
@@ -1439,6 +1594,21 @@ export default function Following() {
 # vite-env.d.ts
 /// <reference types="vite/client" />
 
+# services/comments.ts
+import axios from "axios";
+import CommentDraft from "../models/comment/commentDraft";
+import Comment from "../models/comment/Comment";
+
+class Comments {
+    async create(postId: string, draft: CommentDraft): Promise<Comment> {
+        const response = await axios.post<Comment>(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${postId}`, draft);
+        return response.data;
+    }
+}
+
+//singleton
+const comments = new Comments();
+export default comments;
 # services/followers.ts
 import axios from "axios";
 import User from "../models/user/User";

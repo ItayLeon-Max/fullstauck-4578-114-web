@@ -4,6 +4,7 @@ import PostModel from '../../../models/post/Post'
 import profile from '../../../services/profile'
 import Post from '../post/Post'
 import NewPost from '../new/NewPost'
+import Comment from '../../../models/comment/Comment'
 
 export default function Profile(): JSX.Element {
 
@@ -35,6 +36,16 @@ export default function Profile(): JSX.Element {
         setPosts([post, ...posts])
     }
 
+    function addComment(comment: Comment): void {
+        const postsWithNewComment = [...posts]
+        const postToAddCommentTo = postsWithNewComment.find(post => post.id === comment.postId)
+        if(postToAddCommentTo){
+            postToAddCommentTo.comments.unshift(comment)
+        }
+
+        setPosts(postsWithNewComment)
+    }
+
     return (
         <div className='Profile'>
             <NewPost addPost={addPost} />
@@ -43,7 +54,8 @@ export default function Profile(): JSX.Element {
                             key={p.id} 
                             post={p}
                             remove={remove}
-                            isAllowActions={false}
+                            isAllowActions={true}
+                            addComment={addComment}
                             >
                             </Post>)}
         </div>
