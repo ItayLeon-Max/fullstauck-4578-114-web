@@ -1,24 +1,38 @@
-import './Following.css'
-import { useEffect, useState } from 'react'
-import User from '../../../models/user/User'
-import followingService from '../../../services/following'
-import Follow from '../follow/Follow'
+import './Following.css';
+import { useEffect, useState } from 'react';
+import User from '../../../models/user/User';
+import following from '../../../services/following';
+import Follow from '../follow/Follow';
 
 export default function Following() {
-    const [following, setFollowing] = useState<User[]>([])
+    const [followingList, setFollowingList] = useState<User[]>([]);
 
     useEffect(() => {
-        followingService.getFollowing()
-            .then(setFollowing)
-            .catch(alert)
-    }, [])
+        following.getFollowing()
+            .then(setFollowingList)
+            .catch(alert);
+    }, []);
+
+    async function handleUnfollow(userId: string) {
+        try {
+            await following.unFollow(userId);
+            setFollowingList(prev => prev.filter(user => user.id !== userId));
+        } catch (e) {
+            alert('Failed to unfollow user');
+        }
+    }
 
     return (
-       <div className='Following'>
-                   {following.map(follow => <Follow 
-                                             key={follow.id} 
-                                             user={follow}
-                                            ></Follow>)}
-               </div>
-    )
+        <div className="Following">
+            <h2>Following</h2>
+            {followingList.map(user => (
+                <Follow
+                    key={user.id}
+                    user={user}
+                    isFollowing={true}
+                    onToggleFollow={() => handleUnfollow(user.id)}
+                />
+            ))}
+        </div>
+    );
 }

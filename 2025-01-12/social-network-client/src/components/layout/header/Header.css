@@ -1,15 +1,52 @@
 .Header {
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
+    align-items: center;
+    background-color: #007bff;
+    color: white;
+    padding: 15px 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-family: 'Arial', sans-serif;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.Header:hover {
+    background-color: #0056b3;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.Header div:first-child {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: white;
 }
 
 .Header nav {
     display: flex;
-    flex-direction: row;
-    gap: 6px;
+    gap: 20px;
 }
 
-.Header .active {
-    color: green;
+.Header nav a {
+    text-decoration: none;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.Header nav a:hover {
+    background-color: rgba(255, 255, 255, 0.2); 
+    color: #ffeeba; 
+}
+
+.Header nav a.active {
+    background-color: #0056b3;
+    color: #ffeeba;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }

@@ -1,9 +1,81 @@
 .Follow {
     display: flex;
-    flex-direction: column;
-    border: 1px dashed lightslategray;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+    gap: 15px;
 }
 
-.Follow img {
-    width: 32px;
+.Follow:last-child {
+    border-bottom: none;
+}
+
+.user-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    border: 2px solid #007bff;
+    font-size: 24px;
+    color: #007bff;
+    flex-shrink: 0; 
+}
+
+.user-info {
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    justify-content: center; 
+}
+
+.user-name {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333333;
+    transition: color 0.3s ease;
+}
+
+.user-name:hover {
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.user-email {
+    font-size: 0.9rem;
+    color: #666666;
+}
+
+.follow-toggle-button {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0; 
+}
+
+.follow-toggle-button:hover {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.follow-toggle-button.unfollow {
+    background: #ffebee;
+    border: 1px solid #f44336;
+    color: #b71c1c;
+}
+
+.follow-toggle-button.unfollow:hover {
+    background: #f44336;
+    color: white;
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
 }

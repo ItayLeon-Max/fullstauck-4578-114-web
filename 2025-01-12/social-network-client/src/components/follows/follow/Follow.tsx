@@ -1,18 +1,13 @@
-import './Follow.css'
-import User from '../../../models/user/User'
-import { useState } from 'react'
+import './Follow.css';
+import User from '../../../models/user/User';
 
 interface FollowProps {
-    user: User
+    user: User;
+    isFollowing: boolean;
+    onToggleFollow: () => void;
 }
 
-export default function Follow({ user }: FollowProps) {
-    const [isFollowing, setIsFollowing] = useState(false)
-
-    function toggleFollow() {
-        setIsFollowing(!isFollowing)
-    }
-
+export default function Follow({ user, isFollowing, onToggleFollow }: FollowProps) {
     return (
         <div className="Follow">
             <div className="user-avatar">
@@ -24,10 +19,10 @@ export default function Follow({ user }: FollowProps) {
             </div>
             <button
                 className={`follow-toggle-button ${isFollowing ? 'unfollow' : ''}`}
-                onClick={toggleFollow}
+                onClick={onToggleFollow}
             >
                 {isFollowing ? 'Unfollow' : 'Follow'}
             </button>
         </div>
-    )
+    );
 }

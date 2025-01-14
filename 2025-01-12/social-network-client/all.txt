@@ -1,0 +1,1527 @@
+# main.tsx
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './components/app/App.tsx'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+
+# index.css
+html, body, #root {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+# models/post/PostDraft.ts
+export default interface PostDraft {
+    title: string,
+    body: string
+}
+# models/post/Post.ts
+import Comment from "../comment/Comment";
+import User from "../user/User";
+import PostDraft from "./PostDraft";
+
+export default interface Post extends PostDraft {
+    id: string,
+    userId: string,
+    imageUrl: string,
+    createdAt: string,
+    updatedAt: string,
+    user: User
+    comments: Comment[]
+}
+# models/comment/Comment.ts
+import User from "../user/User";
+
+export default interface Comment {
+    id: string,
+    postId: string,
+    userId: string,
+    body: string,
+    createdAt: string,
+    updatedAt: string,
+    user: User
+}
+# models/user/User.ts
+import { ReactNode } from "react";
+
+export default interface User {
+    avatar: string | undefined;
+    email: ReactNode;
+    id: string,
+    name: string,
+    username: string,
+    password: string,
+    createdAt: string,
+    updatedAt: string
+}
+# components/posts/comments/Comments.css
+
+# components/posts/comments/Comments.tsx
+import CommentModel from '../../../models/comment/Comment'
+import Comment from '../comment/Comment'
+
+interface CommentsProps {
+    comments: CommentModel[]
+}
+export default function Comments(props: CommentsProps): JSX.Element {
+
+    const { comments } = props
+
+    return (
+        <div className='Comments'>
+            <div>
+                total comments: {comments.length}   
+            </div>
+            {comments.map(c =>
+                <Comment
+                    key={c.id}
+                    comment={c}
+                />)
+            }
+        </div>
+    )
+}
+# components/posts/post/Post.tsx
+import './Post.css';
+import PostModel from '../../../models/post/Post';
+import profileService from '../../../services/profile';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Comments from '../comments/Comments';
+
+interface PostProps {
+    post: PostModel;
+    isAllowActions?: boolean;
+    remove?(id: string): void;
+}
+
+export default function Post(props: PostProps): JSX.Element {
+    const { title, body, createdAt, id } = props.post;
+    const { name } = props.post.user;
+    const navigate = useNavigate();
+
+    const [liked, setLiked] = useState(false);
+    const [animateHeart, setAnimateHeart] = useState(false);
+    const [likeCount, setLikeCount] = useState(0);
+    const [showComments, setShowComments] = useState(false);
+
+    async function deleteMe() {
+        if (props.remove && confirm('Are you sure you want to delete this post?')) {
+            try {
+                await profileService.remove(id);
+                props.remove(id);
+            } catch (e) {
+                alert(e);
+            }
+        }
+    }
+
+    function toggleLike() {
+        setLiked(!liked);
+        setAnimateHeart(true);
+
+        setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+
+        setTimeout(() => {
+            setAnimateHeart(false);
+        }, 500);
+    }
+
+    function editPost() {
+        navigate(`/edit/${id}`);
+    }
+
+    function toggleComments() {
+        setShowComments(!showComments);
+    }
+
+    return (
+        <div className="Post">
+            <h2>{title}</h2>
+            <div>
+                by {name} at {new Date(createdAt).toLocaleString()}
+            </div>
+            <div>{body}</div>
+            <div className="actions">
+                <button
+                    className={`like-button ${liked ? 'liked' : ''}`}
+                    onClick={toggleLike}
+                >
+                    <div className={`heart-animation ${animateHeart ? 'animate' : ''}`}>
+                        ❤️
+                    </div>
+                    {liked ? 'Unlike' : 'Like'}
+                </button>
+                <span className="like-count">{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</span>
+                <button className="comment-button" onClick={toggleComments}>
+                    {showComments ? 'Hide Comments' : 'Show Comments'}
+                </button>
+                <button className="edit-button" onClick={editPost}>Edit</button>
+                <button className="delete-button" onClick={deleteMe}>
+                    Delete
+                </button>
+            </div>
+            {showComments && <Comments comments={props.post.comments} />}
+        </div>
+    );
+}
+# components/posts/post/Post.css
+.Post {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 700px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.Post:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.Post div:first-child {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333333;
+    line-height: 1.4;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.Post div:nth-child(2) {
+    font-size: 0.9rem;
+    color: #666666;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.Post div:nth-child(2) span {
+    font-weight: bold;
+    color: #007bff;
+    transition: color 0.3s ease;
+}
+
+.Post div:nth-child(2) span:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.Post div:nth-child(3) {
+    font-size: 1.1rem;
+    color: #555555;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    word-wrap: break-word;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 15px;
+    margin-top: 10px;
+    flex-wrap: nowrap;
+}
+
+.like-button {
+    background: #e0f7fa;
+    border: 1px solid #00bcd4;
+    color: #00796b;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.like-button:hover {
+    background: #00bcd4;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 188, 212, 0.3);
+    transform: scale(1.1);
+}
+
+.like-button:before {
+    content: '❤️';
+    margin-right: 5px;
+    transition: transform 0.3s ease;
+}
+
+.like-button:hover:before {
+    transform: rotate(-10deg) scale(1.2);
+}
+
+.like-button.liked {
+    background: #f44336;
+    border: 1px solid #b71c1c;
+    color: white;
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+.like-button.liked:hover {
+    background: #d32f2f;
+}
+
+.heart-animation {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.5);
+    font-size: 24px;
+    color: #f44336;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    user-select: none;
+}
+
+.heart-animation.animate {
+    opacity: 1;
+    transform: translateX(-50%) scale(2) translateY(-20px);
+}
+
+.like-count {
+    font-size: 0.9rem;
+    color: #555;
+    align-self: center;
+}
+
+.comment-button {
+    background: #f3e5f5;
+    border: 1px solid #9c27b0;
+    color: #6a1b9a;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.comment-button:hover {
+    background: #9c27b0;
+    color: white;
+    box-shadow: 0 4px 8px rgba(156, 39, 176, 0.3);
+    transform: scale(1.1);
+}
+
+.comment-button:before {
+    content: '💬';
+    margin-right: 5px;
+}
+
+/* כפתור Edit */
+.edit-button {
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
+    color: #1565c0;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.edit-button:hover {
+    background: #2196f3;
+    color: white;
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+    transform: scale(1.05);
+}
+
+.edit-button:before {
+    content: '✏️'; /* אייקון עריכה */
+    margin-right: 5px;
+    transition: transform 0.3s ease;
+}
+
+.edit-button:hover:before {
+    transform: rotate(-10deg) scale(1.2);
+}
+
+.delete-button {
+    background: #ffebee;
+    border: 1px solid #f44336;
+    color: #b71c1c;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.delete-button:hover {
+    background: #f44336;
+    color: white;
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+    transform: scale(1.1);
+}
+
+.delete-button:before {
+    content: '🗑️';
+    margin-right: 5px;
+}
+
+@media (max-width: 768px) {
+    .actions {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
+# components/posts/comment/Comment.tsx
+import CommentModel from '../../../models/comment/Comment'
+import './Comment.css'
+
+interface CommentProps {
+    comment: CommentModel
+}
+export default function Comment(props: CommentProps): JSX.Element {
+
+    const { user: { name }, body, createdAt} = props.comment
+ 
+    return (
+        <div className='Comment'>
+            <div>
+                {name} said on {createdAt}:
+            </div>
+            <div>
+                {body}
+            </div>
+        </div>
+    )
+}
+# components/posts/comment/Comment.css
+.Comment {
+    background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 15px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.Comment:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+}
+
+.Comment div:first-child {
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.Comment div:last-child {
+    font-size: 1rem;
+    color: #212529;
+    background-color: #f1f3f5;
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px solid #e9ecef;
+}
+
+.Comment div:last-child:hover {
+    background-color: #e9ecef;
+    color: #343a40;
+}
+# components/posts/profile/Profile.tsx
+import { useEffect, useState } from 'react'
+import './Profile.css'
+import PostModel from '../../../models/post/Post'
+import profile from '../../../services/profile'
+import Post from '../post/Post'
+import NewPost from '../new/NewPost'
+
+export default function Profile(): JSX.Element {
+
+    useEffect(() => {
+        document.title = 'Profile'
+    }, [])
+
+    // posts: Post[]
+    const [posts, setPosts] = useState<PostModel[]>([])
+
+    useEffect(() => {
+        // useEffect disallows the callback function to be async
+        // so we either use then:
+        profile.getProfile()
+            .then(setPosts)
+            .catch(alert)
+    }, [])
+
+    function remove(id: string): void {
+        // remove the post from the state
+        const index = posts.findIndex(p => p.id === id)
+        if(index > -1){
+            posts.splice(index, 1)
+            setPosts([...posts])
+        }
+    }
+
+    function addPost(post: PostModel): void {
+        setPosts([post, ...posts])
+    }
+
+    return (
+        <div className='Profile'>
+            <NewPost addPost={addPost} />
+            {posts.map(p => 
+                        <Post 
+                            key={p.id} 
+                            post={p}
+                            remove={remove}
+                            isAllowActions={false}
+                            >
+                            </Post>)}
+        </div>
+    )
+}
+# components/posts/profile/Profile.css
+
+# components/posts/feed/Feed.tsx
+import { useEffect, useState } from 'react'
+import './Feed.css'
+import PostModel from '../../../models/post/Post'
+import feed from '../../../services/feed'
+import Post from '../post/Post'
+
+
+export default function Feed() {
+    const [posts, setPosts] = useState<PostModel[]>([])
+
+    useEffect(() => {
+        document.title = 'Feed'
+    }, [])
+
+    useEffect(() => {
+        feed.getFeed()
+            .then(setPosts)
+            .catch(alert)
+
+    }, [])
+
+    return (
+        <div className='Feed'>
+            {posts.map(p => <Post 
+                            key={p.id} 
+                            post={p}
+                            ></Post>)}
+        </div>
+    )
+}
+# components/posts/feed/Feed.css
+.Feed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f3f4f6, #ffffff);
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 900px;
+    margin: 20px auto;
+    border: 1px solid #eaeaea;
+    overflow-y: auto;
+    max-height: 80vh;
+    scrollbar-width: thin;
+    scrollbar-color: #d4d4d4 transparent;
+}
+
+
+.Feed::-webkit-scrollbar {
+    width: 8px;
+}
+
+.Feed::-webkit-scrollbar-thumb {
+    background-color: #d4d4d4;
+    border-radius: 4px;
+}
+
+.Feed::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+
+.Feed::before {
+    content: 'No posts to display.';
+    font-size: 1.2rem;
+    color: #888888;
+    margin-top: 20px;
+    display: none;
+    text-align: center;
+}
+
+.Feed.empty::before {
+    display: block;
+}
+# components/posts/new/NewPost.tsx
+import { useForm } from 'react-hook-form';
+import './NewPost.css';
+import PostDraft from '../../../models/post/PostDraft';
+import profile from '../../../services/profile';
+import Post from '../../../models/post/Post';
+
+interface NewPostProps {
+    addPost: (post: Post) => void;
+}
+
+export default function NewPost(props: NewPostProps) {
+    const { register, handleSubmit, reset, formState } = useForm<PostDraft>({
+        mode: 'onTouched', // מציג שגיאות כאשר השדה נוגע
+    });
+
+    async function submit(draft: PostDraft) {
+        try {
+            const newPost = await profile.create(draft);
+            props.addPost(newPost);
+            reset();
+        } catch (e) {
+            alert(e);
+        }
+    }
+
+    return (
+        <div className="NewPost">
+            <form onSubmit={handleSubmit(submit)}>
+                <input
+                    type="text"
+                    placeholder="Title"
+                    {...register('title', {
+                        required: {
+                            value: true,
+                            message: 'You must enter a title',
+                        },
+                        minLength: {
+                            value: 10,
+                            message: 'Title must be at least 10 characters',
+                        },
+                    })}
+                />
+                {formState.touchedFields.title && formState.errors.title && (
+                    <span className="error">{formState.errors.title.message}</span>
+                )}
+                <textarea
+                    placeholder="Content"
+                    {...register('body', {
+                        required: {
+                            value: true,
+                            message: 'You must enter a body',
+                        },
+                        minLength: {
+                            value: 20,
+                            message: 'Body must be at least 20 characters',
+                        },
+                    })}
+                ></textarea>
+                {formState.touchedFields.body && formState.errors.body && (
+                    <span className="error">{formState.errors.body.message}</span>
+                )}
+                <button type="submit">Add Post</button>
+            </form>
+        </div>
+    );
+}
+# components/posts/new/NewPost.css
+.NewPost {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 700px;
+    box-sizing: border-box;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.NewPost:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.NewPost form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-sizing: border-box;
+}
+
+.NewPost input[type="text"],
+.NewPost textarea {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: #f9f9f9;
+    font-family: 'Arial', sans-serif;
+}
+
+.NewPost input[type="text"]:focus,
+.NewPost textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    outline: none;
+    background-color: #ffffff;
+}
+
+.NewPost textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.NewPost button[type="submit"] {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+
+.NewPost button[type="submit"]:hover {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    transform: scale(1.05);
+}
+
+.error {
+    color: #f44336;
+    font-size: 0.9rem;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    margin: 5px 0 0 0; 
+    padding: 2px 5px; 
+    background-color: #ffe6e6;
+    border: 1px solid #f44336;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.2);
+    text-align: left;
+    display: block; 
+    width: fit-content; 
+}
+# components/posts/editPost/EditPost.tsx
+import { useNavigate, useParams } from 'react-router-dom';
+import './EditPost.css';
+import { useEffect } from 'react';
+import profileService from '../../../services/profile';
+import PostDraft from '../../../models/post/PostDraft';
+import { useForm } from 'react-hook-form';
+export default function EditPost() {
+
+    const { id } = useParams<'id'>()
+    const {handleSubmit, register, formState, reset} = useForm<PostDraft>()
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if(id){
+            profileService.getPost(id)
+            .then(reset)
+            .catch(alert)
+        }
+    },[])
+
+    async function submit(draft: PostDraft) {
+        try{
+            const {title, body} = draft
+            await profileService.update(id!, {title, body})
+            navigate('/profile')
+
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    return (
+        <div className="EditPost">
+        <form onSubmit={handleSubmit(submit)}>
+            <input
+                type="text"
+                placeholder="Title"
+                {...register('title', {
+                    required: {
+                        value: true,
+                        message: 'You must enter a title',
+                    },
+                    minLength: {
+                        value: 10,
+                        message: 'Title must be at least 10 characters',
+                    },
+                })}
+            />
+            {formState.touchedFields.title && formState.errors.title && (
+                <span className="error">{formState.errors.title.message}</span>
+            )}
+            <textarea
+                placeholder="Content"
+                {...register('body', {
+                    required: {
+                        value: true,
+                        message: 'You must enter a body',
+                    },
+                    minLength: {
+                        value: 20,
+                        message: 'Body must be at least 20 characters',
+                    },
+                })}
+            ></textarea>
+            {formState.touchedFields.body && formState.errors.body && (
+                <span className="error">{formState.errors.body.message}</span>
+            )}
+            <button type="submit">Update Post</button>
+        </form>
+    </div>
+    )
+}
+# components/posts/editPost/EditPost.css
+.EditPost {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 700px;
+    box-sizing: border-box;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.EditPost:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.EditPost h1 {
+    font-size: 1.8rem;
+    color: #333333;
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+}
+
+.EditPost form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.EditPost label {
+    font-size: 1rem;
+    color: #555555;
+    font-weight: bold;
+}
+
+.EditPost input[type="text"],
+.EditPost textarea {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-family: 'Arial', sans-serif;
+}
+
+.EditPost input[type="text"],
+.EditPost textarea {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-family: 'Arial', sans-serif;
+}
+
+.EditPost textarea {
+    resize: vertical;
+    min-height: 100px; 
+    line-height: 1.5;
+}
+
+.EditPost button {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+
+.EditPost button:hover {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    transform: scale(1.05);
+}
+# components/app/App.tsx
+import { BrowserRouter } from 'react-router-dom'
+import Layout from '../layout/layout/Layout'
+import './App.css'
+
+export default function App(): JSX.Element {
+    return (
+        <div className="App">
+            <BrowserRouter>
+                <Layout />
+            </BrowserRouter>
+        </div>
+    )
+}
+# components/app/App.css
+.App {
+    height: 100%;
+}
+# components/layout/followers/Followers.css
+.Followers {
+    display: flex;
+    flex-direction: row;
+}
+# components/layout/followers/Followers.tsx
+import { useEffect, useState } from 'react'
+import './Followers.css'
+import User from '../../../models/user/User'
+import followersService from '../../../services/followers'
+import Follow from '../../follows/follow/Follow'
+
+export default function Followers() {
+    const [followers, setFollowers] = useState<User[]>([])
+
+    useEffect(() => {
+        followersService.getFollowers()
+            .then(setFollowers)
+            .catch(alert)
+    }, [])
+
+    return (
+        <div className='Followers'>
+            {followers.map(follow => <Follow 
+                                      key={follow.id} 
+                                      user={follow}
+                                     ></Follow>)}
+        </div>
+    )
+}
+# components/layout/footer/Footer.tsx
+import './Footer.css'
+
+export default function Footer() {
+    return (
+        <div className='Footer'>
+            <p>server is: {import.meta.env.VITE_REST_SERVER_URL}</p>            
+        </div>
+    )
+}
+# components/layout/footer/Footer.css
+
+# components/layout/not-found/NotFound.css
+
+# components/layout/not-found/NotFound.tsx
+import './NotFound.css'
+
+export default function NotFound() {
+    return (
+        <div className='NotFound'>
+            404 not found
+            noop is an afghan hound
+            beery is very young
+            let's all join the gang
+        </div>
+    )
+}
+# components/layout/layout/Layout.tsx
+import Followers from '../../follows/followers/Followers'
+import Following from '../../follows/following/Following'
+import Footer from '../footer/Footer'
+import Header from '../header/Header'
+import Routing from '../routing/Routing'
+import './Layout.css'
+
+export default function Layout() {
+    return (
+        <div className='Layout'>
+            <header>
+                <Header />                
+            </header>                
+            <aside>
+                <Following />
+            </aside>
+            <aside>
+                <Followers />
+            </aside>
+            <main>
+                <Routing />
+            </main>
+            <footer>
+                <Footer />
+            </footer>
+        </div>
+    )
+}
+# components/layout/layout/Layout.css
+.Layout {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    grid-template-rows: 1fr 3fr 3fr 1fr;
+    height: 100%;
+}
+
+.Layout > header {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+}
+
+.Layout > footer {
+    grid-column: 1 / span 2;
+    grid-row: 4;
+}
+
+.Layout > aside:nth-child(1) {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.Layout > aside:nth-child(2) {
+    grid-column: 1;
+    grid-row: 3;
+}
+
+.Layout > main {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    overflow: auto;
+}
+
+
+
+# components/layout/following/Following.tsx
+import './Following.css'
+import { useEffect, useState } from 'react'
+import User from '../../../models/user/User'
+import followingService from '../../../services/following'
+import Follow from '../../follows/follow/Follow'
+
+export default function Following() {
+    const [following, setFollowing] = useState<User[]>([])
+
+    useEffect(() => {
+        followingService.getFollowing()
+            .then(setFollowing)
+            .catch(alert)
+    }, [])
+
+    return (
+       <div className='Following'>
+                   {following.map(follow => <Follow 
+                                             key={follow.id} 
+                                             user={follow}
+                                            ></Follow>)}
+               </div>
+    )
+}
+# components/layout/following/Following.css
+
+# components/layout/routing/Routing.tsx
+import { Navigate, Route, Routes } from "react-router-dom";
+import Profile from "../../posts/profile/Profile";
+import Feed from "../../posts/feed/Feed";
+import NotFound from "../not-found/NotFound";
+import EditPost from "../../posts/editPost/EditPost";
+
+export default function Routing(): JSX.Element {
+    return (
+        <Routes>
+            <Route path="/" element={<Navigate to="/profile"/>} />
+            {/* <Route path="/" element={<Profile />} /> */}
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/feed" element={<Feed />} />
+            <Route path="/edit/:id" element={<EditPost />} />
+            <Route path="*" element={<NotFound />} />
+        </Routes>
+    )   
+}
+# components/layout/header/Header.tsx
+import { NavLink } from 'react-router-dom'
+import './Header.css'
+
+export default function Header() {
+    return (
+        <div className='Header'>
+            <div>
+                Logo
+            </div>  
+            <div>
+                <nav>
+                    <NavLink to="/profile">profile</NavLink>
+                    <NavLink to="/feed">feed</NavLink>
+                    <NavLink to="/search">search</NavLink>
+                </nav>
+            </div>          
+        </div>
+    )
+}
+# components/layout/header/Header.css
+.Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #007bff;
+    color: white;
+    padding: 15px 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-family: 'Arial', sans-serif;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.Header:hover {
+    background-color: #0056b3;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.Header div:first-child {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: white;
+}
+
+.Header nav {
+    display: flex;
+    gap: 20px;
+}
+
+.Header nav a {
+    text-decoration: none;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.Header nav a:hover {
+    background-color: rgba(255, 255, 255, 0.2); 
+    color: #ffeeba; 
+}
+
+.Header nav a.active {
+    background-color: #0056b3;
+    color: #ffeeba;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+# components/follows/followers/Followers.css
+.Follow {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.Follow:last-child {
+    border-bottom: none;
+}
+
+.user-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    border: 2px solid #007bff;
+    font-size: 24px;
+    color: #007bff;
+}
+
+.user-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333333;
+    transition: color 0.3s ease;
+}
+
+.user-name:hover {
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.user-email {
+    font-size: 0.9rem;
+    color: #666666;
+}
+
+.follow-toggle-button {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.follow-toggle-button:hover {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.follow-toggle-button.unfollow {
+    background: #ffebee;
+    border: 1px solid #f44336;
+    color: #b71c1c;
+}
+
+.follow-toggle-button.unfollow:hover {
+    background: #f44336;
+    color: white;
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+# components/follows/followers/Followers.tsx
+import './Followers.css';
+import { useEffect, useState } from 'react';
+import User from '../../../models/user/User';
+import followers from '../../../services/followers';
+import Follow from '../follow/Follow';
+
+export default function Followers() {
+    const [followersList, setFollowersList] = useState<User[]>([]);
+    const [followingList, setFollowingList] = useState<User[]>([]);
+
+    useEffect(() => {
+        followers.getFollowers()
+            .then(setFollowersList)
+            .catch(alert);
+    }, []);
+
+    async function handleFollow(userId: string) {
+        try {
+            await followers.follow(userId);
+            const user = followersList.find(f => f.id === userId);
+            if (user) {
+                setFollowingList(prev => [...prev, user]);
+                setFollowersList(prev => prev.filter(f => f.id !== userId)); 
+            }
+        } catch (e) {
+            alert('Failed to follow user');
+        }
+    }
+
+    return (
+        <div className="Followers">
+            <h2>Followers</h2>
+            {followersList.map(user => (
+                <Follow
+                    key={user.id}
+                    user={user}
+                    isFollowing={followingList.some(f => f.id === user.id)}
+                    onToggleFollow={() => handleFollow(user.id)}
+                />
+            ))}
+        </div>
+    );
+}
+# components/follows/follow/Follow.tsx
+import './Follow.css';
+import User from '../../../models/user/User';
+
+interface FollowProps {
+    user: User;
+    isFollowing: boolean;
+    onToggleFollow: () => void;
+}
+
+export default function Follow({ user, isFollowing, onToggleFollow }: FollowProps) {
+    return (
+        <div className="Follow">
+            <div className="user-avatar">
+                <span className="user-icon">👤</span>
+            </div>
+            <div className="user-info">
+                <span className="user-name">{user.name}</span>
+                <span className="user-email">{user.email}</span>
+            </div>
+            <button
+                className={`follow-toggle-button ${isFollowing ? 'unfollow' : ''}`}
+                onClick={onToggleFollow}
+            >
+                {isFollowing ? 'Unfollow' : 'Follow'}
+            </button>
+        </div>
+    );
+}
+# components/follows/follow/Follow.css
+.Follow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+    gap: 15px;
+}
+
+.Follow:last-child {
+    border-bottom: none;
+}
+
+.user-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    border: 2px solid #007bff;
+    font-size: 24px;
+    color: #007bff;
+    flex-shrink: 0; 
+}
+
+.user-info {
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    justify-content: center; 
+}
+
+.user-name {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333333;
+    transition: color 0.3s ease;
+}
+
+.user-name:hover {
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.user-email {
+    font-size: 0.9rem;
+    color: #666666;
+}
+
+.follow-toggle-button {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0; 
+}
+
+.follow-toggle-button:hover {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.follow-toggle-button.unfollow {
+    background: #ffebee;
+    border: 1px solid #f44336;
+    color: #b71c1c;
+}
+
+.follow-toggle-button.unfollow:hover {
+    background: #f44336;
+    color: white;
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+# components/follows/following/Following.tsx
+import './Following.css';
+import { useEffect, useState } from 'react';
+import User from '../../../models/user/User';
+import following from '../../../services/following';
+import Follow from '../follow/Follow';
+
+export default function Following() {
+    const [followingList, setFollowingList] = useState<User[]>([]);
+
+    useEffect(() => {
+        following.getFollowing()
+            .then(setFollowingList)
+            .catch(alert);
+    }, []);
+
+    async function handleUnfollow(userId: string) {
+        try {
+            await following.unFollow(userId);
+            setFollowingList(prev => prev.filter(user => user.id !== userId));
+        } catch (e) {
+            alert('Failed to unfollow user');
+        }
+    }
+
+    return (
+        <div className="Following">
+            <h2>Following</h2>
+            {followingList.map(user => (
+                <Follow
+                    key={user.id}
+                    user={user}
+                    isFollowing={true}
+                    onToggleFollow={() => handleUnfollow(user.id)}
+                />
+            ))}
+        </div>
+    );
+}
+# components/follows/following/Following.css
+.Followers {
+    display: flex;
+    flex-direction: column;
+}
+# vite-env.d.ts
+/// <reference types="vite/client" />
+
+# services/followers.ts
+import axios from "axios";
+import User from "../models/user/User";
+
+class Followers {
+    async getFollowers(): Promise<User[]> {
+        const response = await axios.get<User[]>(`${import.meta.env.VITE_REST_SERVER_URL}/follows/followers`);
+        return response.data;
+    }
+
+    async follow(userId: string): Promise<void> {
+        await axios.post(`${import.meta.env.VITE_REST_SERVER_URL}/follows/follow/${userId}`);
+    }
+}
+
+// Singleton
+const followers = new Followers();
+export default followers;
+# services/following.ts
+import axios from "axios";
+import User from "../models/user/User";
+
+class Following {
+    async getFollowing(): Promise<User[]> {
+        const response = await axios.get<User[]>(`${import.meta.env.VITE_REST_SERVER_URL}/follows/following`);
+        return response.data;
+    }
+
+    async unFollow(userId: string): Promise<void> {
+        await axios.post(`${import.meta.env.VITE_REST_SERVER_URL}/follows/unfollow/${userId}`);
+    }
+}
+
+// Singleton
+const following = new Following();
+export default following;
+# services/feed.ts
+import axios from "axios";
+import Post from "../models/post/Post";
+
+class Feed {
+    async getFeed(): Promise<Post[]> {
+        const response = await axios.get<Post[]>(`${import.meta.env.VITE_REST_SERVER_URL}/feed`)
+        return response.data
+    }
+}
+
+// singleton
+const feed = new Feed()
+export default feed
+# services/profile.ts
+import axios from "axios";
+import Post from "../models/post/Post";
+import PostDraft from "../models/post/PostDraft";
+
+class Profile {
+    async getProfile(): Promise<Post[]> {
+        const response = await axios.get<Post[]>(`${import.meta.env.VITE_REST_SERVER_URL}/posts`);
+        return response.data;
+    }
+
+    async remove(id: string): Promise<boolean> {
+        const response = await axios.delete<boolean>(`${import.meta.env.VITE_REST_SERVER_URL}/posts/${id}`);
+        return response.data;
+    }
+
+    async create(draft: PostDraft): Promise<Post> {
+        const response = await axios.post<Post>(`${import.meta.env.VITE_REST_SERVER_URL}/posts/`, draft);
+        return response.data;
+    }
+
+    async update(id: string, draft: PostDraft): Promise<Post> {
+        const { title, body } = draft;
+        const response = await axios.patch<Post>(`${import.meta.env.VITE_REST_SERVER_URL}/posts/${id}`, { title, body });
+        return response.data;
+    }
+
+    async getPost(id: string): Promise<Post> {
+        const response = await axios.get<Post>(`${import.meta.env.VITE_REST_SERVER_URL}/posts/${id}`);
+        return response.data;
+    }
+}
+
+// singleton
+const profile = new Profile();
+export default profile;

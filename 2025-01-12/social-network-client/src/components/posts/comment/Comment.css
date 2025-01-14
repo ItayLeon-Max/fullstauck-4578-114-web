@@ -1,0 +1,38 @@
+.Comment {
+    background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 15px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.Comment:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+}
+
+.Comment div:first-child {
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.Comment div:last-child {
+    font-size: 1rem;
+    color: #212529;
+    background-color: #f1f3f5;
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px solid #e9ecef;
+}
+
+.Comment div:last-child:hover {
+    background-color: #e9ecef;
+    color: #343a40;
+}
