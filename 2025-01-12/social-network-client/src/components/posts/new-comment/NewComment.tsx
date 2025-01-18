@@ -3,24 +3,31 @@ import './NewComment.css';
 import CommentDraft from '../../../models/comment/commentDraft';
 import CommentService from '../../../services/comments';
 import Comment from '../../../models/comment/Comment';
+import { useState } from 'react';
+import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
 
 interface NewCommentProps {
     postId: string;
-    addComment(comment: Comment): void
+    addComment(comment: Comment): void;
 }
+
 export default function NewComment(props: NewCommentProps): JSX.Element {
+    const { postId, addComment } = props;
 
-    const {postId, addComment} = props;
-
-    const {register, handleSubmit, formState, reset} = useForm<CommentDraft>();
+    const { register, handleSubmit, formState, reset } = useForm<CommentDraft>();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     async function submit(draft: CommentDraft) {
         try {
+            setIsSubmitting(true);
             const newComment = await CommentService.create(postId, draft);
             reset();
             addComment(newComment);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             alert('Failed to add comment');
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
@@ -28,19 +35,24 @@ export default function NewComment(props: NewCommentProps): JSX.Element {
         <div className="NewComment">
             <h2>New Comment</h2>
             <form onSubmit={handleSubmit(submit)}>
-                <textarea {...register('body', {
-                    required: {
-                        value: true,
-                        message: 'Comment is required'
-                    },
-                    minLength: {
-                        value: 20,
-                        message: 'Comment must be at least 20 characters'
-                    }
-                })} placeholder="Enter your comment here"></textarea>
+                <textarea
+                    {...register('body', {
+                        required: {
+                            value: true,
+                            message: 'Comment is required',
+                        },
+                        minLength: {
+                            value: 20,
+                            message: 'Comment must be at least 20 characters',
+                        },
+                    })}
+                    placeholder="Enter your comment here"
+                ></textarea>
                 <span>{formState.errors.body?.message}</span>
-                <button>Add Comment</button>
+                <button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? <ButtonLoading /> : 'Add Comment'}
+                </button>
             </form>
         </div>
-    )
+    );
 }

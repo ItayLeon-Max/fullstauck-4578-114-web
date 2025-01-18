@@ -17,6 +17,7 @@ export default function Following() {
         try {
             await following.unFollow(userId);
             setFollowingList(prev => prev.filter(user => user.id !== userId));
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             alert('Failed to unfollow user');
         }

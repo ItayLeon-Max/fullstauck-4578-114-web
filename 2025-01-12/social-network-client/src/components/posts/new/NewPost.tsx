@@ -3,6 +3,8 @@ import './NewPost.css';
 import PostDraft from '../../../models/post/PostDraft';
 import profile from '../../../services/profile';
 import Post from '../../../models/post/Post';
+import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
+import { useState } from 'react';
 
 interface NewPostProps {
     addPost: (post: Post) => void;
@@ -10,16 +12,22 @@ interface NewPostProps {
 
 export default function NewPost(props: NewPostProps) {
     const { register, handleSubmit, reset, formState } = useForm<PostDraft>({
-        mode: 'onTouched', // מציג שגיאות כאשר השדה נוגע
+        mode: 'onTouched',
     });
+
+    const [isLoading, setIsLoading] = useState(false);
 
     async function submit(draft: PostDraft) {
         try {
+            setIsLoading(true);
             const newPost = await profile.create(draft);
             props.addPost(newPost);
             reset();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
-            alert(e);
+            alert('Failed to add post');
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -59,7 +67,9 @@ export default function NewPost(props: NewPostProps) {
                 {formState.touchedFields.body && formState.errors.body && (
                     <span className="error">{formState.errors.body.message}</span>
                 )}
-                <button type="submit">Add Post</button>
+                <button type="submit" disabled={isLoading}>
+                    {isLoading ? <ButtonLoading /> : 'Add Post'}
+                </button>
             </form>
         </div>
     );

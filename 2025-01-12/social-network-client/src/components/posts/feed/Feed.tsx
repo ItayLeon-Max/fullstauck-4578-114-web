@@ -4,16 +4,13 @@ import PostModel from '../../../models/post/Post'
 import feed from '../../../services/feed'
 import Post from '../post/Post'
 import CommentModel from '../../../models/comment/Comment'
+import useTitle from '../../../hooks/useTitle'
 
 
 export default function Feed() {
     const [posts, setPosts] = useState<PostModel[]>([])
 
-    
-
-    useEffect(() => {
-        document.title = 'Feed'
-    }, [])
+    useTitle('Feed')
 
     useEffect(() => {
         feed.getFeed()

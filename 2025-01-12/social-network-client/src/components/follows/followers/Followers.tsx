@@ -22,6 +22,7 @@ export default function Followers() {
                 setFollowingList(prev => [...prev, user]);
                 setFollowersList(prev => prev.filter(f => f.id !== userId)); // להסיר מ-followers
             }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             alert('Failed to follow user');
         }

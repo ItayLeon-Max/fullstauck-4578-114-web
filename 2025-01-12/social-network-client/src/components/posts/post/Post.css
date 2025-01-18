@@ -106,23 +106,20 @@
     user-select: none;
 }
 
-/* אנימציה ל-Like (אגודל למעלה) */
 .heart-animation.like.animate {
     opacity: 1;
     transform: translateY(-20px) scale(2);
-    color: #4caf50; /* ירוק */
+    color: #4caf50; 
     animation: pop-like 0.5s ease forwards;
 }
 
-/* אנימציה ל-Unlike (אגודל למטה) */
 .heart-animation.unlike.animate {
     opacity: 1;
     transform: translateY(20px) scale(2);
-    color: #f44336; /* אדום */
+    color: #f44336; 
     animation: pop-unlike 0.5s ease forwards;
 }
 
-/* אנימציה ללייק */
 @keyframes pop-like {
     0% {
         opacity: 0;
@@ -138,7 +135,6 @@
     }
 }
 
-/* אנימציה לאנלייק */
 @keyframes pop-unlike {
     0% {
         opacity: 0;
@@ -212,20 +208,60 @@
     cursor: pointer;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 5px;
     transition: all 0.3s ease;
+    width: 100px; 
+    height: 40px; 
+    box-sizing: border-box;
+    text-align: center;
+    position: relative; 
 }
 
 .delete-button:hover {
     background: #f44336;
-    color: white;
+    color: #b71c1c; 
     box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
-@media (max-width: 768px) {
-    .actions {
-        flex-wrap: wrap;
-        gap: 10px;
+.delete-button:disabled {
+    background: #ffcdd2; 
+    color: #b71c1c; 
+    cursor: not-allowed;
+}
+
+.ButtonLoading {
+    position: absolute; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #b71c1c;
+    width: 100%;
+    height: 100%;
+}
+
+.ButtonLoading::after {
+    content: '';
+    margin-left: 10px; 
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid #b71c1c;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
     }
 }

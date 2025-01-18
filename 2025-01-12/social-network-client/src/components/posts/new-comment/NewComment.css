@@ -5,8 +5,8 @@
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     margin: 20px auto;
     padding: 20px;
-    max-width: 700px; 
-    width: 100%; 
+    max-width: 700px;
+    width: 100%;
     box-sizing: border-box;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -61,12 +61,20 @@
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    align-self: flex-start;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    gap: 8px;
+    min-width: 120px;
 }
 
 .NewComment button:hover {
     background: #4caf50;
     color: white;
-    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
-    transform: scale(1.05);
+}
+
+.NewComment button:disabled .ButtonLoading {
+    color: #2e7d32;
 }

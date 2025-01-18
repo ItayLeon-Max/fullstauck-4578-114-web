@@ -61,46 +61,59 @@ export default interface User {
     id: string,
     name: string,
     username: string,
-    password: string,
+    password?: string,
     createdAt: string,
     updatedAt: string
 }
-# components/posts/comments/Comments.css
-
 # components/posts/comments/Comments.tsx
-
-import CommentModel from '../../../models/comment/Comment'
-import Comment from '../comment/Comment'
-import NewComment from '../new-comment/NewComment'
+import { useState } from 'react';
+import CommentModel from '../../../models/comment/Comment';
+import Comment from '../comment/Comment';
+import NewComment from '../new-comment/NewComment';
+import commentsService from '../../../services/comments';
 
 interface CommentsProps {
-    comments: CommentModel[]
-    postId: string
-    addComment(comment: CommentModel): void
+    comments: CommentModel[];
+    postId: string;
+    addComment(comment: CommentModel): void;
 }
-export default function Comments(props: CommentsProps): JSX.Element {
 
-    const { comments, postId, addComment} = props
+export default function Comments(props: CommentsProps): JSX.Element {
+    const { comments, postId, addComment } = props;
+
+    const [currentComments, setCurrentComments] = useState(comments);
+
+    const deleteComment = async (commentId: string) => {
+        try {
+            console.log(`Deleting comment with id: ${commentId}`);
+            await commentsService.deleteComment(commentId);
+            setCurrentComments((prevComments) =>
+                prevComments.filter((comment) => comment.id !== commentId)
+            );
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            console.error('Failed to delete comment', error);
+            alert('Failed to delete comment');
+        }
+    }
 
     return (
-        <div className='Comments'>
+        <div className="Comments">
             <div>
-                total comments: {comments.length}   
+                total comments: {currentComments.length}
             </div>
             <div>
-                <NewComment 
-                    postId={postId}
-                    addComment={addComment}
-                />
+                <NewComment postId={postId} addComment={addComment} />
             </div>
-            {comments.map(c =>
+            {currentComments.map((c) => (
                 <Comment
                     key={c.id}
                     comment={c}
-                />)
-            }
+                    onDelete={deleteComment}
+                />
+            ))}
         </div>
-    )
+    );
 }
 # components/posts/post/Post.tsx
 import './Post.css';
@@ -110,12 +123,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Comments from '../comments/Comments';
 import CommentModel from '../../../models/comment/Comment';
+import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
 
 interface PostProps {
     post: PostModel;
     isAllowActions?: boolean;
     remove?(id: string): void;
-    addComment(comment: CommentModel): void
+    addComment(comment: CommentModel): void;
 }
 
 export default function Post(props: PostProps): JSX.Element {
@@ -123,20 +137,25 @@ export default function Post(props: PostProps): JSX.Element {
     const { name } = props.post.user;
     const navigate = useNavigate();
 
-    const {addComment} = props;
+    const { addComment, isAllowActions } = props;
 
     const [liked, setLiked] = useState(false);
     const [animateHeart, setAnimateHeart] = useState(false);
     const [likeCount, setLikeCount] = useState(0);
     const [showComments, setShowComments] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false); 
 
     async function deleteMe() {
         if (props.remove && confirm('Are you sure you want to delete this post?')) {
             try {
+                setIsDeleting(true);
                 await profileService.remove(id);
                 props.remove(id);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (e) {
-                alert(e);
+                alert('Failed to delete post');
+            } finally {
+                setIsDeleting(false); 
             }
         }
     }
@@ -167,30 +186,36 @@ export default function Post(props: PostProps): JSX.Element {
                 by {name} at {new Date(createdAt).toLocaleString()}
             </div>
             <div>{body}</div>
-            <div className="actions">
-                <button
-                    className={`like-button ${liked ? 'liked' : ''}`}
-                    onClick={toggleLike}
-                >
-                    <div className={`heart-animation ${animateHeart ? 'animate' : ''}`}>
-                        ❤️
-                    </div>
-                    {liked ? 'Unlike' : 'Like'}
-                </button>
-                <span className="like-count">{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</span>
-                <button className="comment-button" onClick={toggleComments}>
-                    {showComments ? 'Hide Comments' : 'Show Comments'}
-                </button>
-                <button className="edit-button" onClick={editPost}>Edit</button>
-                <button className="delete-button" onClick={deleteMe}>
-                    Delete
-                </button>
-            </div>
-            {showComments && <Comments 
-                             comments={props.post.comments} 
-                             postId={id}
-                             addComment={addComment}
-            />}
+            {isAllowActions && (
+                <div className="actions">
+                    <button
+                        className={`like-button ${liked ? 'liked' : ''}`}
+                        onClick={toggleLike}
+                    >
+                        <div className={`heart-animation ${animateHeart ? 'animate' : ''}`}></div>
+                        {liked ? '👎 Unlike' : '👍 Like'}
+                    </button>
+                    <span className="like-count">{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</span>
+                    <button className="comment-button" onClick={toggleComments}>
+                        {showComments ? 'Hide Comments' : 'Show Comments'}
+                    </button>
+                    <button className="edit-button" onClick={editPost}>Edit</button>
+                    <button
+                        className="delete-button"
+                        onClick={deleteMe}
+                        disabled={isDeleting} 
+                    >
+                        {isDeleting ? <ButtonLoading /> : 'Delete'}
+                    </button>
+                </div>
+            )}
+            {showComments && props.post?.comments && (
+                <Comments
+                    comments={props.post.comments}
+                    postId={id}
+                    addComment={addComment}
+                />
+            )}
         </div>
     );
 }
@@ -280,16 +305,6 @@ export default function Post(props: PostProps): JSX.Element {
     transform: scale(1.1);
 }
 
-.like-button:before {
-    content: '❤️';
-    margin-right: 5px;
-    transition: transform 0.3s ease;
-}
-
-.like-button:hover:before {
-    transform: rotate(-10deg) scale(1.2);
-}
-
 .like-button.liked {
     background: #f44336;
     border: 1px solid #b71c1c;
@@ -307,16 +322,54 @@ export default function Post(props: PostProps): JSX.Element {
     left: 50%;
     transform: translateX(-50%) scale(0.5);
     font-size: 24px;
-    color: #f44336;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.5s ease, transform 0.5s ease;
     user-select: none;
 }
 
-.heart-animation.animate {
+.heart-animation.like.animate {
     opacity: 1;
-    transform: translateX(-50%) scale(2) translateY(-20px);
+    transform: translateY(-20px) scale(2);
+    color: #4caf50; 
+    animation: pop-like 0.5s ease forwards;
+}
+
+.heart-animation.unlike.animate {
+    opacity: 1;
+    transform: translateY(20px) scale(2);
+    color: #f44336; 
+    animation: pop-unlike 0.5s ease forwards;
+}
+
+@keyframes pop-like {
+    0% {
+        opacity: 0;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.5);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-20px) scale(2);
+    }
+}
+
+@keyframes pop-unlike {
+    0% {
+        opacity: 0;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.5);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(20px) scale(2);
+    }
 }
 
 .like-count {
@@ -346,12 +399,6 @@ export default function Post(props: PostProps): JSX.Element {
     transform: scale(1.1);
 }
 
-.comment-button:before {
-    content: '💬';
-    margin-right: 5px;
-}
-
-/* כפתור Edit */
 .edit-button {
     background: #e3f2fd;
     border: 1px solid #2196f3;
@@ -373,16 +420,6 @@ export default function Post(props: PostProps): JSX.Element {
     transform: scale(1.05);
 }
 
-.edit-button:before {
-    content: '✏️'; /* אייקון עריכה */
-    margin-right: 5px;
-    transition: transform 0.3s ease;
-}
-
-.edit-button:hover:before {
-    transform: rotate(-10deg) scale(1.2);
-}
-
 .delete-button {
     background: #ffebee;
     border: 1px solid #f44336;
@@ -393,88 +430,285 @@ export default function Post(props: PostProps): JSX.Element {
     cursor: pointer;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 5px;
     transition: all 0.3s ease;
+    width: 100px; 
+    height: 40px; 
+    box-sizing: border-box;
+    text-align: center;
+    position: relative; 
+}
+
+.delete-button:hover {
+    background: #f44336;
+    color: #b71c1c; 
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+    transform: scale(1.05);
+}
+
+.delete-button:disabled {
+    background: #ffcdd2; 
+    color: #b71c1c; 
+    cursor: not-allowed;
+}
+
+.ButtonLoading {
+    position: absolute; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #b71c1c;
+    width: 100%;
+    height: 100%;
+}
+
+.ButtonLoading::after {
+    content: '';
+    margin-left: 10px; 
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid #b71c1c;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+# components/posts/comment/Comment.tsx
+import { useState } from 'react';
+import CommentModel from '../../../models/comment/Comment';
+import EditComment from '../editComment/EditComment';
+import './Comment.css';
+
+interface CommentProps {
+    comment: CommentModel
+    onDelete(commentId: string): void;
+}
+
+export default function Comment(props: CommentProps): JSX.Element {
+    const { user: { name }, body, createdAt, id } = props.comment;
+    const { onDelete } = props;
+
+    const formattedDate = new Date(createdAt).toLocaleString('en-GB', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+
+    const [likeCount, setLikeCount] = useState(0);
+    const [liked, setLiked] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [commentBody, setCommentBody] = useState(body);
+
+    const toggleLike = () => {
+        setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+        setLiked(!liked);
+    };
+
+    const handleEditClick = () => {
+        setIsEditing(true);
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditing(false);
+    };
+
+    const handleSaveEdit = (updatedBody: string) => {
+        setCommentBody(updatedBody);
+        setIsEditing(false);
+    };
+
+    const handleDelete = () => {
+        if (confirm('Are you sure you want to delete this comment?')) {
+            onDelete(id);
+        }
+    };
+
+
+    return (
+        <div className="Comment">
+            <div className="comment-header">
+                <span className="comment-author">{name}</span>
+                <span className="comment-date">on {formattedDate}</span>
+            </div>
+            <div className="comment-body">
+                {isEditing ? (
+                    <EditComment
+                        commentId={id}
+                        currentBody={commentBody}
+                        onSave={handleSaveEdit}
+                        onCancel={handleCancelEdit}
+                    />
+                ) : (
+                    commentBody
+                )}
+            </div>
+            {!isEditing && (
+                <div className="comment-actions">
+                    <button className={`action-button like-button ${liked ? 'liked' : ''}`} onClick={toggleLike}>
+                        {liked ? 'Unlike' : 'Like'} ({likeCount})
+                    </button>
+                    <button className="action-button reply-button" onClick={handleEditClick}>
+                        Edit
+                    </button>
+                    <button className="action-button delete-button" onClick={handleDelete} >
+                        Delete
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
+# components/posts/comment/Comment.css
+.Comment {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.Comment:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+    background: #f0fff4;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.comment-author {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #2e7d32;
+    text-shadow: 1px 1px 4px rgba(46, 125, 50, 0.2);
+}
+
+.comment-date {
+    font-size: 0.9rem;
+    color: #666666;
+    font-style: italic;
+}
+
+.comment-body {
+    font-size: 1rem;
+    color: #4a4a4a;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    padding-left: 10px;
+    border-left: 4px solid #4caf50;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.action-button {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.action-button:hover {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    transform: scale(1.05);
+}
+
+.action-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.like-button:before {
+    content: '👍';
+}
+
+.reply-button:before {
+    content: '✏️';
+}
+
+.delete-button {
+    background: #ffebee;
+    border: 1px solid #f44336;
+    color: #d32f2f;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .delete-button:hover {
     background: #f44336;
     color: white;
     box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
-.delete-button:before {
-    content: '🗑️';
-    margin-right: 5px;
+.delete-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 768px) {
-    .actions {
+    .Comment {
+        padding: 15px;
+    }
+
+    .comment-actions {
         flex-wrap: wrap;
         gap: 10px;
     }
-}
-# components/posts/comment/Comment.tsx
-import CommentModel from '../../../models/comment/Comment'
-import './Comment.css'
 
-interface CommentProps {
-    comment: CommentModel
-}
-export default function Comment(props: CommentProps): JSX.Element {
-
-    const { user: { name }, body, createdAt} = props.comment
- 
-    return (
-        <div className='Comment'>
-            <div>
-                {name} said on {createdAt}:
-            </div>
-            <div>
-                {body}
-            </div>
-        </div>
-    )
-}
-# components/posts/comment/Comment.css
-.Comment {
-    background: linear-gradient(to bottom, #ffffff, #f8f9fa);
-    border: 1px solid #dcdcdc;
-    border-radius: 10px;
-    padding: 15px;
-    margin: 15px 0;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.Comment:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-    background: linear-gradient(to bottom, #f8f9fa, #ffffff);
-}
-
-.Comment div:first-child {
-    font-size: 0.95rem;
-    color: #6c757d;
-    margin-bottom: 10px;
-    font-weight: bold;
-}
-
-.Comment div:last-child {
-    font-size: 1rem;
-    color: #212529;
-    background-color: #f1f3f5;
-    padding: 12px;
-    border-radius: 5px;
-    border: 1px solid #e9ecef;
-}
-
-.Comment div:last-child:hover {
-    background-color: #e9ecef;
-    color: #343a40;
+    .action-button {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
 }
 # components/posts/new-comment/NewComment.css
 .NewComment {
@@ -484,8 +718,8 @@ export default function Comment(props: CommentProps): JSX.Element {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     margin: 20px auto;
     padding: 20px;
-    max-width: 700px; 
-    width: 100%; 
+    max-width: 700px;
+    width: 100%;
     box-sizing: border-box;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -540,14 +774,22 @@ export default function Comment(props: CommentProps): JSX.Element {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    align-self: flex-start;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    gap: 8px;
+    min-width: 120px;
 }
 
 .NewComment button:hover {
     background: #4caf50;
     color: white;
-    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
-    transform: scale(1.05);
+}
+
+.NewComment button:disabled .ButtonLoading {
+    color: #2e7d32;
 }
 # components/posts/new-comment/NewComment.tsx
 import { useForm } from 'react-hook-form';
@@ -555,24 +797,31 @@ import './NewComment.css';
 import CommentDraft from '../../../models/comment/commentDraft';
 import CommentService from '../../../services/comments';
 import Comment from '../../../models/comment/Comment';
+import { useState } from 'react';
+import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
 
 interface NewCommentProps {
     postId: string;
-    addComment(comment: Comment): void
+    addComment(comment: Comment): void;
 }
+
 export default function NewComment(props: NewCommentProps): JSX.Element {
+    const { postId, addComment } = props;
 
-    const {postId, addComment} = props;
-
-    const {register, handleSubmit, formState, reset} = useForm<CommentDraft>();
+    const { register, handleSubmit, formState, reset } = useForm<CommentDraft>();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     async function submit(draft: CommentDraft) {
         try {
+            setIsSubmitting(true);
             const newComment = await CommentService.create(postId, draft);
             reset();
             addComment(newComment);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             alert('Failed to add comment');
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
@@ -580,21 +829,26 @@ export default function NewComment(props: NewCommentProps): JSX.Element {
         <div className="NewComment">
             <h2>New Comment</h2>
             <form onSubmit={handleSubmit(submit)}>
-                <textarea {...register('body', {
-                    required: {
-                        value: true,
-                        message: 'Comment is required'
-                    },
-                    minLength: {
-                        value: 20,
-                        message: 'Comment must be at least 20 characters'
-                    }
-                })} placeholder="Enter your comment here"></textarea>
+                <textarea
+                    {...register('body', {
+                        required: {
+                            value: true,
+                            message: 'Comment is required',
+                        },
+                        minLength: {
+                            value: 20,
+                            message: 'Comment must be at least 20 characters',
+                        },
+                    })}
+                    placeholder="Enter your comment here"
+                ></textarea>
                 <span>{formState.errors.body?.message}</span>
-                <button>Add Comment</button>
+                <button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? <ButtonLoading /> : 'Add Comment'}
+                </button>
             </form>
         </div>
-    )
+    );
 }
 # components/posts/profile/Profile.tsx
 import { useEffect, useState } from 'react'
@@ -604,12 +858,12 @@ import profile from '../../../services/profile'
 import Post from '../post/Post'
 import NewPost from '../new/NewPost'
 import Comment from '../../../models/comment/Comment'
+import Loading from '../../common/loading/Loading'
+import useTitle from '../../../hooks/useTitle'
 
 export default function Profile(): JSX.Element {
 
-    useEffect(() => {
-        document.title = 'Profile'
-    }, [])
+    useTitle('Profile')
 
     // posts: Post[]
     const [posts, setPosts] = useState<PostModel[]>([])
@@ -647,35 +901,40 @@ export default function Profile(): JSX.Element {
 
     return (
         <div className='Profile'>
-            <NewPost addPost={addPost} />
-            {posts.map(p => 
-                        <Post 
-                            key={p.id} 
-                            post={p}
-                            remove={remove}
-                            isAllowActions={false}
-                            addComment={addComment}
-                            >
-                            </Post>)}
-        </div>
+
+        { posts.length === 0 && <Loading />}
+
+        { posts.length > 0 && <>
+            <NewPost 
+                addPost={addPost} 
+            />
+            {posts.map(p =>
+                <Post
+                    key={p.id}
+                    post={p}
+                    isAllowActions={true}
+                    remove={remove}
+                    addComment={addComment}
+                />
+            )}
+        </>}
+    </div>
     )
 }
-# components/posts/profile/Profile.css
-
 # components/posts/feed/Feed.tsx
 import { useEffect, useState } from 'react'
 import './Feed.css'
 import PostModel from '../../../models/post/Post'
 import feed from '../../../services/feed'
 import Post from '../post/Post'
+import CommentModel from '../../../models/comment/Comment'
+import useTitle from '../../../hooks/useTitle'
 
 
 export default function Feed() {
     const [posts, setPosts] = useState<PostModel[]>([])
 
-    useEffect(() => {
-        document.title = 'Feed'
-    }, [])
+    useTitle('Feed')
 
     useEffect(() => {
         feed.getFeed()
@@ -684,11 +943,23 @@ export default function Feed() {
 
     }, [])
 
+       function addComment(comment: CommentModel): void {
+            const postsWithNewComment = [...posts]
+            const postToAddCommentTo = postsWithNewComment.find(post => post.id === comment.postId)
+            if(postToAddCommentTo){
+                postToAddCommentTo.comments.unshift(comment)
+            }
+    
+            setPosts(postsWithNewComment)
+        }
+
     return (
         <div className='Feed'>
             {posts.map(p => <Post 
                             key={p.id} 
                             post={p}
+                            addComment={addComment}
+                            isAllowActions={false}
                             ></Post>)}
         </div>
     )
@@ -745,6 +1016,8 @@ import './NewPost.css';
 import PostDraft from '../../../models/post/PostDraft';
 import profile from '../../../services/profile';
 import Post from '../../../models/post/Post';
+import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
+import { useState } from 'react';
 
 interface NewPostProps {
     addPost: (post: Post) => void;
@@ -752,16 +1025,22 @@ interface NewPostProps {
 
 export default function NewPost(props: NewPostProps) {
     const { register, handleSubmit, reset, formState } = useForm<PostDraft>({
-        mode: 'onTouched', // מציג שגיאות כאשר השדה נוגע
+        mode: 'onTouched',
     });
+
+    const [isLoading, setIsLoading] = useState(false);
 
     async function submit(draft: PostDraft) {
         try {
+            setIsLoading(true);
             const newPost = await profile.create(draft);
             props.addPost(newPost);
             reset();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
-            alert(e);
+            alert('Failed to add post');
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -801,7 +1080,9 @@ export default function NewPost(props: NewPostProps) {
                 {formState.touchedFields.body && formState.errors.body && (
                     <span className="error">{formState.errors.body.message}</span>
                 )}
-                <button type="submit">Add Post</button>
+                <button type="submit" disabled={isLoading}>
+                    {isLoading ? <ButtonLoading /> : 'Add Post'}
+                </button>
             </form>
         </div>
     );
@@ -858,23 +1139,27 @@ export default function NewPost(props: NewPostProps) {
 }
 
 .NewPost button[type="submit"] {
-    background: #e8f5e9;
-    border: 1px solid #4caf50;
-    color: #2e7d32;
+    background: #4caf50;
+    border: none;
+    color: white;
     padding: 10px 15px;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
-    align-self: flex-start;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .NewPost button[type="submit"]:hover {
-    background: #4caf50;
-    color: white;
-    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
-    transform: scale(1.05);
+    background: #45a049; 
+}
+
+.NewPost button[type="submit"]:disabled {
+    background: #4caf50; 
+    cursor: not-allowed;
 }
 
 .error {
@@ -895,75 +1180,83 @@ export default function NewPost(props: NewPostProps) {
 # components/posts/editPost/EditPost.tsx
 import { useNavigate, useParams } from 'react-router-dom';
 import './EditPost.css';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import profileService from '../../../services/profile';
 import PostDraft from '../../../models/post/PostDraft';
 import { useForm } from 'react-hook-form';
-export default function EditPost() {
+import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
 
+export default function EditPost() {
     const { id } = useParams<'id'>()
-    const {handleSubmit, register, formState, reset} = useForm<PostDraft>()
+    const { handleSubmit, register, formState, reset } = useForm<PostDraft>()
     const navigate = useNavigate()
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     useEffect(() => {
-        if(id){
+        if (id) {
             profileService.getPost(id)
-            .then(reset)
-            .catch(alert)
+                .then(reset)
+                .catch(alert)
         }
-    },[])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     async function submit(draft: PostDraft) {
-        try{
-            const {title, body} = draft
-            await profileService.update(id!, {title, body})
-            navigate('/profile')
-
+        try {
+            setIsSubmitting(true);
+            const { title, body } = draft;
+            await profileService.update(id!, { title, body });
+            navigate('/profile');
         } catch (e) {
-            alert(e)
+            alert(e);
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
     return (
         <div className="EditPost">
-        <form onSubmit={handleSubmit(submit)}>
-            <input
-                type="text"
-                placeholder="Title"
-                {...register('title', {
-                    required: {
-                        value: true,
-                        message: 'You must enter a title',
-                    },
-                    minLength: {
-                        value: 10,
-                        message: 'Title must be at least 10 characters',
-                    },
-                })}
-            />
-            {formState.touchedFields.title && formState.errors.title && (
-                <span className="error">{formState.errors.title.message}</span>
-            )}
-            <textarea
-                placeholder="Content"
-                {...register('body', {
-                    required: {
-                        value: true,
-                        message: 'You must enter a body',
-                    },
-                    minLength: {
-                        value: 20,
-                        message: 'Body must be at least 20 characters',
-                    },
-                })}
-            ></textarea>
-            {formState.touchedFields.body && formState.errors.body && (
-                <span className="error">{formState.errors.body.message}</span>
-            )}
-            <button type="submit">Update Post</button>
-        </form>
-    </div>
-    )
+            <form onSubmit={handleSubmit(submit)}>
+                <input
+                    type="text"
+                    placeholder="Title"
+                    {...register('title', {
+                        required: {
+                            value: true,
+                            message: 'You must enter a title',
+                        },
+                        minLength: {
+                            value: 10,
+                            message: 'Title must be at least 10 characters',
+                        },
+                    })}
+                />
+                {formState.touchedFields.title && formState.errors.title && (
+                    <span className="error">{formState.errors.title.message}</span>
+                )}
+                <textarea
+                    placeholder="Content"
+                    {...register('body', {
+                        required: {
+                            value: true,
+                            message: 'You must enter a body',
+                        },
+                        minLength: {
+                            value: 20,
+                            message: 'Body must be at least 20 characters',
+                        },
+                    })}
+                ></textarea>
+                {formState.touchedFields.body && formState.errors.body && (
+                    <span className="error">{formState.errors.body.message}</span>
+                )}
+                <button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? <ButtonLoading /> : 'Update Post'}
+                </button>
+            </form>
+        </div>
+    );
 }
 # components/posts/editPost/EditPost.css
 .EditPost {
@@ -1017,22 +1310,16 @@ export default function EditPost() {
     font-family: 'Arial', sans-serif;
 }
 
-.EditPost input[type="text"],
-.EditPost textarea {
-    width: 100%;
-    padding: 10px 15px;
-    font-size: 1rem;
-    border: 1px solid #cccccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    box-sizing: border-box;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    font-family: 'Arial', sans-serif;
+.EditPost input[type="text"]:focus,
+.EditPost textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    outline: none;
 }
 
 .EditPost textarea {
     resize: vertical;
-    min-height: 100px; 
+    min-height: 100px;
     line-height: 1.5;
 }
 
@@ -1046,7 +1333,13 @@ export default function EditPost() {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    align-self: flex-start;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    gap: 8px;
+    min-width: 100px;
 }
 
 .EditPost button:hover {
@@ -1054,6 +1347,183 @@ export default function EditPost() {
     color: white;
     box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
     transform: scale(1.05);
+}
+
+.ButtonLoading {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    color: #2e7d32;
+    font-size: 1rem;
+}
+
+.ButtonLoading::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    border: 2px solid transparent;
+    border-top: 2px solid #2e7d32;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+# components/posts/editComment/EditComment.tsx
+import { useForm } from 'react-hook-form';
+import { useState } from 'react';
+import './EditComment.css';
+import comments from '../../../services/comments';
+import CommentDraft from '../../../models/comment/commentDraft';
+
+interface EditCommentProps {
+    commentId: string;
+    currentBody: string;
+    onSave: (updatedBody: string) => void;
+    onCancel: () => void;
+}
+
+export default function EditComment(props: EditCommentProps): JSX.Element {
+    const { commentId, currentBody, onSave, onCancel } = props;
+
+    const { register, handleSubmit, reset, formState } = useForm<CommentDraft>({
+        defaultValues: { body: currentBody },
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const onSubmit = async (data: CommentDraft) => {
+        try {
+            setIsSubmitting(true);
+            const updatedComment = await comments.updateComment(commentId, data);
+            onSave(updatedComment.body); 
+            reset();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            alert('Failed to update comment.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <form className="EditComment" onSubmit={handleSubmit(onSubmit)}>
+            <textarea
+                {...register('body', {
+                    required: 'Body is required',
+                    minLength: {
+                        value: 10,
+                        message: 'Comment must be at least 10 characters long.',
+                    },
+                })}
+                placeholder="Edit your comment..."
+            />
+            {formState.errors.body && <span className="error">{formState.errors.body.message}</span>}
+            <div className="edit-comment-actions">
+                <button type="button" onClick={onCancel} className="cancel-button">
+                    Cancel
+                </button>
+                <button type="submit" className="save-button" disabled={isSubmitting}>
+                    {isSubmitting ? 'Saving...' : 'Save'}
+                </button>
+            </div>
+        </form>
+    );
+}
+# components/posts/editComment/EditComment.css
+.EditComment {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: #ffffff;
+    border: 1px solid #d1d1d1;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-top: 15px;
+    animation: fadeIn 0.3s ease-in-out;
+    width: 100%; /* תופס את כל הרוחב */
+    max-width: 700px; /* תקרה לרוחב */
+}
+
+.EditComment textarea {
+    width: 100%; /* תופס את כל הרוחב */
+    padding: 15px;
+    font-size: 1rem;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    background-color: #f7f9fa;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    resize: none; /* ביטול שינוי גודל */
+    box-sizing: border-box; /* לכלול padding ו-border */
+}
+
+.EditComment textarea:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+    outline: none;
+    background-color: #ffffff;
+}
+
+.edit-comment-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.edit-comment-actions .cancel-button {
+    background: #ffebee;
+    border: 1px solid #f44336;
+    color: #d32f2f;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.edit-comment-actions .cancel-button:hover {
+    background: #f44336;
+    color: white;
+    box-shadow: 0 2px 6px rgba(244, 67, 54, 0.3);
+}
+
+.edit-comment-actions .save-button {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.edit-comment-actions .save-button:hover {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 # components/app/App.tsx
 import { BrowserRouter } from 'react-router-dom'
@@ -1113,10 +1583,6 @@ export default function Footer() {
         </div>
     )
 }
-# components/layout/footer/Footer.css
-
-# components/layout/not-found/NotFound.css
-
 # components/layout/not-found/NotFound.tsx
 import './NotFound.css'
 
@@ -1220,8 +1686,6 @@ export default function Following() {
                </div>
     )
 }
-# components/layout/following/Following.css
-
 # components/layout/routing/Routing.tsx
 import { Navigate, Route, Routes } from "react-router-dom";
 import Profile from "../../posts/profile/Profile";
@@ -1313,6 +1777,134 @@ export default function Header() {
     background-color: #0056b3;
     color: #ffeeba;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+# components/common/loading/Loading.css
+.Loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* גובה של כל הדף */
+    background: linear-gradient(135deg, #e3f2fd, #fce4ec);
+    position: relative;
+    overflow: hidden;
+}
+
+.Loading img {
+    width: 100px;
+    height: 100px;
+    animation: spin 2s infinite linear, bounce 1.5s infinite ease-in-out;
+    border-radius: 50%;
+    box-shadow: 0px 0px 30px rgba(255, 255, 255, 0.6);
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.Loading::before, .Loading::after {
+    content: '';
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border: 20px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+.Loading::before {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.Loading::after {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    border-color: rgba(255, 255, 255, 0.6);
+    animation-delay: 1s;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 0.4;
+    }
+}
+# components/common/loading/Loading.tsx
+import './Loading.css';
+import loading from  '../../../assets/images/loading.gif'
+
+export default function Loading() {
+
+    
+    return (
+        <div className='Loading'>
+            <img src={loading} alt='loading'/>
+        </div>
+    )
+}
+# components/common/ButtonLoading/ButtonLoading.tsx
+import './ButtonLoading.css';
+
+export default function ButtonLoading() {
+    return (
+        <span className="ButtonLoading">
+            Loading...
+        </span>
+    );
+}
+# components/common/ButtonLoading/ButtonLoading.css
+.ButtonLoading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #2e7d32;
+    font-size: 1rem;
+    font-weight: bold;
+    position: relative;
+    height: 100%; /* Ensure it covers the button height */
+    width: 100%; /* Ensure it covers the button width */
+    text-align: center;
+}
+
+.ButtonLoading::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    border: 2px solid transparent;
+    border-top: 2px solid #2e7d32;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 # components/follows/followers/Followers.css
 .Follow {
@@ -1415,8 +2007,9 @@ export default function Followers() {
             const user = followersList.find(f => f.id === userId);
             if (user) {
                 setFollowingList(prev => [...prev, user]);
-                setFollowersList(prev => prev.filter(f => f.id !== userId)); 
+                setFollowersList(prev => prev.filter(f => f.id !== userId)); // להסיר מ-followers
             }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             alert('Failed to follow user');
         }
@@ -1567,6 +2160,7 @@ export default function Following() {
         try {
             await following.unFollow(userId);
             setFollowingList(prev => prev.filter(user => user.id !== userId));
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             alert('Failed to unfollow user');
         }
@@ -1594,6 +2188,48 @@ export default function Following() {
 # vite-env.d.ts
 /// <reference types="vite/client" />
 
+# hooks/useTitle.ts
+import { useEffect } from "react";
+
+export default function useTitle(title: string) {
+    useEffect(() => {
+        document.title = title
+    }, [ title ])
+}
+# redux/followingSlice.ts
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import User from "../models/user/User";
+
+
+interface FollowingState {
+    following: User[];
+}
+
+const initialState: FollowingState = {
+    following: []
+}
+
+export const followingSlice = createSlice({
+    name: 'following',
+    initialState,
+    reducers: {
+        init: (state, action: PayloadAction<User[]>) => {
+            state.following = action.payload;
+        },
+        unfollow: (state, action: PayloadAction<{userId: string}>) => {
+            state.following = state.following.filter(f => f.id !== action.payload.userId);
+        },
+        follow: (state, action: PayloadAction<User>) => {
+            state.following.push(action.payload);
+        }
+    }
+})
+
+// actions - functions that know how to modify the state.
+export const { init , unfollow , follow } = followingSlice.actions;
+
+// selectors - functions that know how to extract specific parts of the state.
+export default followingSlice.reducer;
 # services/comments.ts
 import axios from "axios";
 import CommentDraft from "../models/comment/commentDraft";
@@ -1602,6 +2238,21 @@ import Comment from "../models/comment/Comment";
 class Comments {
     async create(postId: string, draft: CommentDraft): Promise<Comment> {
         const response = await axios.post<Comment>(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${postId}`, draft);
+        return response.data;
+    }
+
+    async getComment(postId: string): Promise<Comment> {
+        const response = await axios.get<Comment>(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${postId}`);
+        return response.data;
+    }
+
+    async updateComment(postId: string, draft: CommentDraft): Promise<Comment> {
+        const response = await axios.patch<Comment>(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${postId}`, draft);
+        return response.data;
+    }
+
+    async deleteComment(commentId: string): Promise<void> {
+        const response = await axios.delete(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${commentId}`);
         return response.data;
     }
 }

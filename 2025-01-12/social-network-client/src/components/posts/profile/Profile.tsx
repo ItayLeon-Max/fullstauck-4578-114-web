@@ -6,12 +6,11 @@ import Post from '../post/Post'
 import NewPost from '../new/NewPost'
 import Comment from '../../../models/comment/Comment'
 import Loading from '../../common/loading/Loading'
+import useTitle from '../../../hooks/useTitle'
 
 export default function Profile(): JSX.Element {
 
-    useEffect(() => {
-        document.title = 'Profile'
-    }, [])
+    useTitle('Profile')
 
     // posts: Post[]
     const [posts, setPosts] = useState<PostModel[]>([])
@@ -66,7 +65,6 @@ export default function Profile(): JSX.Element {
                 />
             )}
         </>}
-
     </div>
     )
 }
