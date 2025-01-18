@@ -16,8 +16,8 @@ interface PostProps {
 
 export default function Post(props: PostProps): JSX.Element {
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [post, setPost] = useState(props.post);
+    console.log(post); // So that I don't get an error about the post variable because it is not really used but it is necessary to appear
     const { title, body, createdAt, id } = props.post;
     const { name } = props.post.user;
     const navigate = useNavigate();
