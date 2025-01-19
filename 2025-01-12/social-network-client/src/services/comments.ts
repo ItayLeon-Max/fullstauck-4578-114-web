@@ -13,17 +13,15 @@ class Comments {
         return response.data;
     }
 
-    async updateComment(postId: string, draft: CommentDraft): Promise<Comment> {
-        const response = await axios.patch<Comment>(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${postId}`, draft);
+    async updateComment(commentId: string, draft: CommentDraft): Promise<Comment> {
+        const response = await axios.patch<Comment>(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${commentId}`, draft);
         return response.data;
     }
 
     async deleteComment(commentId: string): Promise<void> {
-        const response = await axios.delete(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${commentId}`);
-        return response.data;
+        await axios.delete(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${commentId}`);
     }
 }
 
-//singleton
 const comments = new Comments();
 export default comments;

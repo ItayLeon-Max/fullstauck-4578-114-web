@@ -138,16 +138,16 @@ export default function Post(props: PostProps): JSX.Element {
 
     const dispatch = useAppDispatch();
 
-    async function deleteMe() {
-        if(props.remove && confirm('are you sure you want delete this post?')){
-            try{
-                await profileService.remove(id);
-                dispatch(removePost(id))
-            } catch (e) {
-                alert(e)
-            }
+   async function deleteMe() {
+    if(props.remove && confirm('are you sure you want delete this post?')){
+        try{
+            await profileService.remove(id);
+            dispatch(removePost(id))
+        } catch (e) {
+            alert(e)
         }
     }
+}
 
     function toggleLike() {
         setLiked(!liked);
@@ -856,54 +856,58 @@ export default function NewComment(props: NewCommentProps) {
 }
 
 # components/posts/profile/Profile.tsx
-import { useEffect } from "react"
-import { useAppDispatch, useAppSelector } from "../../../redux/hooks"
-import LoaddingPageForProfile from "../../common/LoaddingPageForProfile/LoaddingPageForProfile"
-import NewPost from "../new/NewPost"
-import Post from "../post/Post"
-import profile from "../../../services/profile"
-import { init } from "../../../redux/profileSlice"
-import useTitle from "../../../hooks/useTitle"
+import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
+import LoaddingPageForProfile from "../../common/LoaddingPageForProfile/LoaddingPageForProfile";
+import NewPost from "../new/NewPost";
+import Post from "../post/Post";
+import profile from "../../../services/profile";
+import { init } from "../../../redux/profileSlice";
+import useTitle from "../../../hooks/useTitle";
 
 export default function Profile(): JSX.Element {
+    useTitle('SN - Profile');
 
-
-    useTitle('SN - Profile')
-
-    const posts = useAppSelector(state => state.profile.posts)
-    const dispatch = useAppDispatch()
+    const posts = useAppSelector(state => state.profile.posts);
+    const dispatch = useAppDispatch();
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        let isMounted = true;
         (async () => {
             try {
-                if(posts.length === 0) {
-                    const postsFromServer = await profile.getProfile()
-                    dispatch(init(postsFromServer))
+                console.log("Fetching profile posts...");
+                if (posts.length === 0 && isMounted) {
+                    const postsFromServer = await profile.getProfile();
+                    console.log("Posts fetched:", postsFromServer);
+                    dispatch(init(postsFromServer));
                 }
             } catch (e) {
-                alert(e)
+                console.error("Error fetching profile posts:", e);
+                alert("Error fetching profile posts");
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                    console.log("Loading finished");
+                }
             }
-        })()
-    }, [])
-
+        })();
+        return () => { isMounted = false; };
+    }, [posts.length, dispatch]);
     return (
-        <div className='Profile'>
-
-            { posts.length === 0 && <LoaddingPageForProfile />}
-
-            { posts.length > 0 && <>
-                <NewPost />
-                {posts.map(p =>
-                    <Post
-                        key={p.id}
-                        post={p}
-                        isAllowActions={true}
-                    />
-                )}
-            </>}
-
+        <div className="Profile">
+            {isLoading && <LoaddingPageForProfile />}
+            {!isLoading && posts.length > 0 && (
+                <>
+                    <NewPost />
+                    {posts.map(p => (
+                        <Post key={p.id} post={p} isAllowActions={true} />
+                    ))}
+                </>
+            )}
+            {!isLoading && posts.length === 0 && <p>No posts available</p>}
         </div>
-    )
+    );
 }
 # components/posts/feed/Feed.tsx
 import { useEffect, useState } from 'react'
@@ -1614,8 +1618,8 @@ export default function Layout() {
 .Layout {
     display: grid;
     grid-template-columns: 1fr 3fr;
-    grid-template-rows: 1fr 3fr 3fr 1fr;
-    height: 100%;
+    grid-template-rows: 1fr auto auto 1fr;
+    height: 100vh; 
 }
 
 .Layout > header {
@@ -1631,21 +1635,22 @@ export default function Layout() {
 .Layout > aside:nth-child(1) {
     grid-column: 1;
     grid-row: 2;
+    overflow-y: auto; 
+    max-height: 100%; 
 }
 
 .Layout > aside:nth-child(2) {
     grid-column: 1;
     grid-row: 3;
+    overflow-y: auto; 
+    max-height: 100%; 
 }
 
 .Layout > main {
     grid-column: 2;
     grid-row: 2 / span 2;
-    overflow: auto;
+    overflow-y: auto; 
 }
-
-
-
 # components/layout/following/Following.tsx
 import './Following.css'
 import { useEffect, useState } from 'react'
@@ -2500,25 +2505,21 @@ export const followersSlice = createSlice({
             state.followers = state.followers.filter(f => f.id !== action.payload);
         },
         addFollower: (state, action: PayloadAction<User>) => {
-            // למנוע כפילויות
             const existingFollowerIndex = state.followers.findIndex(f => f.id === action.payload.id);
             
             if (existingFollowerIndex === -1) {
                 state.followers.push(action.payload);
             }
         },
-        // הוספת reducer חדש לעדכון פרטי משתמש
-        updateFollowerStatus: (state, action: PayloadAction<{userId: string, isFollowing: boolean}>) => {
+                updateFollowerStatus: (state, action: PayloadAction<{userId: string, isFollowing: boolean}>) => {
             const { userId, isFollowing } = action.payload;
             
             if (isFollowing) {
-                // אם המשתמש כבר לא ברשימת העוקבים, הוסף אותו
                 const existingFollowerIndex = state.followers.findIndex(f => f.id === userId);
                 if (existingFollowerIndex === -1) {
                     state.followers.push({ id: userId } as User);
                 }
             } else {
-                // הסר את המשתמש מרשימת העוקבים
                 state.followers = state.followers.filter(f => f.id !== userId);
             }
         }
@@ -2538,34 +2539,34 @@ interface profileState {
 
 const initialState: profileState = {
     posts: []
-}
+};
 
 export const profileSlice = createSlice({
-    name: 'profile',
+    name: "profile",
     initialState,
     reducers: {
         init: (state, action: PayloadAction<Post[]>) => {
-            state.posts = action.payload;
+            state.posts = action.payload; // אתחול רשימת הפוסטים
         },
         newPost: (state, action: PayloadAction<Post>) => {
-            state.posts.unshift(action.payload);
+            state.posts.unshift(action.payload); // הוספת פוסט חדש
         },
         removePost: (state, action: PayloadAction<string>) => {
-            state.posts = state.posts.filter(p => p.id !== action.payload);
+            state.posts = state.posts.filter(p => p.id !== action.payload); // הסרת פוסט
         },
         update: (state, action: PayloadAction<Post>) => {
             const index = state.posts.findIndex(p => p.id === action.payload.id);
-            if(index > -1){
-                state.posts[index] = action.payload;
+            if (index > -1) {
+                state.posts[index] = action.payload; // עדכון פוסט קיים
             }
         },
         addComment: (state, action: PayloadAction<Comment>) => {
             state.posts.find(p => p.id === action.payload.postId)?.comments.unshift(action.payload);
         }
     }
-})
+});
 
-export const { init , newPost, removePost, update, addComment} = profileSlice.actions;
+export const { init, newPost, removePost, update, addComment } = profileSlice.actions;
 export default profileSlice.reducer;
 # redux/feedSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";

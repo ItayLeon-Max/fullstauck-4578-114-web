@@ -1,6 +1,8 @@
 .Post {
+    display: block !important;
+    flex-direction: unset !important;
+    border: none !important;
     background: #ffffff;
-    border: 1px solid #e0e0e0;
     border-radius: 12px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     margin: 20px auto;
@@ -15,53 +17,36 @@
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
 }
 
-.Post div:first-child {
+.Post h2 {
     font-size: 1.8rem;
     font-weight: bold;
     color: #333333;
-    line-height: 1.4;
     margin-bottom: 15px;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-.Post div:nth-child(2) {
+.Post > div:nth-child(2) {
     font-size: 0.9rem;
     color: #666666;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 15px;
 }
 
-.Post div:nth-child(2) span {
-    font-weight: bold;
-    color: #007bff;
-    transition: color 0.3s ease;
-}
-
-.Post div:nth-child(2) span:hover {
-    color: #0056b3;
-    text-decoration: underline;
-}
-
-.Post div:nth-child(3) {
+.Post > div:nth-child(3) {
     font-size: 1.1rem;
     color: #555555;
     line-height: 1.6;
     margin-bottom: 20px;
-    word-wrap: break-word;
 }
 
-.actions {
+.Post .actions {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
     gap: 15px;
     margin-top: 10px;
-    flex-wrap: nowrap;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
 }
 
-.like-button {
+.Post .like-button {
     background: #e0f7fa;
     border: 1px solid #00bcd4;
     color: #00796b;
@@ -69,94 +54,16 @@
     border-radius: 50px;
     font-size: 0.9rem;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    position: relative;
     transition: all 0.3s ease;
 }
 
-.like-button:hover {
+.Post .like-button:hover {
     background: #00bcd4;
     color: white;
     box-shadow: 0 4px 8px rgba(0, 188, 212, 0.3);
-    transform: scale(1.1);
 }
 
-.like-button.liked {
-    background: #f44336;
-    border: 1px solid #b71c1c;
-    color: white;
-    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
-}
-
-.like-button.liked:hover {
-    background: #d32f2f;
-}
-
-.heart-animation {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%) scale(0.5);
-    font-size: 24px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.5s ease, transform 0.5s ease;
-    user-select: none;
-}
-
-.heart-animation.like.animate {
-    opacity: 1;
-    transform: translateY(-20px) scale(2);
-    color: #4caf50; 
-    animation: pop-like 0.5s ease forwards;
-}
-
-.heart-animation.unlike.animate {
-    opacity: 1;
-    transform: translateY(20px) scale(2);
-    color: #f44336; 
-    animation: pop-unlike 0.5s ease forwards;
-}
-
-@keyframes pop-like {
-    0% {
-        opacity: 0;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.5);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-20px) scale(2);
-    }
-}
-
-@keyframes pop-unlike {
-    0% {
-        opacity: 0;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.5);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(20px) scale(2);
-    }
-}
-
-.like-count {
-    font-size: 0.9rem;
-    color: #555;
-    align-self: center;
-}
-
-.comment-button {
+.Post .comment-button {
     background: #f3e5f5;
     border: 1px solid #9c27b0;
     color: #6a1b9a;
@@ -164,20 +71,16 @@
     border-radius: 50px;
     font-size: 0.9rem;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
     transition: all 0.3s ease;
 }
 
-.comment-button:hover {
+.Post .comment-button:hover {
     background: #9c27b0;
     color: white;
     box-shadow: 0 4px 8px rgba(156, 39, 176, 0.3);
-    transform: scale(1.1);
 }
 
-.edit-button {
+.Post .edit-button {
     background: #e3f2fd;
     border: 1px solid #2196f3;
     color: #1565c0;
@@ -185,20 +88,16 @@
     border-radius: 50px;
     font-size: 0.9rem;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
     transition: all 0.3s ease;
 }
 
-.edit-button:hover {
+.Post .edit-button:hover {
     background: #2196f3;
     color: white;
     box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
-    transform: scale(1.05);
 }
 
-.delete-button {
+.Post .delete-button {
     background: #ffebee;
     border: 1px solid #f44336;
     color: #b71c1c;
@@ -206,65 +105,225 @@
     border-radius: 50px;
     font-size: 0.9rem;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
     transition: all 0.3s ease;
-    width: 100px; 
-    height: 40px; 
-    box-sizing: border-box;
-    text-align: center;
-    position: relative; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
 }
 
-.delete-button:hover {
+.Post .delete-button:hover {
     background: #f44336;
-    color: #b71c1c; 
+    color: white;
     box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
-    transform: scale(1.05);
 }
 
-.delete-button:disabled {
-    background: #ffcdd2; 
-    color: #b71c1c; 
+.Post .delete-button:disabled {
+    opacity: 0.7;
     cursor: not-allowed;
 }
 
-.ButtonLoading {
-    position: absolute; 
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.Post .like-count {
+    color: #666;
     font-size: 0.9rem;
-    font-weight: bold;
-    color: #b71c1c;
-    width: 100%;
-    height: 100%;
+    min-width: 70px;
 }
 
-.ButtonLoading::after {
+.Post.new-post {
+    animation: newPostAppear 1.2s ease-out forwards;
+}
+
+@keyframes newPostAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.8);
+    }
+    50% {
+        transform: translateY(20px) scale(1.05);
+        box-shadow: 0 15px 30px rgba(76, 175, 80, 0.3);
+    }
+    75% {
+        transform: translateY(-10px) scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Animation for new posts */
+.Post.new-post {
+    animation: newPostAppear 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards,
+               glowEffect 2s ease-in-out forwards;
+    position: relative;
+    overflow: hidden;
+}
+
+.Post.new-post::before {
     content: '';
-    margin-left: 10px; 
-    width: 16px;
-    height: 16px;
-    border: 2px solid transparent;
-    border-top: 2px solid #b71c1c;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        45deg,
+        rgba(76, 175, 80, 0.5),  
+        rgba(33, 150, 243, 0.5),  
+        rgba(156, 39, 176, 0.5)   
+    );
+    z-index: -1;
+    opacity: 0;
+    animation: borderGlow 2s ease-in-out;
+    border-radius: 12px;
 }
 
-@keyframes spin {
+@keyframes newPostAppear {
+    0% {
+        opacity: 0;
+        transform: perspective(1000px) rotateX(-90deg) translateY(50px);
+    }
+    
+    30% {
+        opacity: 1;
+        transform: perspective(1000px) rotateX(20deg) translateY(-20px);
+    }
+    
+    45% {
+        transform: perspective(1000px) rotateX(-10deg) translateY(10px);
+    }
+    
+    60% {
+        transform: perspective(1000px) rotateX(5deg) translateY(-5px);
+    }
+    
+    75% {
+        transform: perspective(1000px) rotateX(-2deg) translateY(2px);
+    }
+    
+    100% {
+        transform: perspective(1000px) rotateX(0deg) translateY(0);
+    }
+}
+
+@keyframes borderGlow {
+    0% {
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    60% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.Post.new-post h2,
+.Post.new-post > div {
+    opacity: 0;
+    animation: contentFadeIn 0.5s ease-out forwards;
+}
+
+.Post.new-post h2 { animation-delay: 0.7s; }
+.Post.new-post > div:nth-child(2) { animation-delay: 0.9s; }
+.Post.new-post > div:nth-child(3) { animation-delay: 1.1s; }
+.Post.new-post .actions { animation-delay: 1.3s; }
+
+@keyframes contentFadeIn {
     from {
-        transform: rotate(0deg);
+        opacity: 0;
+        transform: translateY(20px);
     }
     to {
-        transform: rotate(360deg);
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.Post.new-post {
+    animation: 
+        newPostAppear 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards,
+        glowEffect 2s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.Post.new-post::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        45deg,
+        rgba(76, 175, 80, 0.5),  
+        rgba(33, 150, 243, 0.5),  
+        rgba(156, 39, 176, 0.5)   
+    );
+    z-index: -1;
+    opacity: 0;
+    animation: borderGlow 2s ease-in-out infinite;
+    border-radius: 12px;
+}
+
+@keyframes glowEffect {
+    0%, 100% { 
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+    50% { 
+        box-shadow: 0 15px 30px rgba(76, 175, 80, 0.3);
+    }
+}
+
+@keyframes newPostAppear {
+    0% {
+        opacity: 0;
+        transform: perspective(1000px) rotateX(-90deg) translateY(50px);
+    }
+    30% {
+        opacity: 1;
+        transform: perspective(1000px) rotateX(20deg) translateY(-20px);
+    }
+    45% {
+        transform: perspective(1000px) rotateX(-10deg) translateY(10px);
+    }
+    60% {
+        transform: perspective(1000px) rotateX(5deg) translateY(-5px);
+    }
+    75% {
+        transform: perspective(1000px) rotateX(-2deg) translateY(2px);
+    }
+    100% {
+        opacity: 1;
+        transform: perspective(1000px) rotateX(0deg) translateY(0);
+    }
+}
+
+@keyframes borderGlow {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+.Post.new-post h2,
+.Post.new-post > div {
+    opacity: 0;
+    animation: contentFadeIn 0.5s ease-out forwards;
+}
+
+.Post.new-post h2 { animation-delay: 0.7s; }
+.Post.new-post > div:nth-child(2) { animation-delay: 0.9s; }
+.Post.new-post > div:nth-child(3) { animation-delay: 1.1s; }
+.Post.new-post .actions { animation-delay: 1.3s; }
+
+@keyframes contentFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

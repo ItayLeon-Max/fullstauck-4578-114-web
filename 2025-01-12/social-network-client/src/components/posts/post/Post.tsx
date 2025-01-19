@@ -1,110 +1,102 @@
+// Post.tsx
+import { useState } from 'react';
 import './Post.css';
 import PostModel from '../../../models/post/Post';
 import profileService from '../../../services/profile';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Comments from '../comments/Comments';
 import { useAppDispatch } from '../../../redux/hooks';
 import { removePost } from '../../../redux/profileSlice';
+import { motion } from 'framer-motion';
 
 interface PostProps {
     post: PostModel;
     isAllowActions?: boolean;
-    remove?(id: string): void;
+    isNew?: boolean;
 }
 
 export default function Post(props: PostProps): JSX.Element {
-
-    const [post, setPost] = useState(props.post);
-    console.log(post); // So that I don't get an error about the post variable because it is not really used but it is necessary to appear
-    const { title, body, createdAt, id } = props.post;
-    const { name } = props.post.user;
+    const { post, isAllowActions = false, isNew = false } = props;
     const navigate = useNavigate();
-
-    const { isAllowActions } = props;
-
+    const dispatch = useAppDispatch();
     const [liked, setLiked] = useState(false);
-    const [animateHeart, setAnimateHeart] = useState(false);
     const [likeCount, setLikeCount] = useState(0);
     const [showComments, setShowComments] = useState(false);
-    const [isDeleting] = useState(false); 
+    const [isDeleting, setIsDeleting] = useState(false);
 
-    const dispatch = useAppDispatch();
-
-   async function deleteMe() {
-    if(props.remove && confirm('are you sure you want delete this post?')){
-        try{
-            await profileService.remove(id);
-            dispatch(removePost(id))
-        } catch (e) {
-            alert(e)
+    async function deletePost() {
+        if(confirm('Are you sure you want to delete this post?')) {
+            try {
+                setIsDeleting(true);
+                await profileService.remove(post.id);
+                dispatch(removePost(post.id));
+            } catch (e) {
+                alert(e);
+            } finally {
+                setIsDeleting(false);
+            }
         }
     }
-}
 
     function toggleLike() {
         setLiked(!liked);
-        setAnimateHeart(true);
-
-        setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
-
-        setTimeout(() => {
-            setAnimateHeart(false);
-        }, 500);
-    }
-
-    function editPost() {
-        navigate(`/edit/${id}`);
-    }
-
-    function toggleComments() {
-        setShowComments(!showComments);
-    }
-
-    function removeComment(commentId: string): void {
-        const updatedComments = props.post.comments.filter((comment) => comment.id !== commentId);
-        props.post.comments = updatedComments;
-        setPost({ ...props.post }); 
+        setLikeCount(prev => liked ? prev - 1 : prev + 1);
     }
 
     return (
-        <div className="Post">
-            <h2>{title}</h2>
+        <motion.div 
+            className={`Post ${isNew ? 'new-post' : ''}`}
+            initial={{ opacity: 0, scale: 0.8, rotate: -5, backgroundColor: '#f0f8ff' }}
+            animate={{ opacity: 1, scale: 1, rotate: 0, backgroundColor: 'white' }}
+            exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+        >
+            <h2>{post.title}</h2>
             <div>
-                by {name} at {new Date(createdAt).toLocaleString()}
+                by {post.user.name} at {new Date(post.createdAt).toLocaleString()}
             </div>
-            <div dangerouslySetInnerHTML={{ __html: body }} />
+            <div dangerouslySetInnerHTML={{ __html: post.body }} />
+            
             {isAllowActions && (
                 <div className="actions">
-                    <button
-                        className={`like-button ${liked ? 'liked' : ''}`}
+                    <button 
+                        className={`like-button ${liked ? 'liked' : ''}`} 
                         onClick={toggleLike}
                     >
-                        <div className={`heart-animation ${animateHeart ? 'animate' : ''}`}></div>
                         {liked ? '👎 Unlike' : '👍 Like'}
                     </button>
-                    <span className="like-count">{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</span>
-                    <button className="comment-button" onClick={toggleComments}>
+                    <span className="like-count">
+                        {likeCount} {likeCount === 1 ? 'Like' : 'Likes'}
+                    </span>
+                    <button 
+                        className="comment-button"
+                        onClick={() => setShowComments(!showComments)}
+                    >
                         {showComments ? 'Hide Comments' : 'Show Comments'}
                     </button>
-                    <button className="edit-button" onClick={editPost}>Edit</button>
-                    <button
+                    <button 
+                        className="edit-button"
+                        onClick={() => navigate(`/edit/${post.id}`)}
+                    >
+                        Edit
+                    </button>
+                    <button 
                         className="delete-button"
-                        onClick={deleteMe}
-                        disabled={isDeleting} 
+                        onClick={deletePost}
+                        disabled={isDeleting}
                     >
                         {isDeleting ? 'Deleting...' : 'Delete'}
                     </button>
                 </div>
             )}
-            {showComments && props.post?.comments && (
-                <Comments
-                    comments={props.post.comments}
-                    postId={id}
-                    removeComment={removeComment}
+
+            {showComments && (
+                <Comments 
+                    comments={post.comments}
+                    postId={post.id}
+                    removeComment={() => {}} 
                 />
             )}
-        </div>
+        </motion.div>
     );
 }
-

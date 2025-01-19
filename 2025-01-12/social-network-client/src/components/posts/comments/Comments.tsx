@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import CommentModel from '../../../models/comment/Comment';
 import Comment from '../comment/Comment';
 import NewComment from '../new-comment/NewComment';
@@ -10,27 +9,22 @@ interface CommentsProps {
 }
 
 export default function Comments(props: CommentsProps): JSX.Element {
-    const { comments, postId } = props;
-
-    const [currentComments ] = useState(comments);
-
-
-    
+    const { comments, postId, removeComment } = props;
 
     return (
         <div className="Comments">
             <div>
-                total comments: {currentComments.length}
+                total comments: {comments.length}
             </div>
             <div>
-                <NewComment
-                 postId={postId}
-                 />
+                <NewComment postId={postId} />
             </div>
-            {currentComments.map((c) => (
+            {comments.map((c) => (
                 <Comment
                     key={c.id}
                     comment={c}
+                    postId={postId}
+                    onDelete={() => removeComment(c.id)}
                 />
             ))}
         </div>

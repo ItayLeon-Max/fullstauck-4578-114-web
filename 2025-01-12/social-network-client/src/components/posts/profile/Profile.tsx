@@ -6,6 +6,7 @@ import Post from "../post/Post";
 import profile from "../../../services/profile";
 import { init } from "../../../redux/profileSlice";
 import useTitle from "../../../hooks/useTitle";
+import { AnimatePresence } from 'framer-motion'
 
 export default function Profile(): JSX.Element {
     useTitle('SN - Profile');
@@ -13,7 +14,7 @@ export default function Profile(): JSX.Element {
     const posts = useAppSelector(state => state.profile.posts);
     const dispatch = useAppDispatch();
     const [isLoading, setIsLoading] = useState(true);
-
+    console.log(isLoading)
     useEffect(() => {
         let isMounted = true;
         (async () => {
@@ -37,17 +38,21 @@ export default function Profile(): JSX.Element {
         return () => { isMounted = false; };
     }, [posts.length, dispatch]);
     return (
-        <div className="Profile">
-            {isLoading && <LoaddingPageForProfile />}
-            {!isLoading && posts.length > 0 && (
-                <>
-                    <NewPost />
-                    {posts.map(p => (
-                        <Post key={p.id} post={p} isAllowActions={true} />
-                    ))}
-                </>
-            )}
-            {!isLoading && posts.length === 0 && <p>No posts available</p>}
-        </div>
+        <div className='Profile'>
+    { posts.length === 0 && <LoaddingPageForProfile />}
+
+    { posts.length > 0 && <>
+      <NewPost />
+      <AnimatePresence>
+        {posts.map(p =>
+          <Post
+            key={p.id}
+            post={p}
+            isAllowActions={true}
+          />
+        )}
+      </AnimatePresence>
+    </>}
+  </div>
     );
 }

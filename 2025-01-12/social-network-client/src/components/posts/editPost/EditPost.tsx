@@ -5,28 +5,38 @@ import profileService from '../../../services/profile';
 import PostDraft from '../../../models/post/PostDraft';
 import { useForm } from 'react-hook-form';
 import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
+import { update } from '../../../redux/profileSlice';
 
 export default function EditPost() {
 
     const { id } = useParams<'id'>()
     const {handleSubmit, register, formState, reset} = useForm<PostDraft>()
     const navigate = useNavigate()
+    const posts = useAppSelector(state => state.profile.posts)
+    const dispatch = useAppDispatch()
 
     useEffect(() => {
-        if(id){
-            profileService.getPost(id)
-            .then(reset)
-            .catch(alert)
+        if(id) {
+            const post = posts.find(p => p.id === id)
+            if (post) {
+                reset(post)
+            } else {
+                profileService.getPost(id)
+                    .then(reset)
+                    .catch(alert)
+            }
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
 
     async function submit(draft: PostDraft) {
         try{
-            const {title, body} = draft
-            await profileService.update(id!, {title, body})
-            navigate('/profile')
-
+            if (id) {
+                const updatedPost = await profileService.update(id, draft)
+                dispatch(update(updatedPost))
+                navigate('/profile')
+            }
         } catch (e) {
             alert(e)
         }

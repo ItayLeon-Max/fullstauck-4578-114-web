@@ -1,0 +1,1152 @@
+# main.tsx
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './components/app/App.tsx'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+
+# index.css
+html, body, #root {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+# models/post/PostDraft.ts
+export default interface PostDraft {
+    title: string,
+    body: string
+}
+# models/post/Post.ts
+import Comment from "../comment/Comment";
+import User from "../user/User";
+import PostDraft from "./PostDraft";
+
+export default interface Post extends PostDraft {
+    id: string,
+    userId: string,
+    imageUrl: string,
+    createdAt: string,
+    updatedAt: string,
+    user: User
+    comments: Comment[]
+}
+# models/comment/CommentDraft.ts
+export default interface CommentDraft {
+    body: string
+}
+# models/comment/Comment.ts
+import User from "../user/User";
+import CommentDraft from "./CommentDraft";
+
+export default interface Comment extends CommentDraft{
+    id: string,
+    postId: string,
+    userId: string,
+    createdAt: string,
+    updatedAt: string,
+    user: User
+}
+# models/user/User.ts
+export default interface User {
+    id: string,
+    name: string,
+    username: string,
+    password: string,
+    createdAt: string,
+    updatedAt: string
+}
+# components/posts/comments/Comments.tsx
+import CommentModel from '../../../models/comment/Comment'
+import Comment from '../comment/Comment'
+import NewComment from '../new-comment/NewComment'
+import './Comments.css'
+
+interface CommentsProps {
+    comments: CommentModel[]
+    postId: string,
+}
+export default function Comments(props: CommentsProps): JSX.Element {
+
+    const { comments, postId } = props
+
+    return (
+        <div className='Comments'>
+            <div>
+                total comments: {comments.length}
+            </div>
+            <div>
+                <NewComment 
+                    postId={postId}
+                />
+            </div>
+            {comments.map(c =>
+                <Comment
+                    key={c.id}
+                    comment={c}
+                />)
+            }
+        </div>
+    )
+}
+# components/posts/post/Post.tsx
+import './Post.css'
+import PostModel from '../../../models/post/Post'
+import profileService from '../../../services/profile'
+import { useNavigate } from 'react-router-dom'
+import Comments from '../comments/Comments'
+import { useAppDispatch } from '../../../redux/hooks'
+import { remove } from '../../../redux/profileSlice'
+
+interface PostProps {
+    post: PostModel,
+    isAllowActions?: boolean, // === isAllowActions: boolean | undefined
+}
+export default function Post(props: PostProps): JSX.Element {
+
+    const { 
+        title, 
+        body, 
+        createdAt, 
+        id, 
+        comments 
+    } = props.post
+    const { name } = props.post.user
+    
+    
+    const navigate = useNavigate()
+    
+    const dispatch = useAppDispatch()
+
+    async function deleteMe() {
+        if(confirm(`are you sure you want to delete "${title}"`)) {
+            try {
+                await profileService.remove(id)
+                dispatch(remove({id}))
+            } catch (e) {
+                alert(e)
+            }
+        }
+    }
+
+    function editMe() {
+        navigate(`/edit/${id}`)
+    }
+
+    return (
+        <div className='Post'>
+            <div>
+                {title}
+            </div>
+            <div>
+                by {name} at {createdAt}
+            </div>
+            <div>
+                {body}
+            </div>
+            { props.isAllowActions && 
+                <div>
+                    <button onClick={editMe}>Edit</button>
+                    <button onClick={deleteMe}>Delete</button>
+                </div>
+            }
+            <Comments 
+                comments={comments}
+                postId={id}
+            />
+        </div>
+    )
+}
+
+# components/posts/post/Post.css
+.Post {
+    display: flex;
+    flex-direction: column;
+    border: 1px dashed lightgreen;
+    box-shadow: 2px;
+    padding: 4px;
+    margin: 8px;
+    border-radius: 4px;
+}
+# components/posts/comment/Comment.tsx
+import CommentModel from '../../../models/comment/Comment'
+import './Comment.css'
+
+interface CommentProps {
+    comment: CommentModel
+}
+export default function Comment(props: CommentProps): JSX.Element {
+
+    const { user: { name }, body, createdAt} = props.comment
+ 
+    return (
+        <div className='Comment'>
+            <div>
+                {name} said on {createdAt}:
+            </div>
+            <div>
+                {body}
+            </div>
+        </div>
+    )
+}
+# components/posts/comment/Comment.css
+.Comment div:nth-child(1) {
+    font-size: x-small;
+}
+
+.Comment div:nth-child(2) {
+    font-size: small;
+}
+
+.Comment {
+    padding: 2px;
+    border: 1px dashed yellow;
+}
+# components/posts/new-comment/NewComment.css
+.NewComment > form {
+    display: flex;
+    flex-direction: column;
+}
+
+
+# components/posts/new-comment/NewComment.tsx
+import { useForm } from 'react-hook-form'
+import './NewComment.css'
+import CommentDraft from '../../../models/comment/CommentDraft'
+import commentsService from '../../../services/comments'
+import LoadingButton from '../../common/loading-button/LoadingButton'
+import { useAppDispatch } from '../../../redux/hooks'
+import { addComment as addCommentProfile} from '../../../redux/profileSlice'
+import { addComment as addCommentFeed } from '../../../redux/feedSlice'
+
+interface NewCommentProps{
+    postId: string,
+}
+export default function NewComment(props: NewCommentProps): JSX.Element {
+
+    const { postId } = props
+
+    const { 
+        register, 
+        handleSubmit, 
+        formState, 
+        reset 
+    } = useForm<CommentDraft>()  
+
+    const dispatch = useAppDispatch()
+
+    async function submit(draft: CommentDraft) {
+        try {
+            const newComment = await commentsService.create(postId, draft)
+            reset()
+            dispatch(addCommentProfile(newComment))
+            dispatch(addCommentFeed(newComment))
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    return (
+        <div className='NewComment'>
+            <form onSubmit={handleSubmit(submit)}>
+                <textarea {...register('body', {
+                    required: {
+                        value: true,
+                        message: 'Comment body is mandatory'
+                    },
+                    minLength: {
+                        value: 20,
+                        message: 'comment must be at least 20 chars long'
+                    }
+                })}></textarea>
+                <span className="error">{formState.errors.body?.message}</span>
+                <LoadingButton
+                    isSubmitting={formState.isSubmitting}
+                    buttonText='Post Comment'
+                    loadingText='Posting comment'
+                />
+            </form>
+        </div>
+    )
+}
+# components/posts/edit/EditPost.tsx
+import { useNavigate, useParams } from 'react-router-dom'
+import './EditPost.css'
+import profileService from '../../../services/profile'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import PostDraft from '../../../models/post/PostDraft'
+
+export default function EditPost(): JSX.Element {
+
+    const { id } = useParams<'id'>()
+    const { handleSubmit, register, formState, reset} = useForm<PostDraft>()
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if(id) {
+            profileService.getPost(id)
+                .then(reset)
+                .catch(alert)
+        }
+    }, [])
+
+    async function submit(draft: PostDraft) {
+        try {
+            if(id) {
+                await profileService.update(id, draft)
+                navigate('/profile')
+            }            
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    return (
+        <div className='EditPost'>
+            <form onSubmit={handleSubmit(submit)}>
+                <input placeholder='title' {...register('title', {
+                    required: {
+                        value: true,
+                        message: 'you must provide a title'
+                    },
+                    minLength: {
+                        value: 10,
+                        message: 'title must be 10 chars long'
+                    }
+                })}/>
+                <span className='error'>{formState.errors.title?.message}</span>
+                <textarea placeholder='post body' {...register('body', {
+                    required: {
+                        value: true,
+                        message: 'you must provide a body'
+                    },
+                    minLength: {
+                        value: 20,
+                        message: 'body must be 10 chars long'
+                    },
+                })} />
+                <span className='error'>{formState.errors.body?.message}</span>
+                <button>Update Post</button>
+            </form>            
+        </div>
+    )
+}
+# components/posts/edit/EditPost.css
+.EditPost {
+    border: 1px dashed lightgreen;
+    padding: 4px;
+    margin: 4px;
+}
+
+.EditPost > form {
+    display: flex;
+    flex-direction: column;
+}
+
+.EditPost .error {
+    color: red;
+}
+# components/posts/profile/Profile.tsx
+import { useEffect } from 'react'
+import './Profile.css'
+import profile from '../../../services/profile'
+import Post from '../post/Post'
+import NewPost from '../new/NewPost'
+import Loading from '../../common/loading/Loading'
+import useTitle from '../../../hooks/useTitle'
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks'
+import { init } from '../../../redux/profileSlice'
+
+export default function Profile(): JSX.Element {
+
+
+    useTitle('SN - Profile')
+
+    const posts = useAppSelector(state => state.profile.posts)
+    const dispatch = useAppDispatch()
+
+    useEffect(() => {
+        (async () => {
+            try {
+                if(posts.length === 0) {
+                    const postsFromServer = await profile.getProfile()
+                    dispatch(init(postsFromServer))
+                }
+            } catch (e) {
+                alert(e)
+            }
+        })()
+    }, [])
+
+    return (
+        <div className='Profile'>
+
+            { posts.length === 0 && <Loading />}
+
+            { posts.length > 0 && <>
+                <NewPost />
+                {posts.map(p =>
+                    <Post
+                        key={p.id}
+                        post={p}
+                        isAllowActions={true}
+                    />
+                )}
+            </>}
+
+        </div>
+    )
+}
+# components/posts/feed/Feed.tsx
+import { useEffect } from 'react'
+import './Feed.css'
+import feed from '../../../services/feed'
+import Post from '../post/Post'
+import useTitle from '../../../hooks/useTitle'
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks'
+import { init } from '../../../redux/feedSlice'
+import Loading from '../../common/loading/Loading'
+
+export default function Feed() {
+    useTitle('SN - Feed')
+
+    const posts = useAppSelector(state => state.feed.posts)
+    const dispatch = useAppDispatch()
+
+    useEffect(() => {
+        (async () => {
+            try {
+                if(posts.length === 0) {
+                    const postsFromServer = await feed.getFeed()
+                    dispatch(init(postsFromServer))
+                }
+            } catch (e) {
+                alert(e)
+            }
+        })()
+    }, [])
+
+    return (
+        <div className='Feed'>
+
+            {posts.length === 0 && <Loading />}
+
+            {posts.length > 0 && <>
+                {posts.map(p => <Post
+                key={p.id}
+                post={p}
+            />)}
+            </>}
+        </div>
+    )
+}
+# components/posts/new/NewPost.tsx
+import { useForm } from 'react-hook-form'
+import './NewPost.css'
+import PostDraft from '../../../models/post/PostDraft'
+import profileService from '../../../services/profile'
+import loadingImageSource from '../../../assets/images/loading.webp'
+import { useAppDispatch } from '../../../redux/hooks'
+import { newPost } from '../../../redux/profileSlice'
+
+export default function NewPost(): JSX.Element {
+
+    const { register, handleSubmit, reset, formState } = useForm<PostDraft>()
+
+    const dispatch = useAppDispatch()
+
+    async function submit(draft: PostDraft) {
+        try {
+            const newPostFromServer = await profileService.create(draft)
+            reset()
+            dispatch(newPost(newPostFromServer))
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    return (
+        <div className='NewPost'>
+            <form onSubmit={handleSubmit(submit)}>
+                <input placeholder='title' {...register('title', {
+                    required: {
+                        value: true,
+                        message: 'you must provide a title'
+                    },
+                    minLength: {
+                        value: 10,
+                        message: 'title must be 10 chars long'
+                    }
+                })}/>
+                <span className='error'>{formState.errors.title?.message}</span>
+                <textarea placeholder='post body' {...register('body', {
+                    required: {
+                        value: true,
+                        message: 'you must provide a body'
+                    },
+                    minLength: {
+                        value: 20,
+                        message: 'body must be 10 chars long'
+                    },
+                })} />
+                <span className='error'>{formState.errors.body?.message}</span>
+                {!formState.isSubmitting && <button>Add Post</button>}
+                {formState.isSubmitting && <p>posting new post... <i><img src={loadingImageSource}/></i></p>}
+            </form>
+        </div>
+    )
+}
+# components/posts/new/NewPost.css
+.NewPost {
+    border: 1px dashed lightgreen;
+    padding: 4px;
+    margin: 4px;
+}
+
+.NewPost > form {
+    display: flex;
+    flex-direction: column;
+}
+
+.NewPost .error {
+    color: red;
+}
+
+.NewPost i img {
+    height: 16px;
+}
+# components/app/App.tsx
+import { BrowserRouter } from 'react-router-dom'
+import Layout from '../layout/layout/Layout'
+import './App.css'
+import { Provider } from 'react-redux'
+import store from '../../redux/store'
+
+export default function App(): JSX.Element {
+    return (
+        <div className="App">
+            <BrowserRouter>
+                <Provider store={store}>
+                    <Layout />
+                </Provider>
+            </BrowserRouter>
+        </div>
+    )
+}
+# components/app/App.css
+.App {
+    height: 100%;
+}
+# components/layout/footer/Footer.tsx
+import './Footer.css'
+
+export default function Footer() {
+    return (
+        <div className='Footer'>
+            <p>server is: {import.meta.env.VITE_REST_SERVER_URL}</p>            
+        </div>
+    )
+}
+# components/layout/not-found/NotFound.tsx
+import './NotFound.css'
+
+export default function NotFound() {
+    return (
+        <div className='NotFound'>
+            404 not found
+            noop is an afghan hound
+            beery is very young
+            let's all join the gang
+        </div>
+    )
+}
+# components/layout/layout/Layout.tsx
+import Followers from '../../follows/followers/Followers'
+import Following from '../../follows/following/Following'
+import Footer from '../footer/Footer'
+import Header from '../header/Header'
+import Routing from '../routing/Routing'
+import './Layout.css'
+
+export default function Layout() {
+    return (
+        <div className='Layout'>
+            <header>
+                <Header />                
+            </header>                
+            <aside>
+                <Following />
+            </aside>
+            <aside>
+                <Followers />
+            </aside>
+            <main>
+                <Routing />
+            </main>
+            <footer>
+                <Footer />
+            </footer>
+        </div>
+    )
+}
+# components/layout/layout/Layout.css
+.Layout {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    grid-template-rows: 1fr 3fr 3fr 1fr;
+    height: 100%;
+}
+
+.Layout > header {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+}
+
+.Layout > footer {
+    grid-column: 1 / span 2;
+    grid-row: 4;
+}
+
+.Layout > aside:nth-child(0) {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.Layout > aside:nth-child(1) {
+    grid-column: 1;
+    grid-row: 3;
+}
+
+.Layout > main {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    overflow: auto;
+}
+
+.Layout > * {
+    border: 1px dashed lightcoral;
+}
+
+# components/layout/routing/Routing.tsx
+import { Navigate, Route, Routes } from "react-router-dom";
+import Profile from "../../posts/profile/Profile";
+import Feed from "../../posts/feed/Feed";
+import NotFound from "../not-found/NotFound";
+import EditPost from "../../posts/edit/EditPost";
+
+export default function Routing(): JSX.Element {
+    return (
+        <Routes>
+            <Route path="/" element={<Navigate to="/profile"/>} />
+            {/* <Route path="/" element={<Profile />} /> */}
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/feed" element={<Feed />} />
+            <Route path="/edit/:id/" element={<EditPost />} />
+            <Route path="*" element={<NotFound />} />
+        </Routes>
+    )   
+}
+
+# components/layout/header/Header.tsx
+import { NavLink } from 'react-router-dom'
+import './Header.css'
+
+export default function Header() {
+    return (
+        <div className='Header'>
+            <div>
+                Logo
+            </div>  
+            <div>
+                <nav>
+                    {/* we don't want to use <a> tags for inner app navigation 
+                    as it breaks SPA!!! */}
+                    {/* <a href="/profile">profile</a>
+                    <a href="/feed">feed</a> */}
+
+                    {/* we can use <Link> instead */}
+                    {/* <Link to="/profile">profile</Link>
+                    <Link to="/feed">feed</Link> */}
+
+                    {/* but the best option is NavLink */}
+                    <NavLink to="/profile">profile</NavLink>
+                    <NavLink to="/feed">feed</NavLink>
+                    <NavLink to="/search">search</NavLink>
+                </nav>
+            </div>          
+        </div>
+    )
+}
+# components/layout/header/Header.css
+.Header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.Header nav {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+}
+
+.Header .active {
+    color: green;
+}
+# components/common/loading/Loading.tsx
+import './Loading.css'
+import loadingSource from '../../../assets/images/loading.webp'
+
+export default function Loading(): JSX.Element {
+    return (
+        <div className='Loading'>
+            <img src={loadingSource} />
+        </div>
+    )
+}
+# components/common/loading-button/LoadingButton.tsx
+import './LoadingButton.css'
+import loadingImageSource from '../../../assets/images/loading.webp'
+
+interface LoadingButtonProps {
+    isSubmitting: boolean,
+    buttonText: string,
+    loadingText: string,
+    onClick?: React.MouseEventHandler<HTMLButtonElement>
+}
+export default function LoadingButton(props: LoadingButtonProps): JSX.Element {
+
+    const {
+        isSubmitting,
+        buttonText,
+        loadingText,
+        onClick,
+    } = props
+
+    return (
+        <div className='LoadingButton'>
+            {!isSubmitting && <button onClick={onClick}>{buttonText}</button>}
+            {isSubmitting && <p>{loadingText}... <i><img src={loadingImageSource}/></i></p>}
+        </div>
+    )
+}
+# components/common/loading-button/LoadingButton.css
+.LoadingButton i img {
+    height: 16px;
+}
+# components/follows/followers/Followers.css
+.Followers {
+    display: flex;
+    flex-direction: row;
+}
+# components/follows/followers/Followers.tsx
+import { useEffect, useState } from 'react'
+import './Followers.css'
+import User from '../../../models/user/User'
+import followersService from '../../../services/followers'
+import Follow from '../follow/Follow'
+
+export default function Followers() {
+    const [followers, setFollowers] = useState<User[]>([])
+
+    useEffect(() => {
+        followersService.getFollowers()
+            .then(setFollowers)
+            .catch(alert)
+    }, [])
+
+    return (
+        <div className='Followers'>
+            <h3>People who follow me</h3>
+            {followers.map(follow => <Follow
+                key={follow.id}
+                user={follow}
+            ></Follow>)}
+        </div>
+    )
+}
+# components/follows/follow/Follow.tsx
+import User from '../../../models/user/User'
+import './Follow.css'
+import profilePicSource from '../../../assets/images/profile.jpg'
+import followingService from '../../../services/following'
+import LoadingButton from '../../common/loading-button/LoadingButton'
+import { useState } from 'react'
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks'
+import { 
+    unfollow as unfollowAction, 
+    follow as followAction } 
+from '../../../redux/followingSlice'
+
+interface FollowProps {
+    user: User
+}
+export default function Follow(props: FollowProps): JSX.Element {
+
+            
+    const { user: {id, name} } = props
+
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+
+    const dispatch = useAppDispatch()
+    const isFollowing = useAppSelector(state => state.following.following.findIndex(f => f.id === id) > -1)
+
+    async function unfollow() {
+        if(window.confirm(`are you sure you wanna stop following ${name}?`)) {
+            try {
+                setIsSubmitting(true)
+                await followingService.unfollow(id)
+                dispatch(unfollowAction({userId: id}))
+            } catch (e) {
+                alert(e)
+            } finally {
+                setIsSubmitting(false)
+            }
+        }
+    }
+
+    async function follow() {
+        try {
+            setIsSubmitting(true)
+            await followingService.follow(id)
+            dispatch(followAction(props.user))
+        } catch (e) {
+            alert(e)
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    return (
+        <div className='Follow'>
+            <div>
+                <img src={profilePicSource} />
+            </div>
+            <div>
+                {name}
+            </div>
+            <div>
+                {isFollowing && <LoadingButton 
+                    onClick={unfollow}
+                    isSubmitting={isSubmitting}
+                    buttonText='Unfollow'
+                    loadingText='Unfollowing'
+                />}
+
+                {!isFollowing && <LoadingButton 
+                    onClick={follow}
+                    isSubmitting={isSubmitting}
+                    buttonText='Follow'
+                    loadingText='Following'
+                />}
+            </div>
+        </div>
+    )
+}
+# components/follows/follow/Follow.css
+.Follow {
+    display: flex;
+    flex-direction: column;
+    border: 1px dashed lightslategray;
+}
+
+.Follow img {
+    width: 32px;
+}
+# components/follows/following/Following.tsx
+import './Following.css'
+import { useEffect } from 'react'
+import followingService from '../../../services/following'
+import Follow from '../follow/Follow'
+import Loading from '../../common/loading/Loading'
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks'
+import { init } from '../../../redux/followingSlice'
+
+export default function Following() {
+    const following = useAppSelector(state => state.following.following)
+
+    const dispatch = useAppDispatch()
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const following = await followingService.getFollowing()
+                dispatch(init(following))
+            } catch (e) {
+                alert(e)
+            }
+        })()        
+    }, [])
+
+    return (
+        <div className='Following'>
+
+            {following.length === 0 && <Loading />}
+            {following.length > 0 && <>
+                <h3>People I follow</h3>
+                {following.map(follow => <Follow
+                    key={follow.id}
+                    user={follow}
+                ></Follow>)}        
+            </>}
+        </div>
+    )
+}
+# components/follows/following/Following.css
+.Following {
+    display: flex;
+    flex-direction: row;
+}
+# vite-env.d.ts
+/// <reference types="vite/client" />
+
+# hooks/useTitle.ts
+import { useEffect } from "react"
+
+export default function useTitle(title: string): void {
+    useEffect(() => {
+        document.title = title
+    }, [ title ])
+}
+# redux/profileSlice.ts
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import Post from "../models/post/Post";
+import Comment from "../models/comment/Comment";
+
+interface ProfileState {
+    posts: Post[]
+}
+
+const initialState: ProfileState = {
+    posts: []
+}
+
+export const profileSlice = createSlice({
+    name: 'profile',
+    initialState,
+    reducers: {
+        init: (state, action: PayloadAction<Post[]>) => {
+            state.posts = action.payload
+        },
+        newPost: (state, action: PayloadAction<Post>) => {
+            state.posts = [action.payload, ...state.posts]
+        },
+        remove: (state, action: PayloadAction<{id: string}>) => {
+            state.posts = state.posts.filter(p => p.id !== action.payload.id)
+        }, 
+        update: (state, action: PayloadAction<Post>) => {
+            const index = state.posts.findIndex(p => p.id === action.payload.id)
+            if(index > -1) {
+                state.posts[index] = action.payload
+            }
+        },
+        addComment: (state, action: PayloadAction<Comment>) => {
+            state.posts.find(p => p.id === action.payload.postId)?.comments.push(action.payload)
+        }
+    }
+})
+
+export const { init, newPost, remove, update, addComment } = profileSlice.actions
+
+export default profileSlice.reducer
+
+# redux/feedSlice.ts
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import Post from "../models/post/Post";
+import Comment from "../models/comment/Comment";
+
+interface FeedState {
+    posts: Post[]
+}
+
+const initialState: FeedState = {
+    posts: []
+}
+
+export const feedSlice = createSlice({
+    name: 'feed',
+    initialState,
+    reducers: {
+        init: (state, action: PayloadAction<Post[]>) => {
+            state.posts = action.payload
+        },
+        addComment: (state, action: PayloadAction<Comment>) => {
+            state.posts.find(p => p.id === action.payload.postId)?.comments.push(action.payload)
+        }
+    }
+})
+
+export const { init, addComment } = feedSlice.actions
+
+export default feedSlice.reducer
+
+# redux/hooks.ts
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "./store";
+
+export const useAppSelector = useSelector.withTypes<RootState>()
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
+
+# redux/store.ts
+import { configureStore } from "@reduxjs/toolkit";
+import { followingSlice } from "./followingSlice";
+import { profileSlice } from "./profileSlice";
+import { feedSlice } from "./feedSlice";
+
+const store = configureStore({
+    reducer: { // i.e. slices
+        following: followingSlice.reducer, // i.e a single slice
+        profile: profileSlice.reducer,
+        feed: feedSlice.reducer
+    }
+})
+
+export default store
+
+export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch
+# redux/followingSlice.ts
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import User from "../models/user/User";
+
+interface FollowingState {
+    following: User[]
+}
+
+const initialState: FollowingState = {
+    following: []
+}
+
+export const followingSlice = createSlice({
+    name: 'following',
+    initialState,
+    reducers: {
+        init: (state, action: PayloadAction<User[]>) => {
+            state.following = action.payload                        
+        },
+        unfollow: (state, action: PayloadAction<{userId: string}>) => {
+            state.following = state.following.filter(f => f.id !== action.payload.userId)
+        },
+        follow: (state, action: PayloadAction<User>) => {
+            state.following.push(action.payload)
+        }
+    }
+})
+
+export const { init, unfollow, follow } = followingSlice.actions
+
+export default followingSlice.reducer
+
+# services/comments.ts
+import axios from "axios"
+import Comment from "../models/comment/Comment"
+import CommentDraft from "../models/comment/CommentDraft"
+
+
+
+class Comments {
+    
+    async create(postId: string, draft: CommentDraft): Promise<Comment> {
+        const response = await axios.post<Comment>(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${postId}`, draft)
+        return response.data
+    }
+}
+
+const comments = new Comments()
+export default comments
+# services/followers.ts
+import axios from "axios";
+import User from "../models/user/User";
+
+class Followers {
+    async getFollowers(): Promise<User[]> {
+        const response = await axios.get<User[]>(`${import.meta.env.VITE_REST_SERVER_URL}/follows/followers`)
+        return response.data
+    }
+}
+
+// singleton
+const followers = new Followers()
+export default followers
+# services/following.ts
+import axios from "axios";
+import User from "../models/user/User";
+
+class Following {
+    async getFollowing(): Promise<User[]> {
+        const response = await axios.get<User[]>(`${import.meta.env.VITE_REST_SERVER_URL}/follows/following`)
+        return response.data
+    }
+
+    async unfollow(userId: string): Promise<boolean> {
+        const response = await axios.post<boolean>(`${import.meta.env.VITE_REST_SERVER_URL}/follows/unfollow/${userId}`)
+        return response.data
+    }
+
+    async follow(userId: string): Promise<boolean> {
+        const response = await axios.post<boolean>(`${import.meta.env.VITE_REST_SERVER_URL}/follows/follow/${userId}`)
+        return response.data
+    }
+
+}
+
+// singleton
+const following = new Following()
+export default following
+# services/feed.ts
+import axios from "axios";
+import Post from "../models/post/Post";
+
+class Feed {
+    async getFeed(): Promise<Post[]> {
+        const response = await axios.get<Post[]>(`${import.meta.env.VITE_REST_SERVER_URL}/feed`)
+        return response.data
+    }
+}
+
+// singleton
+const feed = new Feed()
+export default feed
+# services/profile.ts
+import axios from "axios";
+import Post from "../models/post/Post";
+import PostDraft from "../models/post/PostDraft";
+
+class Profile {
+    async getProfile(): Promise<Post[]> {
+        const response = await axios.get<Post[]>(`${import.meta.env.VITE_REST_SERVER_URL}/posts`)
+        return response.data
+    }
+
+    async getPost(id: string): Promise<Post> {
+        const response = await axios.get<Post>(`${import.meta.env.VITE_REST_SERVER_URL}/posts/${id}`)
+        return response.data
+    }
+
+    async remove(id: string): Promise<boolean> {
+        const response = await axios.delete<boolean>(`${import.meta.env.VITE_REST_SERVER_URL}/posts/${id}`)
+        return response.data
+    }
+
+    async create(draft: PostDraft): Promise<Post> {
+        const response = await axios.post<Post>(`${import.meta.env.VITE_REST_SERVER_URL}/posts/`, draft)
+        return response.data
+    }
+
+    async update(id: string, draft: PostDraft): Promise<Post> {
+        const { title, body } = draft
+        const response = await axios.patch<Post>(`${import.meta.env.VITE_REST_SERVER_URL}/posts/${id}`, { title, body })
+        return response.data
+    }
+
+}
+
+// singleton
+const profile = new Profile()
+export default profile

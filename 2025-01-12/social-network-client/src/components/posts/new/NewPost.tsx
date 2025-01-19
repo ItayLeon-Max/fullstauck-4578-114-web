@@ -6,8 +6,6 @@ import { useState } from 'react';
 import { useAppDispatch } from '../../../redux/hooks';
 import { newPost } from '../../../redux/profileSlice';
 
-
-
 export default function NewPost() {
     const { register, handleSubmit, reset, formState } = useForm<PostDraft>({
         mode: 'onTouched',
@@ -22,7 +20,6 @@ export default function NewPost() {
             setIsLoading(true);
             const newPostFromServer = await profile.create(draft);
             dispatch(newPost(newPostFromServer))
-
             reset();
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {

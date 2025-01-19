@@ -14,7 +14,7 @@ interface EditCommentProps {
 export default function EditComment(props: EditCommentProps): JSX.Element {
     const { commentId, currentBody, onSave, onCancel } = props;
 
-    const { register, handleSubmit, reset, formState } = useForm<CommentDraft>({
+    const { register, handleSubmit, formState } = useForm<CommentDraft>({
         defaultValues: { body: currentBody },
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,8 +23,7 @@ export default function EditComment(props: EditCommentProps): JSX.Element {
         try {
             setIsSubmitting(true);
             const updatedComment = await comments.updateComment(commentId, data);
-            onSave(updatedComment.body); 
-            reset();
+            onSave(updatedComment.body);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             alert('Failed to update comment.');

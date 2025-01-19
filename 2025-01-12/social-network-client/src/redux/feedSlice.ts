@@ -15,14 +15,23 @@ export const feedSlice = createSlice({
     initialState,
     reducers: {
         init: (state, action: PayloadAction<Post[]>) => {
-            state.posts = action.payload
+            state.posts = action.payload;
         },
         addComment: (state, action: PayloadAction<Comment>) => {
-            state.posts.find(p => p.id === action.payload.postId)?.comments.push(action.payload)
+            const post = state.posts.find(p => p.id === action.payload.postId);
+            if (post) {
+                post.comments.unshift(action.payload);
+            }
+        },
+        removeComment: (state, action: PayloadAction<{ commentId: string, postId: string }>) => {
+            const post = state.posts.find(p => p.id === action.payload.postId);
+            if (post) {
+                post.comments = post.comments.filter(c => c.id !== action.payload.commentId);
+            }
         }
     }
-})
+});
 
-export const { init, addComment } = feedSlice.actions
+export const { init, addComment, removeComment } = feedSlice.actions;
 
-export default feedSlice.reducer
+export default feedSlice.reducer;

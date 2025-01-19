@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import CommentModel from '../../../models/comment/Comment';
+import comments from '../../../services/comments';
 import EditComment from '../editComment/EditComment';
 import './Comment.css';
 
 interface CommentProps {
-    comment: CommentModel
+    comment: CommentModel;
+    postId: string;
+    onDelete: () => void;
 }
 
 export default function Comment(props: CommentProps): JSX.Element {
-    const { user: { name }, body, createdAt, id } = props.comment;
-
+    const { comment, onDelete } = props;
+    const { user: { name }, body, createdAt, id } = comment;
 
     const formattedDate = new Date(createdAt).toLocaleString('en-GB', {
         year: 'numeric',
@@ -25,7 +28,20 @@ export default function Comment(props: CommentProps): JSX.Element {
     const [commentBody, setCommentBody] = useState(body);
     const [isDeleting, setIsDeleting] = useState(false);
 
-
+    const handleDelete = async () => {
+        if (window.confirm('Are you sure you want to delete this comment?')) {
+            try {
+                setIsDeleting(true);
+                await comments.deleteComment(id);
+                onDelete(); // Call the onDelete callback from props
+            } catch (error) {
+                console.error('Failed to delete comment:', error);
+                alert('Failed to delete comment');
+            } finally {
+                setIsDeleting(false);
+            }
+        }
+    };
 
     const toggleLike = () => {
         setLikeCount(liked ? likeCount - 1 : likeCount + 1);
@@ -44,13 +60,6 @@ export default function Comment(props: CommentProps): JSX.Element {
         setCommentBody(updatedBody);
         setIsEditing(false);
     };
-
-    const handleDelete = () => {
-        if (window.confirm('Are you sure you want to delete this comment?')) {
-            setIsDeleting(true);
-        }
-    };
-
 
     return (
         <div className="Comment">
@@ -78,7 +87,7 @@ export default function Comment(props: CommentProps): JSX.Element {
                     <button className="action-button reply-button" onClick={handleEditClick}>
                         Edit
                     </button>
-                    <button className="action-button delete-button" onClick={handleDelete} >
+                    <button className="action-button delete-button" onClick={handleDelete} disabled={isDeleting}>
                         {isDeleting ? 'Deleting...' : 'Delete'}
                     </button>
                 </div>

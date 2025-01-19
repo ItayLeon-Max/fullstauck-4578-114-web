@@ -12,29 +12,31 @@ interface NewCommentProps {
 }
 
 export default function NewComment(props: NewCommentProps) {
-    const { postId } = props
+    const { postId } = props;
 
     const { 
         register, 
         handleSubmit, 
         formState, 
         reset 
-    } = useForm<CommentDraft>()  
+    } = useForm<CommentDraft>();
 
-    const dispatch = useAppDispatch()
+    const dispatch = useAppDispatch();
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     async function submit(draft: CommentDraft) {
         try {
-            const newComment = await CommentService.create(postId, draft)
-            reset()
-            dispatch(addCommentProfile(newComment))
-            dispatch(addCommentFeed(newComment))
+            setIsSubmitting(true);
+            const newComment = await CommentService.create(postId, draft);
+            reset();
+            dispatch(addCommentProfile(newComment));
+            dispatch(addCommentFeed(newComment));
         } catch (e) {
-            alert(e)
+            alert(e);
+        } finally {
+            setIsSubmitting(false);
         }
     }
-
-    const [isSubmitting] = useState<boolean>(false)
 
     return (
         <div className="NewComment">
@@ -60,5 +62,4 @@ export default function NewComment(props: NewCommentProps) {
             </form>
         </div>
     );
-
 }
