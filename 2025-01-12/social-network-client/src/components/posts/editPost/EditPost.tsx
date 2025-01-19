@@ -1,37 +1,34 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import './EditPost.css';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import profileService from '../../../services/profile';
 import PostDraft from '../../../models/post/PostDraft';
 import { useForm } from 'react-hook-form';
 import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
 
 export default function EditPost() {
+
     const { id } = useParams<'id'>()
-    const { handleSubmit, register, formState, reset } = useForm<PostDraft>()
+    const {handleSubmit, register, formState, reset} = useForm<PostDraft>()
     const navigate = useNavigate()
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
     useEffect(() => {
-        if (id) {
+        if(id){
             profileService.getPost(id)
-                .then(reset)
-                .catch(alert)
+            .then(reset)
+            .catch(alert)
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    },[])
 
     async function submit(draft: PostDraft) {
-        try {
-            setIsSubmitting(true);
-            const { title, body } = draft;
-            await profileService.update(id!, { title, body });
-            navigate('/profile');
+        try{
+            const {title, body} = draft
+            await profileService.update(id!, {title, body})
+            navigate('/profile')
+
         } catch (e) {
-            alert(e);
-        } finally {
-            setIsSubmitting(false);
+            alert(e)
         }
     }
 
@@ -71,10 +68,9 @@ export default function EditPost() {
                 {formState.touchedFields.body && formState.errors.body && (
                     <span className="error">{formState.errors.body.message}</span>
                 )}
-                <button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? <ButtonLoading /> : 'Update Post'}
-                </button>
+                <button type="submit" disabled={formState.isSubmitting}>Update Post</button>
             </form>
+            {formState.isSubmitting && <ButtonLoading />}
         </div>
-    );
+    )
 }

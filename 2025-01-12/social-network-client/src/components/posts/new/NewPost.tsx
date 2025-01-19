@@ -3,6 +3,7 @@ import './NewPost.css';
 import PostDraft from '../../../models/post/PostDraft';
 import profile from '../../../services/profile';
 import Post from '../../../models/post/Post';
+
 import { useState } from 'react';
 
 interface NewPostProps {
@@ -27,6 +28,7 @@ export default function NewPost(props: NewPostProps) {
             alert('Failed to add post');
         } finally {
             setIsLoading(false);
+            reset();
         }
     }
 

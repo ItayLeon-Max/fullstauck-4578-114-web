@@ -75,7 +75,7 @@ export default function Post(props: PostProps): JSX.Element {
             <div>
                 by {name} at {new Date(createdAt).toLocaleString()}
             </div>
-            <div>{body}</div>
+            <div dangerouslySetInnerHTML={{ __html: body }} />
             {isAllowActions && (
                 <div className="actions">
                     <button
