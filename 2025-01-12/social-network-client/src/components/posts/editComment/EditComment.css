@@ -9,12 +9,12 @@
     padding: 20px;
     margin-top: 15px;
     animation: fadeIn 0.3s ease-in-out;
-    width: 100%; /* תופס את כל הרוחב */
-    max-width: 700px; /* תקרה לרוחב */
+    width: 100%; 
+    max-width: 700px; 
 }
 
 .EditComment textarea {
-    width: 100%; /* תופס את כל הרוחב */
+    width: 100%; 
     padding: 15px;
     font-size: 1rem;
     border: 1px solid #cccccc;
@@ -22,8 +22,8 @@
     background-color: #f7f9fa;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    resize: none; /* ביטול שינוי גודל */
-    box-sizing: border-box; /* לכלול padding ו-border */
+    resize: none; 
+    box-sizing: border-box; 
 }
 
 .EditComment textarea:focus {

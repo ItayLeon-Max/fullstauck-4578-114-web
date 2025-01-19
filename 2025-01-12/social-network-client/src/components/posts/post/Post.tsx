@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Comments from '../comments/Comments';
 import CommentModel from '../../../models/comment/Comment';
-import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
 
 interface PostProps {
     post: PostModel;
@@ -96,7 +95,7 @@ export default function Post(props: PostProps): JSX.Element {
                         onClick={deleteMe}
                         disabled={isDeleting} 
                     >
-                        {isDeleting ? <ButtonLoading /> : 'Delete'}
+                        {isDeleting ? 'Deleting...' : 'Delete'}
                     </button>
                 </div>
             )}

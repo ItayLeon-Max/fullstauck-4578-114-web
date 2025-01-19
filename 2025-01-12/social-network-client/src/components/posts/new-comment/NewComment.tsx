@@ -4,7 +4,6 @@ import CommentDraft from '../../../models/comment/commentDraft';
 import CommentService from '../../../services/comments';
 import Comment from '../../../models/comment/Comment';
 import { useState } from 'react';
-import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
 
 interface NewCommentProps {
     postId: string;
@@ -50,7 +49,7 @@ export default function NewComment(props: NewCommentProps): JSX.Element {
                 ></textarea>
                 <span>{formState.errors.body?.message}</span>
                 <button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? <ButtonLoading /> : 'Add Comment'}
+                    {isSubmitting ? 'Adding a comment...' : 'Add Comment'}
                 </button>
             </form>
         </div>

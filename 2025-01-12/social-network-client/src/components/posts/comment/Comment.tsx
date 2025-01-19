@@ -24,6 +24,9 @@ export default function Comment(props: CommentProps): JSX.Element {
     const [liked, setLiked] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [commentBody, setCommentBody] = useState(body);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+
 
     const toggleLike = () => {
         setLikeCount(liked ? likeCount - 1 : likeCount + 1);
@@ -44,7 +47,8 @@ export default function Comment(props: CommentProps): JSX.Element {
     };
 
     const handleDelete = () => {
-        if (confirm('Are you sure you want to delete this comment?')) {
+        if (window.confirm('Are you sure you want to delete this comment?')) {
+            setIsDeleting(true);
             onDelete(id);
         }
     };
@@ -77,7 +81,7 @@ export default function Comment(props: CommentProps): JSX.Element {
                         Edit
                     </button>
                     <button className="action-button delete-button" onClick={handleDelete} >
-                        Delete
+                        {isDeleting ? 'Deleting...' : 'Delete'}
                     </button>
                 </div>
             )}

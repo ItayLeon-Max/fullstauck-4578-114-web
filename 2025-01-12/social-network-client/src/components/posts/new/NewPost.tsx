@@ -3,7 +3,6 @@ import './NewPost.css';
 import PostDraft from '../../../models/post/PostDraft';
 import profile from '../../../services/profile';
 import Post from '../../../models/post/Post';
-import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
 import { useState } from 'react';
 
 interface NewPostProps {
@@ -68,7 +67,7 @@ export default function NewPost(props: NewPostProps) {
                     <span className="error">{formState.errors.body.message}</span>
                 )}
                 <button type="submit" disabled={isLoading}>
-                    {isLoading ? <ButtonLoading /> : 'Add Post'}
+                    {isLoading ? 'Adding a post...' : 'Add Post'}
                 </button>
             </form>
         </div>
