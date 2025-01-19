@@ -2,33 +2,39 @@ import { useForm } from 'react-hook-form';
 import './NewComment.css';
 import CommentDraft from '../../../models/comment/commentDraft';
 import CommentService from '../../../services/comments';
-import Comment from '../../../models/comment/Comment';
+import { useAppDispatch } from '../../../redux/hooks';
+import { addComment as addCommentProfile} from '../../../redux/profileSlice'
+import { addComment as addCommentFeed } from '../../../redux/feedSlice'
 import { useState } from 'react';
 
 interface NewCommentProps {
     postId: string;
-    addComment(comment: Comment): void;
 }
 
-export default function NewComment(props: NewCommentProps): JSX.Element {
-    const { postId, addComment } = props;
+export default function NewComment(props: NewCommentProps) {
+    const { postId } = props
 
-    const { register, handleSubmit, formState, reset } = useForm<CommentDraft>();
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { 
+        register, 
+        handleSubmit, 
+        formState, 
+        reset 
+    } = useForm<CommentDraft>()  
+
+    const dispatch = useAppDispatch()
 
     async function submit(draft: CommentDraft) {
         try {
-            setIsSubmitting(true);
-            const newComment = await CommentService.create(postId, draft);
-            reset();
-            addComment(newComment);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-            alert('Failed to add comment');
-        } finally {
-            setIsSubmitting(false);
+            const newComment = await CommentService.create(postId, draft)
+            reset()
+            dispatch(addCommentProfile(newComment))
+            dispatch(addCommentFeed(newComment))
+        } catch (e) {
+            alert(e)
         }
     }
+
+    const [isSubmitting] = useState<boolean>(false)
 
     return (
         <div className="NewComment">
@@ -54,4 +60,5 @@ export default function NewComment(props: NewCommentProps): JSX.Element {
             </form>
         </div>
     );
+
 }

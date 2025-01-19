@@ -4,13 +4,13 @@ import profileService from '../../../services/profile';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Comments from '../comments/Comments';
-import CommentModel from '../../../models/comment/Comment';
+import { useAppDispatch } from '../../../redux/hooks';
+import { removePost } from '../../../redux/profileSlice';
 
 interface PostProps {
     post: PostModel;
     isAllowActions?: boolean;
     remove?(id: string): void;
-    addComment(comment: CommentModel): void;
 }
 
 export default function Post(props: PostProps): JSX.Element {
@@ -21,28 +21,26 @@ export default function Post(props: PostProps): JSX.Element {
     const { name } = props.post.user;
     const navigate = useNavigate();
 
-    const { addComment, isAllowActions } = props;
+    const { isAllowActions } = props;
 
     const [liked, setLiked] = useState(false);
     const [animateHeart, setAnimateHeart] = useState(false);
     const [likeCount, setLikeCount] = useState(0);
     const [showComments, setShowComments] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false); 
+    const [isDeleting] = useState(false); 
 
-    async function deleteMe() {
-        if (props.remove && confirm('Are you sure you want to delete this post?')) {
-            try {
-                setIsDeleting(true);
-                await profileService.remove(id);
-                props.remove(id);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            } catch (e) {
-                alert('Failed to delete post');
-            } finally {
-                setIsDeleting(false); 
-            }
+    const dispatch = useAppDispatch();
+
+   async function deleteMe() {
+    if(props.remove && confirm('are you sure you want delete this post?')){
+        try{
+            await profileService.remove(id);
+            dispatch(removePost(id))
+        } catch (e) {
+            alert(e)
         }
     }
+}
 
     function toggleLike() {
         setLiked(!liked);
@@ -103,7 +101,6 @@ export default function Post(props: PostProps): JSX.Element {
                 <Comments
                     comments={props.post.comments}
                     postId={id}
-                    addComment={addComment}
                     removeComment={removeComment}
                 />
             )}

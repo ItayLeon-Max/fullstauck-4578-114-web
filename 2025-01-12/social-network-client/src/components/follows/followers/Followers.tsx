@@ -1,42 +1,40 @@
 import './Followers.css';
 import { useEffect, useState } from 'react';
-import User from '../../../models/user/User';
-import followers from '../../../services/followers';
+import followersService from '../../../services/followers';
 import Follow from '../follow/Follow';
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
+import { initFollowers } from '../../../redux/followersSlice';
+import FollowSkeleton from '../../common/LoaddingPageEffect-followers/LoaddingPageEffect';
 
 export default function Followers() {
-    const [followersList, setFollowersList] = useState<User[]>([]);
-    const [followingList, setFollowingList] = useState<User[]>([]);
+    const dispatch = useAppDispatch();
+    const followers = useAppSelector(state => state.followers.followers);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        followers.getFollowers()
-            .then(setFollowersList)
-            .catch(alert);
-    }, []);
+        followersService.getFollowers()
+            .then(followers => {
+                dispatch(initFollowers(followers));
+                // קצת דיליי מלאכותי כדי שנראה את אפקט הטעינה
+                setTimeout(() => setIsLoading(false), 1000);
+            })
+            .catch(error => {
+                alert(error);
+                setIsLoading(false);
+            });
+    }, [dispatch]);
 
-    async function handleFollow(userId: string) {
-        try {
-            await followers.follow(userId);
-            const user = followersList.find(f => f.id === userId);
-            if (user) {
-                setFollowingList(prev => [...prev, user]);
-                setFollowersList(prev => prev.filter(f => f.id !== userId)); // להסיר מ-followers
-            }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (e) {
-            alert('Failed to follow user');
-        }
+    if (isLoading) {
+        return <div className="Followers"><FollowSkeleton /></div>;
     }
 
     return (
         <div className="Followers">
             <h2>Followers</h2>
-            {followersList.map(user => (
+            {followers.map(user => (
                 <Follow
                     key={user.id}
                     user={user}
-                    isFollowing={followingList.some(f => f.id === user.id)}
-                    onToggleFollow={() => handleFollow(user.id)}
                 />
             ))}
         </div>

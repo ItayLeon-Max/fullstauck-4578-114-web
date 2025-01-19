@@ -1,13 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import User from "../models/user/User";
 
-
 interface FollowingState {
     following: User[];
+    followers: User[];
 }
 
 const initialState: FollowingState = {
-    following: []
+    following: [],
+    followers: []
 }
 
 export const followingSlice = createSlice({
@@ -21,13 +22,30 @@ export const followingSlice = createSlice({
             state.following = state.following.filter(f => f.id !== action.payload.userId);
         },
         follow: (state, action: PayloadAction<User>) => {
-            state.following.push(action.payload);
+
+            const existingFollowIndex = state.following.findIndex(f => f.id === action.payload.id);
+            
+            if (existingFollowIndex === -1) {
+                state.following.push(action.payload);
+            }
+        },
+        initFollowers: (state, action: PayloadAction<User[]>) => {
+            state.followers = action.payload;
+        },
+        updateFollowStatus: (state, action: PayloadAction<{userId: string, isFollowing: boolean}>) => {
+            const { userId, isFollowing } = action.payload;
+            
+            if (isFollowing) {
+                const existingFollowIndex = state.following.findIndex(f => f.id === userId);
+                if (existingFollowIndex === -1) {
+                    state.following.push({ id: userId } as User);
+                }
+            } else {
+                state.following = state.following.filter(f => f.id !== userId);
+            }
         }
     }
 })
 
-// actions - functions that know how to modify the state.
-export const { init , unfollow , follow } = followingSlice.actions;
-
-// selectors - functions that know how to extract specific parts of the state.
+export const { init, unfollow, follow, initFollowers, updateFollowStatus } = followingSlice.actions;
 export default followingSlice.reducer;

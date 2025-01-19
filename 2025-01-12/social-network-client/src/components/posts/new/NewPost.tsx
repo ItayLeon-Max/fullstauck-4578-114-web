@@ -2,26 +2,27 @@ import { useForm } from 'react-hook-form';
 import './NewPost.css';
 import PostDraft from '../../../models/post/PostDraft';
 import profile from '../../../services/profile';
-import Post from '../../../models/post/Post';
-
 import { useState } from 'react';
+import { useAppDispatch } from '../../../redux/hooks';
+import { newPost } from '../../../redux/profileSlice';
 
-interface NewPostProps {
-    addPost: (post: Post) => void;
-}
 
-export default function NewPost(props: NewPostProps) {
+
+export default function NewPost() {
     const { register, handleSubmit, reset, formState } = useForm<PostDraft>({
         mode: 'onTouched',
     });
 
     const [isLoading, setIsLoading] = useState(false);
 
+    const dispatch = useAppDispatch();
+
     async function submit(draft: PostDraft) {
         try {
             setIsLoading(true);
-            const newPost = await profile.create(draft);
-            props.addPost(newPost);
+            const newPostFromServer = await profile.create(draft);
+            dispatch(newPost(newPostFromServer))
+
             reset();
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {

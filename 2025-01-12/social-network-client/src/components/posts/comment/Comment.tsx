@@ -5,12 +5,11 @@ import './Comment.css';
 
 interface CommentProps {
     comment: CommentModel
-    onDelete(commentId: string): void;
 }
 
 export default function Comment(props: CommentProps): JSX.Element {
     const { user: { name }, body, createdAt, id } = props.comment;
-    const { onDelete } = props;
+
 
     const formattedDate = new Date(createdAt).toLocaleString('en-GB', {
         year: 'numeric',
@@ -49,7 +48,6 @@ export default function Comment(props: CommentProps): JSX.Element {
     const handleDelete = () => {
         if (window.confirm('Are you sure you want to delete this comment?')) {
             setIsDeleting(true);
-            onDelete(id);
         }
     };
 

@@ -1,39 +1,46 @@
 import './Following.css';
 import { useEffect, useState } from 'react';
-import User from '../../../models/user/User';
-import following from '../../../services/following';
+import followingService from '../../../services/following';
 import Follow from '../follow/Follow';
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
+import { init } from '../../../redux/followingSlice';
+import FollowSkeleton from '../../common/LoaddingPageEffect-followers/LoaddingPageEffect';
 
 export default function Following() {
-    const [followingList, setFollowingList] = useState<User[]>([]);
+    const following = useAppSelector(state => state.following.following);
+    const dispatch = useAppDispatch();
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        following.getFollowing()
-            .then(setFollowingList)
-            .catch(alert);
-    }, []);
-
-    async function handleUnfollow(userId: string) {
-        try {
-            await following.unFollow(userId);
-            setFollowingList(prev => prev.filter(user => user.id !== userId));
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (e) {
-            alert('Failed to unfollow user');
-        }
-    }
+        followingService.getFollowing()
+            .then(following => {
+                // מדמה השהייה של הטעינה כדי שנראה את האפקט
+                setTimeout(() => {
+                    dispatch(init(following));
+                    setIsLoading(false);
+                }, 1500); // 1.5 שניות של טעינה מדומה
+            })
+            .catch(error => {
+                alert(error);
+                setIsLoading(false);
+            });
+    }, [dispatch]);
 
     return (
         <div className="Following">
-            <h2>Following</h2>
-            {followingList.map(user => (
-                <Follow
-                    key={user.id}
-                    user={user}
-                    isFollowing={true}
-                    onToggleFollow={() => handleUnfollow(user.id)}
-                />
-            ))}
+            {isLoading ? (
+                <FollowSkeleton />
+            ) : (
+                <>
+                    <h2>Following</h2>
+                    {following.map(user => (
+                        <Follow
+                            key={user.id}
+                            user={user}
+                        />
+                    ))}
+                </>
+            )}
         </div>
     );
 }

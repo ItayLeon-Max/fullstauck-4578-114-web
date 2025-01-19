@@ -1,0 +1,73 @@
+.skeleton-container {
+    padding: 1rem;
+    height: 100%;
+}
+
+.skeleton-header {
+    margin-bottom: 1.5rem;
+}
+
+.skeleton-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    border-bottom: 1px solid #eaeaea;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #eaeaea;
+}
+
+.skeleton-content {
+    flex: 1;
+    margin: 0 1rem;
+}
+
+.skeleton-text {
+    height: 16px;
+    background-color: #eaeaea;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    width: 150px;
+}
+
+.skeleton-text.small {
+    width: 100px;
+    height: 12px;
+}
+
+.skeleton-button {
+    width: 80px;
+    height: 32px;
+    background-color: #eaeaea;
+    border-radius: 16px;
+}
+
+.skeleton-title {
+    width: 120px;
+    height: 24px;
+    background-color: #eaeaea;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+.skeleton-avatar, .skeleton-text, .skeleton-button, .skeleton-title {
+    animation: pulse 1.5s infinite ease-in-out;
+}

@@ -1,70 +1,53 @@
-import { useEffect, useState } from 'react'
-import './Profile.css'
-import PostModel from '../../../models/post/Post'
-import profile from '../../../services/profile'
-import Post from '../post/Post'
-import NewPost from '../new/NewPost'
-import Comment from '../../../models/comment/Comment'
-import Loading from '../../common/loading/Loading'
-import useTitle from '../../../hooks/useTitle'
+import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
+import LoaddingPageForProfile from "../../common/LoaddingPageForProfile/LoaddingPageForProfile";
+import NewPost from "../new/NewPost";
+import Post from "../post/Post";
+import profile from "../../../services/profile";
+import { init } from "../../../redux/profileSlice";
+import useTitle from "../../../hooks/useTitle";
 
 export default function Profile(): JSX.Element {
+    useTitle('SN - Profile');
 
-    useTitle('Profile')
-
-    // posts: Post[]
-    const [posts, setPosts] = useState<PostModel[]>([])
+    const posts = useAppSelector(state => state.profile.posts);
+    const dispatch = useAppDispatch();
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // useEffect disallows the callback function to be async
-        // so we either use then:
-        profile.getProfile()
-            .then(setPosts)
-            .catch(alert)
-    }, [])
-
-    function remove(id: string): void {
-        // remove the post from the state
-        const index = posts.findIndex(p => p.id === id)
-        if(index > -1){
-            posts.splice(index, 1)
-            setPosts([...posts])
-        }
-    }
-
-    function addPost(post: PostModel): void {
-        setPosts([post, ...posts])
-    }
-
-    function addComment(comment: Comment): void {
-        const postsWithNewComment = [...posts]
-        const postToAddCommentTo = postsWithNewComment.find(post => post.id === comment.postId)
-        if(postToAddCommentTo){
-            postToAddCommentTo.comments.unshift(comment)
-        }
-
-        setPosts(postsWithNewComment)
-    }
-
+        let isMounted = true;
+        (async () => {
+            try {
+                console.log("Fetching profile posts...");
+                if (posts.length === 0 && isMounted) {
+                    const postsFromServer = await profile.getProfile();
+                    console.log("Posts fetched:", postsFromServer);
+                    dispatch(init(postsFromServer));
+                }
+            } catch (e) {
+                console.error("Error fetching profile posts:", e);
+                alert("Error fetching profile posts");
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                    console.log("Loading finished");
+                }
+            }
+        })();
+        return () => { isMounted = false; };
+    }, [posts.length, dispatch]);
     return (
-        <div className='Profile'>
-
-        { posts.length === 0 && <Loading />}
-
-        { posts.length > 0 && <>
-            <NewPost 
-                addPost={addPost} 
-            />
-            {posts.map(p =>
-                <Post
-                    key={p.id}
-                    post={p}
-                    isAllowActions={true}
-                    remove={remove}
-                    addComment={addComment}
-                />
+        <div className="Profile">
+            {isLoading && <LoaddingPageForProfile />}
+            {!isLoading && posts.length > 0 && (
+                <>
+                    <NewPost />
+                    {posts.map(p => (
+                        <Post key={p.id} post={p} isAllowActions={true} />
+                    ))}
+                </>
             )}
-        </>}
-    </div>
-    )
+            {!isLoading && posts.length === 0 && <p>No posts available</p>}
+        </div>
+    );
 }

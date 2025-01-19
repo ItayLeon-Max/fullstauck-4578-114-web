@@ -70,32 +70,18 @@ import { useState } from 'react';
 import CommentModel from '../../../models/comment/Comment';
 import Comment from '../comment/Comment';
 import NewComment from '../new-comment/NewComment';
-import commentsService from '../../../services/comments';
 
 interface CommentsProps {
     comments: CommentModel[];
     postId: string;
-    addComment(comment: CommentModel): void;
     removeComment(commentId: string): void;
 }
 
 export default function Comments(props: CommentsProps): JSX.Element {
-    const { comments, postId, addComment } = props;
+    const { comments, postId } = props;
 
-    const [currentComments, setCurrentComments] = useState(comments);
+    const [currentComments ] = useState(comments);
 
-    const deleteComment = async (commentId: string) => {
-        try {
-            console.log(`Deleting comment with id: ${commentId}`);
-            await commentsService.deleteComment(commentId);
-            setCurrentComments((prevComments) =>
-                prevComments.filter((comment) => comment.id !== commentId)
-            );
-        } catch (error) {
-            console.error('Failed to delete comment', error);
-            alert('Failed to delete comment');
-        }
-    };
 
     
 
@@ -105,13 +91,14 @@ export default function Comments(props: CommentsProps): JSX.Element {
                 total comments: {currentComments.length}
             </div>
             <div>
-                <NewComment postId={postId} addComment={addComment} />
+                <NewComment
+                 postId={postId}
+                 />
             </div>
             {currentComments.map((c) => (
                 <Comment
                     key={c.id}
                     comment={c}
-                    onDelete={deleteComment}
                 />
             ))}
         </div>
@@ -124,13 +111,13 @@ import profileService from '../../../services/profile';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Comments from '../comments/Comments';
-import CommentModel from '../../../models/comment/Comment';
+import { useAppDispatch } from '../../../redux/hooks';
+import { removePost } from '../../../redux/profileSlice';
 
 interface PostProps {
     post: PostModel;
     isAllowActions?: boolean;
     remove?(id: string): void;
-    addComment(comment: CommentModel): void;
 }
 
 export default function Post(props: PostProps): JSX.Element {
@@ -141,25 +128,23 @@ export default function Post(props: PostProps): JSX.Element {
     const { name } = props.post.user;
     const navigate = useNavigate();
 
-    const { addComment, isAllowActions } = props;
+    const { isAllowActions } = props;
 
     const [liked, setLiked] = useState(false);
     const [animateHeart, setAnimateHeart] = useState(false);
     const [likeCount, setLikeCount] = useState(0);
     const [showComments, setShowComments] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false); 
+    const [isDeleting] = useState(false); 
+
+    const dispatch = useAppDispatch();
 
     async function deleteMe() {
-        if (props.remove && confirm('Are you sure you want to delete this post?')) {
-            try {
-                setIsDeleting(true);
+        if(props.remove && confirm('are you sure you want delete this post?')){
+            try{
                 await profileService.remove(id);
-                props.remove(id);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                dispatch(removePost(id))
             } catch (e) {
-                alert('Failed to delete post');
-            } finally {
-                setIsDeleting(false); 
+                alert(e)
             }
         }
     }
@@ -223,7 +208,6 @@ export default function Post(props: PostProps): JSX.Element {
                 <Comments
                     comments={props.post.comments}
                     postId={id}
-                    addComment={addComment}
                     removeComment={removeComment}
                 />
             )}
@@ -511,12 +495,11 @@ import './Comment.css';
 
 interface CommentProps {
     comment: CommentModel
-    onDelete(commentId: string): void;
 }
 
 export default function Comment(props: CommentProps): JSX.Element {
     const { user: { name }, body, createdAt, id } = props.comment;
-    const { onDelete } = props;
+
 
     const formattedDate = new Date(createdAt).toLocaleString('en-GB', {
         year: 'numeric',
@@ -555,7 +538,6 @@ export default function Comment(props: CommentProps): JSX.Element {
     const handleDelete = () => {
         if (window.confirm('Are you sure you want to delete this comment?')) {
             setIsDeleting(true);
-            onDelete(id);
         }
     };
 
@@ -812,33 +794,39 @@ import { useForm } from 'react-hook-form';
 import './NewComment.css';
 import CommentDraft from '../../../models/comment/commentDraft';
 import CommentService from '../../../services/comments';
-import Comment from '../../../models/comment/Comment';
+import { useAppDispatch } from '../../../redux/hooks';
+import { addComment as addCommentProfile} from '../../../redux/profileSlice'
+import { addComment as addCommentFeed } from '../../../redux/feedSlice'
 import { useState } from 'react';
 
 interface NewCommentProps {
     postId: string;
-    addComment(comment: Comment): void;
 }
 
-export default function NewComment(props: NewCommentProps): JSX.Element {
-    const { postId, addComment } = props;
+export default function NewComment(props: NewCommentProps) {
+    const { postId } = props
 
-    const { register, handleSubmit, formState, reset } = useForm<CommentDraft>();
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { 
+        register, 
+        handleSubmit, 
+        formState, 
+        reset 
+    } = useForm<CommentDraft>()  
+
+    const dispatch = useAppDispatch()
 
     async function submit(draft: CommentDraft) {
         try {
-            setIsSubmitting(true);
-            const newComment = await CommentService.create(postId, draft);
-            reset();
-            addComment(newComment);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-            alert('Failed to add comment');
-        } finally {
-            setIsSubmitting(false);
+            const newComment = await CommentService.create(postId, draft)
+            reset()
+            dispatch(addCommentProfile(newComment))
+            dispatch(addCommentFeed(newComment))
+        } catch (e) {
+            alert(e)
         }
     }
+
+    const [isSubmitting] = useState<boolean>(false)
 
     return (
         <div className="NewComment">
@@ -864,76 +852,57 @@ export default function NewComment(props: NewCommentProps): JSX.Element {
             </form>
         </div>
     );
+
 }
+
 # components/posts/profile/Profile.tsx
-import { useEffect, useState } from 'react'
-import './Profile.css'
-import PostModel from '../../../models/post/Post'
-import profile from '../../../services/profile'
-import Post from '../post/Post'
-import NewPost from '../new/NewPost'
-import Comment from '../../../models/comment/Comment'
-import Loading from '../../common/loading/Loading'
-import useTitle from '../../../hooks/useTitle'
+import { useEffect } from "react"
+import { useAppDispatch, useAppSelector } from "../../../redux/hooks"
+import LoaddingPageForProfile from "../../common/LoaddingPageForProfile/LoaddingPageForProfile"
+import NewPost from "../new/NewPost"
+import Post from "../post/Post"
+import profile from "../../../services/profile"
+import { init } from "../../../redux/profileSlice"
+import useTitle from "../../../hooks/useTitle"
 
 export default function Profile(): JSX.Element {
 
-    useTitle('Profile')
 
-    // posts: Post[]
-    const [posts, setPosts] = useState<PostModel[]>([])
+    useTitle('SN - Profile')
+
+    const posts = useAppSelector(state => state.profile.posts)
+    const dispatch = useAppDispatch()
 
     useEffect(() => {
-        // useEffect disallows the callback function to be async
-        // so we either use then:
-        profile.getProfile()
-            .then(setPosts)
-            .catch(alert)
+        (async () => {
+            try {
+                if(posts.length === 0) {
+                    const postsFromServer = await profile.getProfile()
+                    dispatch(init(postsFromServer))
+                }
+            } catch (e) {
+                alert(e)
+            }
+        })()
     }, [])
-
-    function remove(id: string): void {
-        // remove the post from the state
-        const index = posts.findIndex(p => p.id === id)
-        if(index > -1){
-            posts.splice(index, 1)
-            setPosts([...posts])
-        }
-    }
-
-    function addPost(post: PostModel): void {
-        setPosts([post, ...posts])
-    }
-
-    function addComment(comment: Comment): void {
-        const postsWithNewComment = [...posts]
-        const postToAddCommentTo = postsWithNewComment.find(post => post.id === comment.postId)
-        if(postToAddCommentTo){
-            postToAddCommentTo.comments.unshift(comment)
-        }
-
-        setPosts(postsWithNewComment)
-    }
 
     return (
         <div className='Profile'>
 
-        { posts.length === 0 && <Loading />}
+            { posts.length === 0 && <LoaddingPageForProfile />}
 
-        { posts.length > 0 && <>
-            <NewPost 
-                addPost={addPost} 
-            />
-            {posts.map(p =>
-                <Post
-                    key={p.id}
-                    post={p}
-                    isAllowActions={true}
-                    remove={remove}
-                    addComment={addComment}
-                />
-            )}
-        </>}
-    </div>
+            { posts.length > 0 && <>
+                <NewPost />
+                {posts.map(p =>
+                    <Post
+                        key={p.id}
+                        post={p}
+                        isAllowActions={true}
+                    />
+                )}
+            </>}
+
+        </div>
     )
 }
 # components/posts/feed/Feed.tsx
@@ -1030,26 +999,27 @@ import { useForm } from 'react-hook-form';
 import './NewPost.css';
 import PostDraft from '../../../models/post/PostDraft';
 import profile from '../../../services/profile';
-import Post from '../../../models/post/Post';
-
 import { useState } from 'react';
+import { useAppDispatch } from '../../../redux/hooks';
+import { newPost } from '../../../redux/profileSlice';
 
-interface NewPostProps {
-    addPost: (post: Post) => void;
-}
 
-export default function NewPost(props: NewPostProps) {
+
+export default function NewPost() {
     const { register, handleSubmit, reset, formState } = useForm<PostDraft>({
         mode: 'onTouched',
     });
 
     const [isLoading, setIsLoading] = useState(false);
 
+    const dispatch = useAppDispatch();
+
     async function submit(draft: PostDraft) {
         try {
             setIsLoading(true);
-            const newPost = await profile.create(draft);
-            props.addPost(newPost);
+            const newPostFromServer = await profile.create(draft);
+            dispatch(newPost(newPostFromServer))
+
             reset();
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
@@ -1538,18 +1508,21 @@ export default function EditComment(props: EditCommentProps): JSX.Element {
     }
 }
 # components/app/App.tsx
-import { BrowserRouter } from 'react-router-dom'
-import Layout from '../layout/layout/Layout'
-import './App.css'
+import { Provider } from 'react-redux';
+import store from '../../redux/store';
+import { BrowserRouter } from 'react-router-dom';
+import Layout from '../layout/layout/Layout';
 
 export default function App(): JSX.Element {
     return (
         <div className="App">
             <BrowserRouter>
-                <Layout />
+                <Provider store={store}>
+                    <Layout />
+                </Provider>
             </BrowserRouter>
         </div>
-    )
+    );
 }
 # components/app/App.css
 .App {
@@ -1918,6 +1891,251 @@ export default function ButtonLoading() {
         transform: rotate(360deg);
     }
 }
+# components/common/LoaddingPageForProfile/LoaddingPageForProfile.tsx
+import './LoaddingPageForProfile.css'
+
+const PostsSkeleton = () => {
+  return (
+    <div className="posts-skeleton-container">
+      <div className="posts-skeleton-new-post">
+        <div className="posts-skeleton-new-post-title"></div>
+        <div className="posts-skeleton-new-post-input"></div>
+        <div className="posts-skeleton-new-post-input"></div>
+        <div className="posts-skeleton-new-post-button"></div>
+      </div>
+      
+      {[...Array(3)].map((_, index) => (
+        <div key={index} className="posts-skeleton-post">
+          <div className="posts-skeleton-post-header">
+            <div className="posts-skeleton-post-title"></div>
+            <div className="posts-skeleton-post-subtitle"></div>
+          </div>
+          <div className="posts-skeleton-post-body"></div>
+          <div className="posts-skeleton-post-actions">
+            <div className="posts-skeleton-action-button"></div>
+            <div className="posts-skeleton-action-button"></div>
+            <div className="posts-skeleton-action-button"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default PostsSkeleton;
+# components/common/LoaddingPageForProfile/LoaddingPageForProfile.css
+.posts-skeleton-container {
+    padding: 1rem;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.posts-skeleton-new-post {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.posts-skeleton-new-post-title,
+.posts-skeleton-new-post-input,
+.posts-skeleton-new-post-button {
+    background-color: #eaeaea;
+    border-radius: 8px;
+}
+
+.posts-skeleton-new-post-title {
+    height: 24px;
+    width: 150px;
+}
+
+.posts-skeleton-new-post-input {
+    height: 100px;
+}
+
+.posts-skeleton-new-post-button {
+    height: 40px;
+    width: 120px;
+    align-self: flex-start;
+}
+
+.posts-skeleton-post {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.posts-skeleton-post-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.posts-skeleton-post-title {
+    height: 24px;
+    width: 250px;
+    background-color: #eaeaea;
+    border-radius: 8px;
+}
+
+.posts-skeleton-post-subtitle {
+    height: 16px;
+    width: 180px;
+    background-color: #eaeaea;
+    border-radius: 8px;
+}
+
+.posts-skeleton-post-body {
+    height: 120px;
+    background-color: #eaeaea;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.posts-skeleton-post-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.posts-skeleton-action-button {
+    height: 40px;
+    width: 100px;
+    background-color: #eaeaea;
+    border-radius: 50px;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+.posts-skeleton-new-post-title,
+.posts-skeleton-new-post-input,
+.posts-skeleton-new-post-button,
+.posts-skeleton-post-title,
+.posts-skeleton-post-subtitle,
+.posts-skeleton-post-body,
+.posts-skeleton-action-button {
+    animation: pulse 1.5s infinite ease-in-out;
+}
+# components/common/LoaddingPageEffect-followers/LoaddingPageEffect.tsx
+import './LoaddingPageEffect.css'
+
+const FollowSkeleton = () => {
+  return (
+    <div className="skeleton-container">
+      {/* Title skeleton */}
+      <div className="skeleton-title"></div>
+      
+      {/* Items */}
+      {[...Array(5)].map((_, index) => (
+        <div key={index} className="skeleton-item">
+          {/* Avatar */}
+          <div className="skeleton-avatar"></div>
+          
+          {/* Content */}
+          <div className="skeleton-content">
+            <div className="skeleton-text"></div>
+            <div className="skeleton-text small"></div>
+          </div>
+          
+          {/* Button */}
+          <div className="skeleton-button"></div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default FollowSkeleton;
+# components/common/LoaddingPageEffect-followers/LoaddingPageEffect.css
+.skeleton-container {
+    padding: 1rem;
+    height: 100%;
+}
+
+.skeleton-header {
+    margin-bottom: 1.5rem;
+}
+
+.skeleton-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    border-bottom: 1px solid #eaeaea;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #eaeaea;
+}
+
+.skeleton-content {
+    flex: 1;
+    margin: 0 1rem;
+}
+
+.skeleton-text {
+    height: 16px;
+    background-color: #eaeaea;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    width: 150px;
+}
+
+.skeleton-text.small {
+    width: 100px;
+    height: 12px;
+}
+
+.skeleton-button {
+    width: 80px;
+    height: 32px;
+    background-color: #eaeaea;
+    border-radius: 16px;
+}
+
+.skeleton-title {
+    width: 120px;
+    height: 24px;
+    background-color: #eaeaea;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+.skeleton-avatar, .skeleton-text, .skeleton-button, .skeleton-title {
+    animation: pulse 1.5s infinite ease-in-out;
+}
 # components/follows/followers/Followers.css
 .Follow {
     display: flex;
@@ -1997,58 +2215,119 @@ export default function ButtonLoading() {
     box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
 }
 # components/follows/followers/Followers.tsx
-import { useEffect, useState } from 'react'
-import './Followers.css'
-import User from '../../../models/user/User'
-import followersService from '../../../services/followers'
-import Follow from '../../follows/follow/Follow'
+import './Followers.css';
+import { useEffect, useState } from 'react';
+import followersService from '../../../services/followers';
+import Follow from '../follow/Follow';
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
+import { initFollowers } from '../../../redux/followersSlice';
+import FollowSkeleton from '../../common/LoaddingPageEffect-followers/LoaddingPageEffect';
 
 export default function Followers() {
-    const [followers, setFollowers] = useState<User[]>([])
+    const dispatch = useAppDispatch();
+    const followers = useAppSelector(state => state.followers.followers);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         followersService.getFollowers()
-            .then(setFollowers)
-            .catch(alert)
-    }, [])
+            .then(followers => {
+                dispatch(initFollowers(followers));
+                // קצת דיליי מלאכותי כדי שנראה את אפקט הטעינה
+                setTimeout(() => setIsLoading(false), 1000);
+            })
+            .catch(error => {
+                alert(error);
+                setIsLoading(false);
+            });
+    }, [dispatch]);
+
+    if (isLoading) {
+        return <div className="Followers"><FollowSkeleton /></div>;
+    }
 
     return (
-        <div className='Followers'>
-            {followers.map(follow => <Follow 
-                key={follow.id}
-                user={follow}
-                 isFollowing={false}
-                  onToggleFollow={function (): void {
-                } }                                     
-                ></Follow>)}
+        <div className="Followers">
+            <h2>Followers</h2>
+            {followers.map(user => (
+                <Follow
+                    key={user.id}
+                    user={user}
+                />
+            ))}
         </div>
-    )
+    );
 }
 # components/follows/follow/Follow.tsx
 import './Follow.css';
 import User from '../../../models/user/User';
+import { useState } from 'react';
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
+import { updateFollowStatus } from '../../../redux/followingSlice';
+import { removeFollower, addFollower } from '../../../redux/followersSlice';
+import followingService from '../../../services/following';
+
 
 interface FollowProps {
     user: User;
-    isFollowing: boolean;
-    onToggleFollow: () => void;
 }
 
-export default function Follow({ user, isFollowing, onToggleFollow }: FollowProps) {
+export default function Follow({ user }: FollowProps) {
+    const { id, name } = user;
+    const [loading, setLoading] = useState(false);
+
+    const dispatch = useAppDispatch();
+    const isFollowing = useAppSelector(state => 
+        state.following.following.some(f => f.id === id)
+    );
+
+    async function handleToggleFollow() {
+        if (isFollowing && !window.confirm(`Are you sure you want to stop following ${name}?`)) {
+            return;
+        }
+
+        setLoading(true);
+        try {
+            if (isFollowing) {
+                // Unfollow
+                await followingService.unFollow(id);
+                
+                // עדכון סטייט קליינט צד
+                dispatch(updateFollowStatus({ userId: id, isFollowing: false }));
+                dispatch(removeFollower(id));
+            } else {
+                // Follow
+                await followingService.follow(id);
+                
+                // עדכון סטייט קליינט צד
+                dispatch(updateFollowStatus({ userId: id, isFollowing: true }));
+                dispatch(addFollower({ ...user }));
+            }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (e) {
+            alert('Failed to toggle follow status');
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
         <div className="Follow">
             <div className="user-avatar">
                 <span className="user-icon">👤</span>
             </div>
             <div className="user-info">
-                <span className="user-name">{user.name}</span>
+                <span className="user-name">{name}</span>
                 <span className="user-email">{user.email}</span>
             </div>
             <button
                 className={`follow-toggle-button ${isFollowing ? 'unfollow' : ''}`}
-                onClick={onToggleFollow}
+                onClick={handleToggleFollow}
+                disabled={loading}
             >
-                {isFollowing ? 'Unfollow' : 'Follow'}
+                {loading ? 
+                    (isFollowing ? 'Unfollowing...' : 'Following...') : 
+                    (isFollowing ? 'Unfollow' : 'Follow')
+                }
             </button>
         </div>
     );
@@ -2138,40 +2417,47 @@ export default function Follow({ user, isFollowing, onToggleFollow }: FollowProp
 # components/follows/following/Following.tsx
 import './Following.css';
 import { useEffect, useState } from 'react';
-import User from '../../../models/user/User';
-import following from '../../../services/following';
+import followingService from '../../../services/following';
 import Follow from '../follow/Follow';
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
+import { init } from '../../../redux/followingSlice';
+import FollowSkeleton from '../../common/LoaddingPageEffect-followers/LoaddingPageEffect';
 
 export default function Following() {
-    const [followingList, setFollowingList] = useState<User[]>([]);
+    const following = useAppSelector(state => state.following.following);
+    const dispatch = useAppDispatch();
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        following.getFollowing()
-            .then(setFollowingList)
-            .catch(alert);
-    }, []);
-
-    async function handleUnfollow(userId: string) {
-        try {
-            await following.unFollow(userId);
-            setFollowingList(prev => prev.filter(user => user.id !== userId));
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (e) {
-            alert('Failed to unfollow user');
-        }
-    }
+        followingService.getFollowing()
+            .then(following => {
+                // מדמה השהייה של הטעינה כדי שנראה את האפקט
+                setTimeout(() => {
+                    dispatch(init(following));
+                    setIsLoading(false);
+                }, 1500); // 1.5 שניות של טעינה מדומה
+            })
+            .catch(error => {
+                alert(error);
+                setIsLoading(false);
+            });
+    }, [dispatch]);
 
     return (
         <div className="Following">
-            <h2>Following</h2>
-            {followingList.map(user => (
-                <Follow
-                    key={user.id}
-                    user={user}
-                    isFollowing={true}
-                    onToggleFollow={() => handleUnfollow(user.id)}
-                />
-            ))}
+            {isLoading ? (
+                <FollowSkeleton />
+            ) : (
+                <>
+                    <h2>Following</h2>
+                    {following.map(user => (
+                        <Follow
+                            key={user.id}
+                            user={user}
+                        />
+                    ))}
+                </>
+            )}
         </div>
     );
 }
@@ -2207,28 +2493,151 @@ export const followersSlice = createSlice({
     name: 'followers',
     initialState,
     reducers: {
-        init: (state, action: PayloadAction<User[]>) => {
+        initFollowers: (state, action: PayloadAction<User[]>) => {
             state.followers = action.payload;
         },
-        follow: (state, action: PayloadAction<User>) => {
-            state.followers.push(action.payload);
+        removeFollower: (state, action: PayloadAction<string>) => {
+            state.followers = state.followers.filter(f => f.id !== action.payload);
         },
-        unfollow: (state, action: PayloadAction<{ userId: string }>) => {
-            state.followers = state.followers.filter(f => f.id !== action.payload.userId);
+        addFollower: (state, action: PayloadAction<User>) => {
+            // למנוע כפילויות
+            const existingFollowerIndex = state.followers.findIndex(f => f.id === action.payload.id);
+            
+            if (existingFollowerIndex === -1) {
+                state.followers.push(action.payload);
+            }
+        },
+        // הוספת reducer חדש לעדכון פרטי משתמש
+        updateFollowerStatus: (state, action: PayloadAction<{userId: string, isFollowing: boolean}>) => {
+            const { userId, isFollowing } = action.payload;
+            
+            if (isFollowing) {
+                // אם המשתמש כבר לא ברשימת העוקבים, הוסף אותו
+                const existingFollowerIndex = state.followers.findIndex(f => f.id === userId);
+                if (existingFollowerIndex === -1) {
+                    state.followers.push({ id: userId } as User);
+                }
+            } else {
+                // הסר את המשתמש מרשימת העוקבים
+                state.followers = state.followers.filter(f => f.id !== userId);
+            }
+        }
+    }
+});
+
+export const { initFollowers, removeFollower, addFollower, updateFollowerStatus } = followersSlice.actions;
+export default followersSlice.reducer;
+# redux/profileSlice.ts
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import Post from "../models/post/Post";
+import Comment from "../models/comment/Comment";
+
+interface profileState {
+    posts: Post[];
+}
+
+const initialState: profileState = {
+    posts: []
+}
+
+export const profileSlice = createSlice({
+    name: 'profile',
+    initialState,
+    reducers: {
+        init: (state, action: PayloadAction<Post[]>) => {
+            state.posts = action.payload;
+        },
+        newPost: (state, action: PayloadAction<Post>) => {
+            state.posts.unshift(action.payload);
+        },
+        removePost: (state, action: PayloadAction<string>) => {
+            state.posts = state.posts.filter(p => p.id !== action.payload);
+        },
+        update: (state, action: PayloadAction<Post>) => {
+            const index = state.posts.findIndex(p => p.id === action.payload.id);
+            if(index > -1){
+                state.posts[index] = action.payload;
+            }
+        },
+        addComment: (state, action: PayloadAction<Comment>) => {
+            state.posts.find(p => p.id === action.payload.postId)?.comments.unshift(action.payload);
         }
     }
 })
+
+export const { init , newPost, removePost, update, addComment} = profileSlice.actions;
+export default profileSlice.reducer;
+# redux/feedSlice.ts
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import Post from "../models/post/Post";
+import Comment from "../models/comment/Comment";
+
+interface FeedState {
+    posts: Post[]
+}
+
+const initialState: FeedState = {
+    posts: []
+}
+
+export const feedSlice = createSlice({
+    name: 'feed',
+    initialState,
+    reducers: {
+        init: (state, action: PayloadAction<Post[]>) => {
+            state.posts = action.payload
+        },
+        addComment: (state, action: PayloadAction<Comment>) => {
+            state.posts.find(p => p.id === action.payload.postId)?.comments.push(action.payload)
+        }
+    }
+})
+
+export const { init, addComment } = feedSlice.actions
+
+export default feedSlice.reducer
+
+# redux/hooks.ts
+import { AppDispatch, RootState } from './store';
+import { useDispatch, useSelector } from 'react-redux';
+
+export const useAppSelector = useSelector.withTypes<RootState>();
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
+
+
+
+# redux/store.ts
+import { configureStore } from "@reduxjs/toolkit";
+import { followingSlice } from "./followingSlice";
+import { followersSlice } from "./followersSlice";
+import { profileSlice } from "./profileSlice";
+import { feedSlice } from "./feedSlice";
+
+const store = configureStore({
+    reducer: {
+        following: followingSlice.reducer,
+        followers: followersSlice.reducer,
+        profile: profileSlice.reducer,
+        feed: feedSlice.reducer
+    }
+});
+
+export default store;
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
 # redux/followingSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import User from "../models/user/User";
 
-
 interface FollowingState {
     following: User[];
+    followers: User[];
 }
 
 const initialState: FollowingState = {
-    following: []
+    following: [],
+    followers: []
 }
 
 export const followingSlice = createSlice({
@@ -2242,15 +2651,32 @@ export const followingSlice = createSlice({
             state.following = state.following.filter(f => f.id !== action.payload.userId);
         },
         follow: (state, action: PayloadAction<User>) => {
-            state.following.push(action.payload);
+
+            const existingFollowIndex = state.following.findIndex(f => f.id === action.payload.id);
+            
+            if (existingFollowIndex === -1) {
+                state.following.push(action.payload);
+            }
+        },
+        initFollowers: (state, action: PayloadAction<User[]>) => {
+            state.followers = action.payload;
+        },
+        updateFollowStatus: (state, action: PayloadAction<{userId: string, isFollowing: boolean}>) => {
+            const { userId, isFollowing } = action.payload;
+            
+            if (isFollowing) {
+                const existingFollowIndex = state.following.findIndex(f => f.id === userId);
+                if (existingFollowIndex === -1) {
+                    state.following.push({ id: userId } as User);
+                }
+            } else {
+                state.following = state.following.filter(f => f.id !== userId);
+            }
         }
     }
 })
 
-// actions - functions that know how to modify the state.
-export const { init , unfollow , follow } = followingSlice.actions;
-
-// selectors - functions that know how to extract specific parts of the state.
+export const { init, unfollow, follow, initFollowers, updateFollowStatus } = followingSlice.actions;
 export default followingSlice.reducer;
 # services/comments.ts
 import axios from "axios";
@@ -2313,9 +2739,12 @@ class Following {
     async unFollow(userId: string): Promise<void> {
         await axios.post(`${import.meta.env.VITE_REST_SERVER_URL}/follows/unfollow/${userId}`);
     }
+
+    async follow(userId: string): Promise<void> {
+        await axios.post(`${import.meta.env.VITE_REST_SERVER_URL}/follows/follow/${userId}`);
+    }
 }
 
-// Singleton
 const following = new Following();
 export default following;
 # services/feed.ts

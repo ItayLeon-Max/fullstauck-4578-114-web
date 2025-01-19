@@ -10,8 +10,11 @@ class Following {
     async unFollow(userId: string): Promise<void> {
         await axios.post(`${import.meta.env.VITE_REST_SERVER_URL}/follows/unfollow/${userId}`);
     }
+
+    async follow(userId: string): Promise<void> {
+        await axios.post(`${import.meta.env.VITE_REST_SERVER_URL}/follows/follow/${userId}`);
+    }
 }
 
-// Singleton
 const following = new Following();
 export default following;
