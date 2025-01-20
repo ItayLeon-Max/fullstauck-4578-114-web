@@ -4,10 +4,12 @@ import Comment from "../models/comment/Comment";
 
 interface FeedState {
     posts: Post[]
+    hasNewPosts: boolean
 }
 
 const initialState: FeedState = {
-    posts: []
+    posts: [],
+    hasNewPosts: false
 }
 
 export const feedSlice = createSlice({
@@ -28,10 +30,13 @@ export const feedSlice = createSlice({
             if (post) {
                 post.comments = post.comments.filter(c => c.id !== action.payload.commentId);
             }
+        },
+        setHasNewPosts: (state, action: PayloadAction<boolean>) => {
+            state.hasNewPosts = action.payload;
         }
     }
 });
 
-export const { init, addComment, removeComment } = feedSlice.actions;
+export const { init, addComment, removeComment, setHasNewPosts } = feedSlice.actions;
 
 export default feedSlice.reducer;

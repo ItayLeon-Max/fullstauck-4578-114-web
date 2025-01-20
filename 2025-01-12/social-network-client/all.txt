@@ -66,7 +66,6 @@ export default interface User {
     updatedAt: string
 }
 # components/posts/comments/Comments.tsx
-import { useState } from 'react';
 import CommentModel from '../../../models/comment/Comment';
 import Comment from '../comment/Comment';
 import NewComment from '../new-comment/NewComment';
@@ -78,148 +77,178 @@ interface CommentsProps {
 }
 
 export default function Comments(props: CommentsProps): JSX.Element {
-    const { comments, postId } = props;
-
-    const [currentComments ] = useState(comments);
-
-
-    
+    const { comments, postId, removeComment } = props;
 
     return (
         <div className="Comments">
             <div>
-                total comments: {currentComments.length}
+                total comments: {comments.length}
             </div>
             <div>
-                <NewComment
-                 postId={postId}
-                 />
+                <NewComment postId={postId} />
             </div>
-            {currentComments.map((c) => (
+            {comments.map((c) => (
                 <Comment
                     key={c.id}
                     comment={c}
+                    postId={postId}
+                    onDelete={() => removeComment(c.id)}
                 />
             ))}
         </div>
     );
 }
 # components/posts/post/Post.tsx
+import { useState } from 'react';
 import './Post.css';
 import PostModel from '../../../models/post/Post';
 import profileService from '../../../services/profile';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Comments from '../comments/Comments';
 import { useAppDispatch } from '../../../redux/hooks';
-import { removePost } from '../../../redux/profileSlice';
+import { removePost, update } from '../../../redux/profileSlice';
+import { motion } from 'framer-motion';
 
 interface PostProps {
     post: PostModel;
     isAllowActions?: boolean;
-    remove?(id: string): void;
+    isNew?: boolean;
 }
 
 export default function Post(props: PostProps): JSX.Element {
-
-    const [post, setPost] = useState(props.post);
-    console.log(post); // So that I don't get an error about the post variable because it is not really used but it is necessary to appear
-    const { title, body, createdAt, id } = props.post;
-    const { name } = props.post.user;
-    const navigate = useNavigate();
-
-    const { isAllowActions } = props;
-
+    const { post, isAllowActions = false, isNew = false } = props;
+    const dispatch = useAppDispatch();
     const [liked, setLiked] = useState(false);
-    const [animateHeart, setAnimateHeart] = useState(false);
     const [likeCount, setLikeCount] = useState(0);
     const [showComments, setShowComments] = useState(false);
-    const [isDeleting] = useState(false); 
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [draftTitle, setDraftTitle] = useState(post.title);
+    const [draftBody, setDraftBody] = useState(post.body);
 
-    const dispatch = useAppDispatch();
-
-   async function deleteMe() {
-    if(props.remove && confirm('are you sure you want delete this post?')){
-        try{
-            await profileService.remove(id);
-            dispatch(removePost(id))
-        } catch (e) {
-            alert(e)
+    async function deletePost() {
+        if (confirm('Are you sure you want to delete this post?')) {
+            try {
+                setIsDeleting(true);
+                await profileService.remove(post.id);
+                dispatch(removePost(post.id));
+            } catch (e) {
+                alert(e);
+            } finally {
+                setIsDeleting(false);
+            }
         }
     }
-}
+
+    async function saveEdit() {
+        try {
+            setIsDeleting(true); // הצגת מצב טעינה על הכפתור
+            const updatedPost = await profileService.update(post.id, {
+                title: draftTitle,
+                body: draftBody,
+            });
+            dispatch(update(updatedPost));
+            setDraftTitle(updatedPost.title);
+            setDraftBody(updatedPost.body);
+            setIsEditing(false); 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (e) {
+            alert('Failed to save post changes');
+        } finally {
+            setIsDeleting(false); 
+        }
+    }
 
     function toggleLike() {
         setLiked(!liked);
-        setAnimateHeart(true);
-
         setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
-
-        setTimeout(() => {
-            setAnimateHeart(false);
-        }, 500);
-    }
-
-    function editPost() {
-        navigate(`/edit/${id}`);
-    }
-
-    function toggleComments() {
-        setShowComments(!showComments);
-    }
-
-    function removeComment(commentId: string): void {
-        const updatedComments = props.post.comments.filter((comment) => comment.id !== commentId);
-        props.post.comments = updatedComments;
-        setPost({ ...props.post }); 
     }
 
     return (
-        <div className="Post">
-            <h2>{title}</h2>
-            <div>
-                by {name} at {new Date(createdAt).toLocaleString()}
-            </div>
-            <div dangerouslySetInnerHTML={{ __html: body }} />
-            {isAllowActions && (
-                <div className="actions">
-                    <button
-                        className={`like-button ${liked ? 'liked' : ''}`}
-                        onClick={toggleLike}
-                    >
-                        <div className={`heart-animation ${animateHeart ? 'animate' : ''}`}></div>
-                        {liked ? '👎 Unlike' : '👍 Like'}
+        <motion.div
+            className={`Post ${isNew ? 'new-post' : ''}`}
+            initial={{ opacity: 0, scale: 0.8, rotate: -5, backgroundColor: '#f0f8ff' }}
+            animate={{ opacity: 1, scale: 1, rotate: 0, backgroundColor: 'white' }}
+            exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+        >
+            {isEditing ? (
+                <div className="edit-post-form">
+                    <input
+                        type="text"
+                        value={draftTitle}
+                        onChange={(e) => setDraftTitle(e.target.value)}
+                        placeholder="Title"
+                        className="edit-input"
+                    />
+                    <textarea
+                        value={draftBody}
+                        onChange={(e) => setDraftBody(e.target.value)}
+                        placeholder="Content"
+                        className="edit-textarea"
+                    ></textarea>
+                    <div className="actions">
+                    <button onClick={saveEdit} className="save-button" disabled={isDeleting}>
+                            {isDeleting ? <span className="spinner"></span> : 'Save'}
                     </button>
-                    <span className="like-count">{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</span>
-                    <button className="comment-button" onClick={toggleComments}>
-                        {showComments ? 'Hide Comments' : 'Show Comments'}
-                    </button>
-                    <button className="edit-button" onClick={editPost}>Edit</button>
-                    <button
-                        className="delete-button"
-                        onClick={deleteMe}
-                        disabled={isDeleting} 
-                    >
-                        {isDeleting ? 'Deleting...' : 'Delete'}
-                    </button>
+                        <button onClick={() => setIsEditing(false)} className="cancel-button">
+                            Cancel
+                        </button>
+                    </div>
                 </div>
+            ) : (
+                <>
+                    <h2>{post.title}</h2>
+                    <div>
+                        by {post.user.name} at {new Date(post.createdAt).toLocaleString()}
+                    </div>
+                    <div dangerouslySetInnerHTML={{ __html: post.body }} />
+                    {isAllowActions && (
+                        <div className="actions">
+                            <button
+                                className={`like-button ${liked ? 'liked' : ''}`}
+                                onClick={toggleLike}
+                            >
+                                {liked ? '👎 Unlike' : '👍 Like'}
+                            </button>
+                            <span className="like-count">
+                                {likeCount} {likeCount === 1 ? 'Like' : 'Likes'}
+                            </span>
+                            <button
+                                className="comment-button"
+                                onClick={() => setShowComments(!showComments)}
+                            >
+                                {showComments ? 'Hide Comments' : 'Show Comments'}
+                            </button>
+                            <button className="edit-button" onClick={() => setIsEditing(true)}>
+                                Edit
+                            </button>
+                            <button
+                                className="delete-button"
+                                onClick={deletePost}
+                                disabled={isDeleting}
+                            >
+                                {isDeleting ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    )}
+                    {showComments && (
+                        <Comments
+                            comments={post.comments}
+                            postId={post.id}
+                            removeComment={() => {}}
+                        />
+                    )}
+                </>
             )}
-            {showComments && props.post?.comments && (
-                <Comments
-                    comments={props.post.comments}
-                    postId={id}
-                    removeComment={removeComment}
-                />
-            )}
-        </div>
+        </motion.div>
     );
 }
-
-
 # components/posts/post/Post.css
 .Post {
+    display: block !important;
+    flex-direction: unset !important;
+    border: none !important;
     background: #ffffff;
-    border: 1px solid #e0e0e0;
     border-radius: 12px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     margin: 20px auto;
@@ -234,53 +263,36 @@ export default function Post(props: PostProps): JSX.Element {
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
 }
 
-.Post div:first-child {
+.Post h2 {
     font-size: 1.8rem;
     font-weight: bold;
     color: #333333;
-    line-height: 1.4;
     margin-bottom: 15px;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-.Post div:nth-child(2) {
+.Post > div:nth-child(2) {
     font-size: 0.9rem;
     color: #666666;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 15px;
 }
 
-.Post div:nth-child(2) span {
-    font-weight: bold;
-    color: #007bff;
-    transition: color 0.3s ease;
-}
-
-.Post div:nth-child(2) span:hover {
-    color: #0056b3;
-    text-decoration: underline;
-}
-
-.Post div:nth-child(3) {
+.Post > div:nth-child(3) {
     font-size: 1.1rem;
     color: #555555;
     line-height: 1.6;
     margin-bottom: 20px;
-    word-wrap: break-word;
 }
 
-.actions {
+.Post .actions {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
     gap: 15px;
     margin-top: 10px;
-    flex-wrap: nowrap;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
 }
 
-.like-button {
+.Post .like-button {
     background: #e0f7fa;
     border: 1px solid #00bcd4;
     color: #00796b;
@@ -288,94 +300,16 @@ export default function Post(props: PostProps): JSX.Element {
     border-radius: 50px;
     font-size: 0.9rem;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    position: relative;
     transition: all 0.3s ease;
 }
 
-.like-button:hover {
+.Post .like-button:hover {
     background: #00bcd4;
     color: white;
     box-shadow: 0 4px 8px rgba(0, 188, 212, 0.3);
-    transform: scale(1.1);
 }
 
-.like-button.liked {
-    background: #f44336;
-    border: 1px solid #b71c1c;
-    color: white;
-    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
-}
-
-.like-button.liked:hover {
-    background: #d32f2f;
-}
-
-.heart-animation {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%) scale(0.5);
-    font-size: 24px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.5s ease, transform 0.5s ease;
-    user-select: none;
-}
-
-.heart-animation.like.animate {
-    opacity: 1;
-    transform: translateY(-20px) scale(2);
-    color: #4caf50; 
-    animation: pop-like 0.5s ease forwards;
-}
-
-.heart-animation.unlike.animate {
-    opacity: 1;
-    transform: translateY(20px) scale(2);
-    color: #f44336; 
-    animation: pop-unlike 0.5s ease forwards;
-}
-
-@keyframes pop-like {
-    0% {
-        opacity: 0;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.5);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-20px) scale(2);
-    }
-}
-
-@keyframes pop-unlike {
-    0% {
-        opacity: 0;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.5);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(20px) scale(2);
-    }
-}
-
-.like-count {
-    font-size: 0.9rem;
-    color: #555;
-    align-self: center;
-}
-
-.comment-button {
+.Post .comment-button {
     background: #f3e5f5;
     border: 1px solid #9c27b0;
     color: #6a1b9a;
@@ -383,20 +317,16 @@ export default function Post(props: PostProps): JSX.Element {
     border-radius: 50px;
     font-size: 0.9rem;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
     transition: all 0.3s ease;
 }
 
-.comment-button:hover {
+.Post .comment-button:hover {
     background: #9c27b0;
     color: white;
     box-shadow: 0 4px 8px rgba(156, 39, 176, 0.3);
-    transform: scale(1.1);
 }
 
-.edit-button {
+.Post .edit-button {
     background: #e3f2fd;
     border: 1px solid #2196f3;
     color: #1565c0;
@@ -404,20 +334,16 @@ export default function Post(props: PostProps): JSX.Element {
     border-radius: 50px;
     font-size: 0.9rem;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
     transition: all 0.3s ease;
 }
 
-.edit-button:hover {
+.Post .edit-button:hover {
     background: #2196f3;
     color: white;
     box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
-    transform: scale(1.05);
 }
 
-.delete-button {
+.Post .delete-button {
     background: #ffebee;
     border: 1px solid #f44336;
     color: #b71c1c;
@@ -425,58 +351,134 @@ export default function Post(props: PostProps): JSX.Element {
     border-radius: 50px;
     font-size: 0.9rem;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
     transition: all 0.3s ease;
-    width: 100px; 
-    height: 40px; 
-    box-sizing: border-box;
-    text-align: center;
-    position: relative; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
 }
 
-.delete-button:hover {
+.Post .delete-button:hover {
     background: #f44336;
-    color: #b71c1c; 
+    color: white;
     box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
-    transform: scale(1.05);
 }
 
-.delete-button:disabled {
-    background: #ffcdd2; 
-    color: #b71c1c; 
+.Post .delete-button:disabled {
+    opacity: 0.7;
     cursor: not-allowed;
 }
 
-.ButtonLoading {
-    position: absolute; 
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.Post .like-count {
+    color: #666;
     font-size: 0.9rem;
-    font-weight: bold;
-    color: #b71c1c;
-    width: 100%;
-    height: 100%;
+    min-width: 70px;
 }
 
-.ButtonLoading::after {
-    content: '';
-    margin-left: 10px; 
+/* Edit post form styling */
+.edit-post-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.edit-post-form input,
+.edit-post-form textarea {
+    width: 100%;
+    padding: 15px;
+    font-size: 1rem;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.edit-post-form input:focus,
+.edit-post-form textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    outline: none;
+    background-color: #ffffff;
+}
+
+.edit-post-form textarea {
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.6;
+}
+
+.edit-post-form .button-container {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.edit-post-form .save-button {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.edit-post-form .save-button:hover {
+    background: #4caf50;
+    color: white;
+}
+
+.edit-post-form .cancel-button {
+    background: #ffebee;
+    border: 1px solid #f44336;
+    color: #b71c1c;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.edit-post-form .cancel-button:hover {
+    background: #f44336;
+    color: white;
+}
+
+.save-button {
+    position: relative;
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.save-button:disabled {
+    background: #dcedc8;
+    color: #a5d6a7;
+    cursor: not-allowed;
+}
+
+.save-button .spinner {
     width: 16px;
     height: 16px;
     border: 2px solid transparent;
-    border-top: 2px solid #b71c1c;
+    border-top: 2px solid #2e7d32;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -490,16 +492,19 @@ export default function Post(props: PostProps): JSX.Element {
 # components/posts/comment/Comment.tsx
 import { useState } from 'react';
 import CommentModel from '../../../models/comment/Comment';
+import comments from '../../../services/comments';
 import EditComment from '../editComment/EditComment';
 import './Comment.css';
 
 interface CommentProps {
-    comment: CommentModel
+    comment: CommentModel;
+    postId: string;
+    onDelete: () => void;
 }
 
 export default function Comment(props: CommentProps): JSX.Element {
-    const { user: { name }, body, createdAt, id } = props.comment;
-
+    const { comment, onDelete } = props;
+    const { user: { name }, body, createdAt, id } = comment;
 
     const formattedDate = new Date(createdAt).toLocaleString('en-GB', {
         year: 'numeric',
@@ -515,7 +520,20 @@ export default function Comment(props: CommentProps): JSX.Element {
     const [commentBody, setCommentBody] = useState(body);
     const [isDeleting, setIsDeleting] = useState(false);
 
-
+    const handleDelete = async () => {
+        if (window.confirm('Are you sure you want to delete this comment?')) {
+            try {
+                setIsDeleting(true);
+                await comments.deleteComment(id);
+                onDelete(); // Call the onDelete callback from props
+            } catch (error) {
+                console.error('Failed to delete comment:', error);
+                alert('Failed to delete comment');
+            } finally {
+                setIsDeleting(false);
+            }
+        }
+    };
 
     const toggleLike = () => {
         setLikeCount(liked ? likeCount - 1 : likeCount + 1);
@@ -534,13 +552,6 @@ export default function Comment(props: CommentProps): JSX.Element {
         setCommentBody(updatedBody);
         setIsEditing(false);
     };
-
-    const handleDelete = () => {
-        if (window.confirm('Are you sure you want to delete this comment?')) {
-            setIsDeleting(true);
-        }
-    };
-
 
     return (
         <div className="Comment">
@@ -568,7 +579,7 @@ export default function Comment(props: CommentProps): JSX.Element {
                     <button className="action-button reply-button" onClick={handleEditClick}>
                         Edit
                     </button>
-                    <button className="action-button delete-button" onClick={handleDelete} >
+                    <button className="action-button delete-button" onClick={handleDelete} disabled={isDeleting}>
                         {isDeleting ? 'Deleting...' : 'Delete'}
                     </button>
                 </div>
@@ -804,29 +815,31 @@ interface NewCommentProps {
 }
 
 export default function NewComment(props: NewCommentProps) {
-    const { postId } = props
+    const { postId } = props;
 
     const { 
         register, 
         handleSubmit, 
         formState, 
         reset 
-    } = useForm<CommentDraft>()  
+    } = useForm<CommentDraft>();
 
-    const dispatch = useAppDispatch()
+    const dispatch = useAppDispatch();
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     async function submit(draft: CommentDraft) {
         try {
-            const newComment = await CommentService.create(postId, draft)
-            reset()
-            dispatch(addCommentProfile(newComment))
-            dispatch(addCommentFeed(newComment))
+            setIsSubmitting(true);
+            const newComment = await CommentService.create(postId, draft);
+            reset();
+            dispatch(addCommentProfile(newComment));
+            dispatch(addCommentFeed(newComment));
         } catch (e) {
-            alert(e)
+            alert(e);
+        } finally {
+            setIsSubmitting(false);
         }
     }
-
-    const [isSubmitting] = useState<boolean>(false)
 
     return (
         <div className="NewComment">
@@ -852,9 +865,7 @@ export default function NewComment(props: NewCommentProps) {
             </form>
         </div>
     );
-
 }
-
 # components/posts/profile/Profile.tsx
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
@@ -864,6 +875,7 @@ import Post from "../post/Post";
 import profile from "../../../services/profile";
 import { init } from "../../../redux/profileSlice";
 import useTitle from "../../../hooks/useTitle";
+import { AnimatePresence } from 'framer-motion'
 
 export default function Profile(): JSX.Element {
     useTitle('SN - Profile');
@@ -871,7 +883,7 @@ export default function Profile(): JSX.Element {
     const posts = useAppSelector(state => state.profile.posts);
     const dispatch = useAppDispatch();
     const [isLoading, setIsLoading] = useState(true);
-
+    console.log(isLoading)
     useEffect(() => {
         let isMounted = true;
         (async () => {
@@ -895,18 +907,22 @@ export default function Profile(): JSX.Element {
         return () => { isMounted = false; };
     }, [posts.length, dispatch]);
     return (
-        <div className="Profile">
-            {isLoading && <LoaddingPageForProfile />}
-            {!isLoading && posts.length > 0 && (
-                <>
-                    <NewPost />
-                    {posts.map(p => (
-                        <Post key={p.id} post={p} isAllowActions={true} />
-                    ))}
-                </>
-            )}
-            {!isLoading && posts.length === 0 && <p>No posts available</p>}
-        </div>
+        <div className='Profile'>
+    { posts.length === 0 && <LoaddingPageForProfile />}
+
+    { posts.length > 0 && <>
+      <NewPost />
+      <AnimatePresence>
+        {posts.map(p =>
+          <Post
+            key={p.id}
+            post={p}
+            isAllowActions={true}
+          />
+        )}
+      </AnimatePresence>
+    </>}
+  </div>
     );
 }
 # components/posts/feed/Feed.tsx
@@ -917,32 +933,49 @@ import feed from '../../../services/feed'
 import Post from '../post/Post'
 import CommentModel from '../../../models/comment/Comment'
 import useTitle from '../../../hooks/useTitle'
-
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks'
+import { init, setHasNewPosts } from '../../../redux/feedSlice'
 
 export default function Feed() {
-    const [posts, setPosts] = useState<PostModel[]>([])
+    const dispatch = useAppDispatch()
+    const posts = useAppSelector(state => state.feed.posts)
+    const hasNewPosts = useAppSelector(state => state.feed.hasNewPosts)
 
     useTitle('Feed')
 
     useEffect(() => {
         feed.getFeed()
-            .then(setPosts)
+            .then(posts => dispatch(init(posts)))
             .catch(alert)
+    }, [dispatch])
 
-    }, [])
-
-       function addComment(comment: CommentModel): void {
-            const postsWithNewComment = [...posts]
-            const postToAddCommentTo = postsWithNewComment.find(post => post.id === comment.postId)
-            if(postToAddCommentTo){
-                postToAddCommentTo.comments.unshift(comment)
-            }
-    
-            setPosts(postsWithNewComment)
+    function addComment(comment: CommentModel): void {
+        const postToAddCommentTo = posts.find(post => post.id === comment.postId)
+        if(postToAddCommentTo){
+            postToAddCommentTo.comments.unshift(comment)
         }
+        dispatch(init([...posts]))
+    }
+
+    function handleReloadFeed() {
+        dispatch(init([]))
+        feed.getFeed()
+            .then(posts => {
+                dispatch(init(posts))
+                dispatch(setHasNewPosts(false))
+            })
+            .catch(alert)
+    }
 
     return (
         <div className='Feed'>
+            {hasNewPosts && (
+                <div className="alert">
+                    You have new posts in your feed.
+                    <button onClick={handleReloadFeed}>Reload Feed</button>
+                </div>
+            )}
+            
             {posts.map(p => <Post 
                             key={p.id} 
                             post={p}
@@ -998,6 +1031,18 @@ export default function Feed() {
 .Feed.empty::before {
     display: block;
 }
+
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    margin-bottom: 20px;
+}
 # components/posts/new/NewPost.tsx
 import { useForm } from 'react-hook-form';
 import './NewPost.css';
@@ -1006,8 +1051,6 @@ import profile from '../../../services/profile';
 import { useState } from 'react';
 import { useAppDispatch } from '../../../redux/hooks';
 import { newPost } from '../../../redux/profileSlice';
-
-
 
 export default function NewPost() {
     const { register, handleSubmit, reset, formState } = useForm<PostDraft>({
@@ -1023,7 +1066,6 @@ export default function NewPost() {
             setIsLoading(true);
             const newPostFromServer = await profile.create(draft);
             dispatch(newPost(newPostFromServer))
-
             reset();
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
@@ -1175,28 +1217,38 @@ import profileService from '../../../services/profile';
 import PostDraft from '../../../models/post/PostDraft';
 import { useForm } from 'react-hook-form';
 import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
+import { update } from '../../../redux/profileSlice';
 
 export default function EditPost() {
 
     const { id } = useParams<'id'>()
     const {handleSubmit, register, formState, reset} = useForm<PostDraft>()
     const navigate = useNavigate()
+    const posts = useAppSelector(state => state.profile.posts)
+    const dispatch = useAppDispatch()
 
     useEffect(() => {
-        if(id){
-            profileService.getPost(id)
-            .then(reset)
-            .catch(alert)
+        if(id) {
+            const post = posts.find(p => p.id === id)
+            if (post) {
+                reset(post)
+            } else {
+                profileService.getPost(id)
+                    .then(reset)
+                    .catch(alert)
+            }
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
 
     async function submit(draft: PostDraft) {
         try{
-            const {title, body} = draft
-            await profileService.update(id!, {title, body})
-            navigate('/profile')
-
+            if (id) {
+                const updatedPost = await profileService.update(id, draft)
+                dispatch(update(updatedPost))
+                navigate('/profile')
+            }
         } catch (e) {
             alert(e)
         }
@@ -1204,6 +1256,7 @@ export default function EditPost() {
 
     return (
         <div className="EditPost">
+            <h2>Edit Post</h2>
             <form onSubmit={handleSubmit(submit)}>
                 <input
                     type="text"
@@ -1362,6 +1415,13 @@ export default function EditPost() {
         transform: rotate(360deg);
     }
 }
+
+h2 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333333;
+    margin-bottom: 15px;
+}
 # components/posts/editComment/EditComment.tsx
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
@@ -1379,7 +1439,7 @@ interface EditCommentProps {
 export default function EditComment(props: EditCommentProps): JSX.Element {
     const { commentId, currentBody, onSave, onCancel } = props;
 
-    const { register, handleSubmit, reset, formState } = useForm<CommentDraft>({
+    const { register, handleSubmit, formState } = useForm<CommentDraft>({
         defaultValues: { body: currentBody },
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -1388,8 +1448,7 @@ export default function EditComment(props: EditCommentProps): JSX.Element {
         try {
             setIsSubmitting(true);
             const updatedComment = await comments.updateComment(commentId, data);
-            onSave(updatedComment.body); 
-            reset();
+            onSave(updatedComment.body);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             alert('Failed to update comment.');
@@ -1427,19 +1486,12 @@ export default function EditComment(props: EditCommentProps): JSX.Element {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    background: #ffffff;
-    border: 1px solid #d1d1d1;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-top: 15px;
     animation: fadeIn 0.3s ease-in-out;
-    width: 100%; 
-    max-width: 700px; 
+    width: 100%;
 }
 
 .EditComment textarea {
-    width: 100%; 
+    width: 100%;
     padding: 15px;
     font-size: 1rem;
     border: 1px solid #cccccc;
@@ -1447,8 +1499,9 @@ export default function EditComment(props: EditCommentProps): JSX.Element {
     background-color: #f7f9fa;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    resize: none; 
-    box-sizing: border-box; 
+    min-height: 100px;
+    resize: vertical;
+    box-sizing: border-box;
 }
 
 .EditComment textarea:focus {
@@ -1462,43 +1515,49 @@ export default function EditComment(props: EditCommentProps): JSX.Element {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 15px;
+    margin-top: 10px;
+}
+
+.edit-comment-actions button {
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .edit-comment-actions .cancel-button {
     background: #ffebee;
     border: 1px solid #f44336;
     color: #d32f2f;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .edit-comment-actions .cancel-button:hover {
     background: #f44336;
     color: white;
-    box-shadow: 0 2px 6px rgba(244, 67, 54, 0.3);
 }
 
 .edit-comment-actions .save-button {
     background: #e8f5e9;
     border: 1px solid #4caf50;
     color: #2e7d32;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .edit-comment-actions .save-button:hover {
     background: #4caf50;
     color: white;
-    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+}
+
+.edit-comment-actions .save-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.EditComment .error {
+    color: #f44336;
+    font-size: 0.9rem;
+    margin-top: 5px;
 }
 
 @keyframes fadeIn {
@@ -2270,6 +2329,7 @@ import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 import { updateFollowStatus } from '../../../redux/followingSlice';
 import { removeFollower, addFollower } from '../../../redux/followersSlice';
 import followingService from '../../../services/following';
+import setHasNewPosts  from '../../../redux/feedSlice';
 
 
 interface FollowProps {
@@ -2289,21 +2349,20 @@ export default function Follow({ user }: FollowProps) {
         if (isFollowing && !window.confirm(`Are you sure you want to stop following ${name}?`)) {
             return;
         }
-
         setLoading(true);
         try {
             if (isFollowing) {
                 // Unfollow
                 await followingService.unFollow(id);
                 
-                // עדכון סטייט קליינט צד
                 dispatch(updateFollowStatus({ userId: id, isFollowing: false }));
                 dispatch(removeFollower(id));
+
+                dispatch(setHasNewPosts(true));
             } else {
                 // Follow
                 await followingService.follow(id);
-                
-                // עדכון סטייט קליינט צד
+
                 dispatch(updateFollowStatus({ userId: id, isFollowing: true }));
                 dispatch(addFollower({ ...user }));
             }
@@ -2337,6 +2396,8 @@ export default function Follow({ user }: FollowProps) {
         </div>
     );
 }
+
+
 # components/follows/follow/Follow.css
 .Follow {
     display: flex;
@@ -2533,40 +2594,57 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Post from "../models/post/Post";
 import Comment from "../models/comment/Comment";
 
-interface profileState {
-    posts: Post[];
+interface ProfileState {
+    posts: Post[]
 }
 
-const initialState: profileState = {
+const initialState: ProfileState = {
     posts: []
-};
+}
 
 export const profileSlice = createSlice({
-    name: "profile",
+    name: 'profile',
     initialState,
     reducers: {
         init: (state, action: PayloadAction<Post[]>) => {
-            state.posts = action.payload; // אתחול רשימת הפוסטים
+            state.posts = action.payload;
         },
         newPost: (state, action: PayloadAction<Post>) => {
-            state.posts.unshift(action.payload); // הוספת פוסט חדש
+            state.posts.unshift(action.payload);
         },
         removePost: (state, action: PayloadAction<string>) => {
-            state.posts = state.posts.filter(p => p.id !== action.payload); // הסרת פוסט
+            state.posts = state.posts.filter(p => p.id !== action.payload);
         },
         update: (state, action: PayloadAction<Post>) => {
             const index = state.posts.findIndex(p => p.id === action.payload.id);
             if (index > -1) {
-                state.posts[index] = action.payload; // עדכון פוסט קיים
+                state.posts[index] = action.payload;
             }
         },
         addComment: (state, action: PayloadAction<Comment>) => {
-            state.posts.find(p => p.id === action.payload.postId)?.comments.unshift(action.payload);
+            const post = state.posts.find(p => p.id === action.payload.postId);
+            if (post) {
+                post.comments.unshift(action.payload);
+            }
+        },
+        removeComment: (state, action: PayloadAction<{ commentId: string, postId: string }>) => {
+            const post = state.posts.find(p => p.id === action.payload.postId);
+            if (post) {
+                post.comments = post.comments.filter(c => c.id !== action.payload.commentId);
+            }
         }
     }
 });
 
-export const { init, newPost, removePost, update, addComment } = profileSlice.actions;
+export const { 
+    init, 
+    newPost, 
+    removePost, 
+    update, 
+    addComment, 
+    removeComment 
+} = profileSlice.actions;
+
 export default profileSlice.reducer;
 # redux/feedSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
@@ -2575,10 +2653,12 @@ import Comment from "../models/comment/Comment";
 
 interface FeedState {
     posts: Post[]
+    hasNewPosts: boolean
 }
 
 const initialState: FeedState = {
-    posts: []
+    posts: [],
+    hasNewPosts: false
 }
 
 export const feedSlice = createSlice({
@@ -2586,18 +2666,29 @@ export const feedSlice = createSlice({
     initialState,
     reducers: {
         init: (state, action: PayloadAction<Post[]>) => {
-            state.posts = action.payload
+            state.posts = action.payload;
         },
         addComment: (state, action: PayloadAction<Comment>) => {
-            state.posts.find(p => p.id === action.payload.postId)?.comments.push(action.payload)
+            const post = state.posts.find(p => p.id === action.payload.postId);
+            if (post) {
+                post.comments.unshift(action.payload);
+            }
+        },
+        removeComment: (state, action: PayloadAction<{ commentId: string, postId: string }>) => {
+            const post = state.posts.find(p => p.id === action.payload.postId);
+            if (post) {
+                post.comments = post.comments.filter(c => c.id !== action.payload.commentId);
+            }
+        },
+        setHasNewPosts: (state, action: PayloadAction<boolean>) => {
+            state.hasNewPosts = action.payload;
         }
     }
-})
+});
 
-export const { init, addComment } = feedSlice.actions
+export const { init, addComment, removeComment, setHasNewPosts } = feedSlice.actions;
 
-export default feedSlice.reducer
-
+export default feedSlice.reducer;
 # redux/hooks.ts
 import { AppDispatch, RootState } from './store';
 import { useDispatch, useSelector } from 'react-redux';
@@ -2695,18 +2786,16 @@ class Comments {
         return response.data;
     }
 
-    async updateComment(postId: string, draft: CommentDraft): Promise<Comment> {
-        const response = await axios.patch<Comment>(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${postId}`, draft);
+    async updateComment(commentId: string, draft: CommentDraft): Promise<Comment> {
+        const response = await axios.patch<Comment>(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${commentId}`, draft);
         return response.data;
     }
 
     async deleteComment(commentId: string): Promise<void> {
-        const response = await axios.delete(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${commentId}`);
-        return response.data;
+        await axios.delete(`${import.meta.env.VITE_REST_SERVER_URL}/comments/${commentId}`);
     }
 }
 
-//singleton
 const comments = new Comments();
 export default comments;
 # services/followers.ts

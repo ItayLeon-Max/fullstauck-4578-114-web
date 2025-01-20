@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 import { updateFollowStatus } from '../../../redux/followingSlice';
 import { removeFollower, addFollower } from '../../../redux/followersSlice';
 import followingService from '../../../services/following';
+import { setHasNewPosts }  from '../../../redux/feedSlice';
 
 
 interface FollowProps {
@@ -24,21 +25,20 @@ export default function Follow({ user }: FollowProps) {
         if (isFollowing && !window.confirm(`Are you sure you want to stop following ${name}?`)) {
             return;
         }
-
         setLoading(true);
         try {
             if (isFollowing) {
                 // Unfollow
                 await followingService.unFollow(id);
                 
-                // עדכון סטייט קליינט צד
                 dispatch(updateFollowStatus({ userId: id, isFollowing: false }));
                 dispatch(removeFollower(id));
+
+                dispatch(setHasNewPosts(true));
             } else {
                 // Follow
                 await followingService.follow(id);
-                
-                // עדכון סטייט קליינט צד
+
                 dispatch(updateFollowStatus({ userId: id, isFollowing: true }));
                 dispatch(addFollower({ ...user }));
             }
@@ -72,3 +72,4 @@ export default function Follow({ user }: FollowProps) {
         </div>
     );
 }
+

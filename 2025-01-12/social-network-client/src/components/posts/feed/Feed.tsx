@@ -1,36 +1,52 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import './Feed.css'
-import PostModel from '../../../models/post/Post'
 import feed from '../../../services/feed'
 import Post from '../post/Post'
 import CommentModel from '../../../models/comment/Comment'
 import useTitle from '../../../hooks/useTitle'
-
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks'
+import { init, setHasNewPosts } from '../../../redux/feedSlice'
 
 export default function Feed() {
-    const [posts, setPosts] = useState<PostModel[]>([])
+    const dispatch = useAppDispatch()
+    const posts = useAppSelector(state => state.feed.posts)
+    const hasNewPosts = useAppSelector(state => state.feed.hasNewPosts)
 
     useTitle('Feed')
 
     useEffect(() => {
         feed.getFeed()
-            .then(setPosts)
+            .then(posts => dispatch(init(posts)))
             .catch(alert)
+    }, [dispatch])
 
-    }, [])
-
-       function addComment(comment: CommentModel): void {
-            const postsWithNewComment = [...posts]
-            const postToAddCommentTo = postsWithNewComment.find(post => post.id === comment.postId)
-            if(postToAddCommentTo){
-                postToAddCommentTo.comments.unshift(comment)
-            }
-    
-            setPosts(postsWithNewComment)
+    function addComment(comment: CommentModel): void {
+        const postToAddCommentTo = posts.find(post => post.id === comment.postId)
+        if(postToAddCommentTo){
+            postToAddCommentTo.comments.unshift(comment)
         }
+        dispatch(init([...posts]))
+    }
+
+    function handleReloadFeed() {
+        dispatch(init([]))
+        feed.getFeed()
+            .then(posts => {
+                dispatch(init(posts))
+                dispatch(setHasNewPosts(false))
+            })
+            .catch(alert)
+    }
 
     return (
         <div className='Feed'>
+            {hasNewPosts && (
+                <div className="alert">
+                    You have new posts in your feed.
+                    <button onClick={handleReloadFeed}>Reload Feed</button>
+                </div>
+            )}
+            
             {posts.map(p => <Post 
                             key={p.id} 
                             post={p}

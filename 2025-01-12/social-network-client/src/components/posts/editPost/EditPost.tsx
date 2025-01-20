@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import './EditPost.css';
 import { useEffect } from 'react';
 import profileService from '../../../services/profile';
@@ -12,7 +12,6 @@ export default function EditPost() {
 
     const { id } = useParams<'id'>()
     const {handleSubmit, register, formState, reset} = useForm<PostDraft>()
-    const navigate = useNavigate()
     const posts = useAppSelector(state => state.profile.posts)
     const dispatch = useAppDispatch()
 
@@ -31,19 +30,21 @@ export default function EditPost() {
     },[])
 
     async function submit(draft: PostDraft) {
-        try{
+        try {
             if (id) {
-                const updatedPost = await profileService.update(id, draft)
-                dispatch(update(updatedPost))
-                navigate('/profile')
+                const updatedPost = await profileService.update(id, draft);
+                dispatch(update(updatedPost)); 
+                reset(updatedPost); 
             }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
-            alert(e)
+            alert('Failed to save changes');
         }
     }
 
     return (
         <div className="EditPost">
+            <h2>Edit Post</h2>
             <form onSubmit={handleSubmit(submit)}>
                 <input
                     type="text"
