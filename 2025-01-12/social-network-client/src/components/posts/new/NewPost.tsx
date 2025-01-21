@@ -1,15 +1,18 @@
 import { useForm } from 'react-hook-form';
 import './NewPost.css';
 import PostDraft from '../../../models/post/PostDraft';
-import profile from '../../../services/profile';
+import profile from '../../../services/auth-aware/profile';
 import { useState } from 'react';
 import { useAppDispatch } from '../../../redux/hooks';
 import { newPost } from '../../../redux/profileSlice';
+import useService from '../../../hooks/useService';
 
 export default function NewPost() {
     const { register, handleSubmit, reset, formState } = useForm<PostDraft>({
         mode: 'onTouched',
     });
+
+    const profileService = useService(profile);
 
     const [isLoading, setIsLoading] = useState(false);
     const dispatch = useAppDispatch();
@@ -17,7 +20,7 @@ export default function NewPost() {
     async function submit(draft: PostDraft) {
         try {
             setIsLoading(true);
-            const newPostFromServer = await profile.create(draft);
+            const newPostFromServer = await profileService.create(draft);
             const postWithNew = { ...newPostFromServer, isNew: true };
             dispatch(newPost(postWithNew));
             reset();

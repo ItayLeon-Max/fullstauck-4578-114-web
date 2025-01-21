@@ -1,16 +1,19 @@
 import { useEffect } from 'react'
 import './Feed.css'
-import feed from '../../../services/feed'
 import Post from '../post/Post'
 import CommentModel from '../../../models/comment/Comment'
 import useTitle from '../../../hooks/useTitle'
 import { useAppDispatch, useAppSelector } from '../../../redux/hooks'
 import { init, setHasNewPosts } from '../../../redux/feedSlice'
+import FeedService from '../../../services/auth-aware/feed'
+import useService from '../../../hooks/useService'
 
 export default function Feed() {
     const dispatch = useAppDispatch()
     const posts = useAppSelector(state => state.feed.posts)
     const hasNewPosts = useAppSelector(state => state.feed.hasNewPosts)
+
+    const feed = useService(FeedService)
 
     useTitle('Feed')
 

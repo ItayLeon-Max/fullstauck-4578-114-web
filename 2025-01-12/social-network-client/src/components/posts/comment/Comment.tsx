@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import CommentModel from '../../../models/comment/Comment';
-import comments from '../../../services/comments';
 import EditComment from '../editComment/EditComment';
 import './Comment.css';
+import CommentService from '../../../services/auth-aware/comments';
+import useService from '../../../hooks/useService';
 
 interface CommentProps {
     comment: CommentModel;
@@ -13,6 +14,8 @@ interface CommentProps {
 export default function Comment(props: CommentProps): JSX.Element {
     const { comment, onDelete } = props;
     const { user: { name }, body, createdAt, id } = comment;
+
+    const comments = useService(CommentService);
 
     const formattedDate = new Date(createdAt).toLocaleString('en-GB', {
         year: 'numeric',

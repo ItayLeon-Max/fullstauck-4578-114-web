@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import './Post.css';
 import PostModel from '../../../models/post/Post';
-import profileService from '../../../services/profile';
+import profile from '../../../services/auth-aware/profile';
 import Comments from '../comments/Comments';
 import { useAppDispatch } from '../../../redux/hooks';
 import { removePost, update } from '../../../redux/profileSlice';
 import { motion } from 'framer-motion';
 import CommentModel from '../../../models/comment/Comment';
+import useService from '../../../hooks/useService';
 
 interface PostProps {
     post: PostModel;
@@ -25,6 +26,8 @@ export default function Post(props: PostProps): JSX.Element {
     const [isEditing, setIsEditing] = useState(false);
     const [draftTitle, setDraftTitle] = useState(post.title);
     const [draftBody, setDraftBody] = useState(post.body);
+
+    const profileService = useService(profile);
 
     async function deletePost() {
         if (confirm('Are you sure you want to delete this post?')) {

@@ -1,15 +1,18 @@
 import './Followers.css';
 import { useEffect, useState } from 'react';
-import followersService from '../../../services/followers';
 import Follow from '../follow/Follow';
 import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 import { initFollowers } from '../../../redux/followersSlice';
 import FollowSkeleton from '../../common/LoaddingPageEffect-followers/LoaddingPageEffect';
+import FollowersService from '../../../services/auth-aware/followers';
+import useService from '../../../hooks/useService';
 
 export default function Followers() {
     const dispatch = useAppDispatch();
     const followers = useAppSelector(state => state.followers.followers);
     const [isLoading, setIsLoading] = useState(true);
+
+    const followersService = useService(FollowersService);
 
     useEffect(() => {
         followersService.getFollowers()

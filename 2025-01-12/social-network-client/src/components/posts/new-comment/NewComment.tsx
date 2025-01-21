@@ -1,11 +1,12 @@
 import { useForm } from 'react-hook-form';
 import './NewComment.css';
 import CommentDraft from '../../../models/comment/commentDraft';
-import CommentService from '../../../services/comments';
 import { useAppDispatch } from '../../../redux/hooks';
-import { addComment as addCommentProfile} from '../../../redux/profileSlice'
-import { addComment as addCommentFeed } from '../../../redux/feedSlice'
+import { addComment as addCommentProfile} from '../../../redux/profileSlice';
+import { addComment as addCommentFeed } from '../../../redux/feedSlice';
 import { useState } from 'react';
+import CommentService from '../../../services/auth-aware/comments';
+import useService from '../../../hooks/useService';
 
 interface NewCommentProps {
     postId: string;
@@ -13,26 +14,21 @@ interface NewCommentProps {
 
 export default function NewComment(props: NewCommentProps) {
     const { postId } = props;
-
-    const { 
-        register, 
-        handleSubmit, 
-        formState, 
-        reset 
-    } = useForm<CommentDraft>();
-
+    const { register, handleSubmit, formState, reset } = useForm<CommentDraft>();
     const dispatch = useAppDispatch();
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const comments = useService(CommentService);
 
     async function submit(draft: CommentDraft) {
         try {
             setIsSubmitting(true);
-            const newComment = await CommentService.create(postId, draft);
+            const newComment = await comments.create(postId, draft);  // שימוש ב-comments במקום CommentService
             reset();
             dispatch(addCommentProfile(newComment));
             dispatch(addCommentFeed(newComment));
-        } catch (e) {
-            alert(e);
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            alert('Failed to add comment');
         } finally {
             setIsSubmitting(false);
         }
@@ -55,7 +51,9 @@ export default function NewComment(props: NewCommentProps) {
                     })}
                     placeholder="Enter your comment here"
                 ></textarea>
-                <span>{formState.errors.body?.message}</span>
+                {formState.errors.body && (
+                    <span className="error">{formState.errors.body.message}</span>
+                )}
                 <button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? 'Adding a comment...' : 'Add Comment'}
                 </button>

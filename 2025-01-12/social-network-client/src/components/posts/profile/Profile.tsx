@@ -3,13 +3,16 @@ import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
 import LoaddingPageForProfile from "../../common/LoaddingPageForProfile/LoaddingPageForProfile";
 import NewPost from "../new/NewPost";
 import Post from "../post/Post";
-import profile from "../../../services/profile";
-import { init, resetNewFlags } from "../../../redux/profileSlice";  // הוספנו את resetNewFlags
+import { init, resetNewFlags } from "../../../redux/profileSlice";  
 import useTitle from "../../../hooks/useTitle";
 import { AnimatePresence } from 'framer-motion'
+import useService from "../../../hooks/useService";
+import ProfileService from "../../../services/auth-aware/profile";
 
 export default function Profile(): JSX.Element {
     useTitle('SN - Profile');
+
+    const profileService = useService(ProfileService);
 
     const posts = useAppSelector(state => state.profile.posts);
     const dispatch = useAppDispatch();
@@ -25,7 +28,7 @@ export default function Profile(): JSX.Element {
         (async () => {
             try {
                 if (posts.length === 0 && isMounted) {
-                    const postsFromServer = await profile.getProfile();
+                    const postsFromServer = await profileService.getProfile();
                     dispatch(init(postsFromServer));
                 }
             } catch (e) {

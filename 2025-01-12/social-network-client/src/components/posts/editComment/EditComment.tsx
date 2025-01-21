@@ -1,8 +1,9 @@
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import './EditComment.css';
-import comments from '../../../services/comments';
 import CommentDraft from '../../../models/comment/commentDraft';
+import CommentService from '../../../services/auth-aware/comments';
+import useService from '../../../hooks/useService';
 
 interface EditCommentProps {
     commentId: string;
@@ -18,6 +19,8 @@ export default function EditComment(props: EditCommentProps): JSX.Element {
         defaultValues: { body: currentBody },
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const comments = useService(CommentService);
 
     const onSubmit = async (data: CommentDraft) => {
         try {

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 import { updateFollowStatus } from '../../../redux/followingSlice';
 import { removeFollower, addFollower } from '../../../redux/followersSlice';
-import followingService from '../../../services/following';
+import followingService from '../../../services/auth-aware/Following';
 import { setHasNewPosts }  from '../../../redux/feedSlice';
 
 

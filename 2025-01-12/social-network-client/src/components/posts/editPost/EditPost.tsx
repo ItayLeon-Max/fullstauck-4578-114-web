@@ -1,132 +1,124 @@
 import { useParams } from 'react-router-dom';
 import './EditPost.css';
-import { useEffect, useState, useRef } from 'react';
-import profileService from '../../../services/profile';
+import { useEffect, useState } from 'react';
+import profile from '../../../services/auth-aware/profile';
 import PostDraft from '../../../models/post/PostDraft';
 import { useForm } from 'react-hook-form';
 import ButtonLoading from '../../common/ButtonLoading/ButtonLoading';
 import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 import { update } from '../../../redux/profileSlice';
+import useService from '../../../hooks/useService';
 
 export default function EditPost() {
     const { id } = useParams<'id'>();
     const { handleSubmit, register, formState, reset } = useForm<PostDraft>();
     const posts = useAppSelector(state => state.profile.posts);
     const dispatch = useAppDispatch();
-    const [content, setContent] = useState('');
-    const editorRef = useRef<HTMLDivElement>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const profileService = useService(profile);
 
     useEffect(() => {
-        if(id) {
+        if (id) {
             const post = posts.find(p => p.id === id);
             if (post) {
                 reset(post);
-                setContent(post.body);
             } else {
+                setIsLoading(true);
                 profileService.getPost(id)
                     .then((post) => {
                         reset(post);
-                        setContent(post.body);
                     })
-                    .catch(alert);
+                    .catch((error) => {
+                        console.error('Error fetching post:', error);
+                        alert('Failed to fetch post details');
+                    })
+                    .finally(() => {
+                        setIsLoading(false);
+                    });
             }
         }
     }, [id, posts, reset]);
 
-    const formatText = (command: string, value?: string) => {
-        document.execCommand(command, false, value);
-        if (editorRef.current) {
-            setContent(editorRef.current.innerHTML);
-            editorRef.current.focus();
-        }
-    };
-
     async function submit(draft: PostDraft) {
+        if (!id) return;
+        
         try {
-            if (id) {
-                const updatedPost = await profileService.update(id, {
-                    ...draft,
-                    body: content
-                });
-                dispatch(update(updatedPost));
-                reset(updatedPost);
-                setContent(updatedPost.body);
-            }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (e) {
+            setIsLoading(true);
+            const updatedPost = await profileService.update(id, draft);
+            dispatch(update(updatedPost));
+            reset(updatedPost);
+            alert('Post updated successfully!');
+        } catch (error) {
+            console.error('Error updating post:', error);
             alert('Failed to save changes');
+        } finally {
+            setIsLoading(false);
         }
+    }
+
+    if (isLoading) {
+        return <ButtonLoading />;
     }
 
     return (
         <div className="EditPost">
             <h2>Edit Post</h2>
             <form onSubmit={handleSubmit(submit)}>
-                <div className="edit-title-section">
+                <div className="form-group">
+                    <label htmlFor="title">Title</label>
                     <input
+                        id="title"
                         type="text"
-                        placeholder="Title"
-                        className="title-input"
+                        className="form-control"
                         {...register('title', {
                             required: {
                                 value: true,
-                                message: 'You must enter a title',
+                                message: 'You must enter a title'
                             },
                             minLength: {
                                 value: 10,
-                                message: 'Title must be at least 10 characters',
-                            },
+                                message: 'Title must be at least 10 characters'
+                            }
                         })}
                     />
                     {formState.touchedFields.title && formState.errors.title && (
                         <span className="error">{formState.errors.title.message}</span>
                     )}
                 </div>
-                
-                <div className="editor-container">
-                    <div className="toolbar">
-                        <button type="button" onClick={() => formatText('bold')} className="tool-button">
-                            B
-                        </button>
-                        <button type="button" onClick={() => formatText('italic')} className="tool-button">
-                            I
-                        </button>
-                        <button type="button" onClick={() => formatText('underline')} className="tool-button">
-                            U
-                        </button>
-                        <span className="divider">|</span>
-                        <button type="button" onClick={() => formatText('justifyLeft')} className="tool-button">
-                            ←
-                        </button>
-                        <button type="button" onClick={() => formatText('justifyCenter')} className="tool-button">
-                            ≡
-                        </button>
-                        <button type="button" onClick={() => formatText('justifyRight')} className="tool-button">
-                            →
-                        </button>
-                    </div>
-                    <div
-                        ref={editorRef}
-                        className="edit-content"
-                        contentEditable={true}
-                        dangerouslySetInnerHTML={{ __html: content }}
-                        onInput={(e) => setContent(e.currentTarget.innerHTML)}
-                        role="textbox"
-                        aria-label="Content editor"
+
+                <div className="form-group">
+                    <label htmlFor="body">Content</label>
+                    <textarea
+                        id="body"
+                        className="form-control"
+                        rows={10}
+                        {...register('body', {
+                            required: {
+                                value: true,
+                                message: 'Content is required'
+                            },
+                            minLength: {
+                                value: 20,
+                                message: 'Content must be at least 20 characters'
+                            }
+                        })}
                     />
+                    {formState.touchedFields.body && formState.errors.body && (
+                        <span className="error">{formState.errors.body.message}</span>
+                    )}
                 </div>
 
                 <div className="actions">
                     <button 
                         type="submit" 
-                        disabled={formState.isSubmitting}
+                        disabled={isLoading}
                         className="update-button"
                     >
-                        {formState.isSubmitting ? 'Updating...' : 'Update Post'}
+                        {isLoading ? 'Updating...' : 'Update Post'}
                     </button>
                 </div>
             </form>
-            {formState.isSubmitting && <ButtonLoading />}
         </div>
     );
 }
