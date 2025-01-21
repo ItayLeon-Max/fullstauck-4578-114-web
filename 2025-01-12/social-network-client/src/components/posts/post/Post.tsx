@@ -6,10 +6,12 @@ import Comments from '../comments/Comments';
 import { useAppDispatch } from '../../../redux/hooks';
 import { removePost, update } from '../../../redux/profileSlice';
 import { motion } from 'framer-motion';
+import CommentModel from '../../../models/comment/Comment';
 
 interface PostProps {
     post: PostModel;
     isAllowActions?: boolean;
+    addComment?: (comment: CommentModel) => void;
 }
 
 export default function Post(props: PostProps): JSX.Element {

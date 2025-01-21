@@ -1,3 +1,4 @@
+import Login from '../../auth/Login/Login'
 import Followers from '../../follows/followers/Followers'
 import Following from '../../follows/following/Following'
 import Footer from '../footer/Footer'
@@ -6,8 +7,14 @@ import Routing from '../routing/Routing'
 import './Layout.css'
 
 export default function Layout() {
+
+    const isLoggedIn: boolean = false;
+
     return (
-        <div className='Layout'>
+        <div>
+        {isLoggedIn && <>
+            <div className='Layout'>
+
             <header>
                 <Header />                
             </header>                
@@ -23,6 +30,13 @@ export default function Layout() {
             <footer>
                 <Footer />
             </footer>
+            </div>
+        </>}
+
+
+        {!isLoggedIn && <>
+            <Login />
+        </>}
         </div>
     )
 }

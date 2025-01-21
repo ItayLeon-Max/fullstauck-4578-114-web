@@ -17,15 +17,22 @@ export const profileSlice = createSlice({
         init: (state, action: PayloadAction<Post[]>) => {
             state.posts = action.payload.map(post => ({
                 ...post,
-                isNew: false  
+                isNew: false
             }));
         },
         newPost: (state, action: PayloadAction<Post>) => {
             const postWithNew = {
                 ...action.payload,
-                isNew: true  
+                isNew: true
             };
             state.posts.unshift(postWithNew);
+        },
+        // פעולה חדשה שמאפסת את הדגל isNew
+        resetNewFlags: (state) => {
+            state.posts = state.posts.map(post => ({
+                ...post,
+                isNew: false
+            }));
         },
         removePost: (state, action: PayloadAction<string>) => {
             state.posts = state.posts.filter(p => p.id !== action.payload);
@@ -57,6 +64,7 @@ export const profileSlice = createSlice({
 export const { 
     init, 
     newPost, 
+    resetNewFlags,  
     removePost, 
     update, 
     addComment, 

@@ -33,7 +33,8 @@ export default interface Post extends PostDraft {
     createdAt: string,
     updatedAt: string,
     user: User
-    comments: Comment[]
+    comments: Comment[],
+    isNew?: boolean
 }
 # models/comment/commentDraft.ts
 export default interface CommentDraft {
@@ -52,16 +53,20 @@ export default interface Comment extends CommentDraft {
     updatedAt: string,
     user: User
 }
+# models/user/Login.ts
+export default interface Login {
+    username: string,
+    password: string,
+}
 # models/user/User.ts
 import { ReactNode } from "react";
+import Login from "./Login";
 
-export default interface User {
+export default interface User extends Login {
     avatar: string | undefined;
     email: ReactNode;
     id: string,
     name: string,
-    username: string,
-    password?: string,
     createdAt: string,
     updatedAt: string
 }
@@ -107,15 +112,17 @@ import Comments from '../comments/Comments';
 import { useAppDispatch } from '../../../redux/hooks';
 import { removePost, update } from '../../../redux/profileSlice';
 import { motion } from 'framer-motion';
+import CommentModel from '../../../models/comment/Comment';
 
 interface PostProps {
     post: PostModel;
     isAllowActions?: boolean;
-    isNew?: boolean;
+    addComment?: (comment: CommentModel) => void;
 }
 
 export default function Post(props: PostProps): JSX.Element {
-    const { post, isAllowActions = false, isNew = false } = props;
+    const { post, isAllowActions = false } = props;
+    const isNew = post.isNew || false;
     const dispatch = useAppDispatch();
     const [liked, setLiked] = useState(false);
     const [likeCount, setLikeCount] = useState(0);
@@ -151,6 +158,7 @@ export default function Post(props: PostProps): JSX.Element {
             setDraftTitle(updatedPost.title);
             setDraftBody(updatedPost.body);
             setIsEditing(false);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             alert('Failed to save post changes');
         } finally {
@@ -166,10 +174,28 @@ export default function Post(props: PostProps): JSX.Element {
     return (
         <motion.div
             className={`Post ${isNew ? 'new-post' : ''}`}
-            initial={{ opacity: 0, scale: 0.8, rotate: -5, backgroundColor: '#f0f8ff' }}
-            animate={{ opacity: 1, scale: 1, rotate: 0, backgroundColor: 'white' }}
-            exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+            initial={isNew ? {
+                opacity: 0,
+                scale: 0.8,
+                rotate: -5,
+                backgroundColor: '#f0f8ff'
+            } : false}
+            animate={isNew ? {
+                opacity: 1,
+                scale: 1,
+                rotate: 0,
+                backgroundColor: 'white'
+            } : {}}
+            exit={isNew ? {
+                opacity: 0,
+                scale: 0.8,
+                rotate: 5
+            } : {}}
+            transition={isNew ? {
+                type: 'spring',
+                stiffness: 260,
+                damping: 20
+            } : {}}
         >
             {isEditing ? (
                 <div className="edit-post-form">
@@ -734,7 +760,7 @@ import LoaddingPageForProfile from "../../common/LoaddingPageForProfile/Loadding
 import NewPost from "../new/NewPost";
 import Post from "../post/Post";
 import profile from "../../../services/profile";
-import { init } from "../../../redux/profileSlice";
+import { init, resetNewFlags } from "../../../redux/profileSlice";  // הוספנו את resetNewFlags
 import useTitle from "../../../hooks/useTitle";
 import { AnimatePresence } from 'framer-motion'
 
@@ -744,16 +770,18 @@ export default function Profile(): JSX.Element {
     const posts = useAppSelector(state => state.profile.posts);
     const dispatch = useAppDispatch();
     const [isLoading, setIsLoading] = useState(true);
-    console.log(isLoading)
+    console.log(isLoading);
+
+    useEffect(() => {
+        dispatch(resetNewFlags());
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         let isMounted = true;
         (async () => {
             try {
-                console.log("Fetching profile posts...");
                 if (posts.length === 0 && isMounted) {
                     const postsFromServer = await profile.getProfile();
-                    console.log("Posts fetched:", postsFromServer);
                     dispatch(init(postsFromServer));
                 }
             } catch (e) {
@@ -762,7 +790,6 @@ export default function Profile(): JSX.Element {
             } finally {
                 if (isMounted) {
                     setIsLoading(false);
-                    console.log("Loading finished");
                 }
             }
         })();
@@ -781,7 +808,6 @@ export default function Profile(): JSX.Element {
                             key={p.id}
                             post={p}
                             isAllowActions={true}
-                            isNew={false}
                         />
                     )}
                 </AnimatePresence>
@@ -842,7 +868,7 @@ export default function Feed() {
             {posts.map(p => <Post 
                             key={p.id} 
                             post={p}
-                            // addComment={addComment}
+                            addComment={addComment}
                             isAllowActions={false}
                             ></Post>)}
         </div>
@@ -930,6 +956,7 @@ export default function NewPost() {
             const postWithNew = { ...newPostFromServer, isNew: true };
             dispatch(newPost(postWithNew));
             reset();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             alert('Failed to add post');
         } finally {
@@ -1074,7 +1101,7 @@ export default function NewPost() {
 # components/posts/editPost/EditPost.tsx
 import { useParams } from 'react-router-dom';
 import './EditPost.css';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import profileService from '../../../services/profile';
 import PostDraft from '../../../models/post/PostDraft';
 import { useForm } from 'react-hook-form';
@@ -1083,32 +1110,48 @@ import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 import { update } from '../../../redux/profileSlice';
 
 export default function EditPost() {
-
-    const { id } = useParams<'id'>()
-    const {handleSubmit, register, formState, reset} = useForm<PostDraft>()
-    const posts = useAppSelector(state => state.profile.posts)
-    const dispatch = useAppDispatch()
+    const { id } = useParams<'id'>();
+    const { handleSubmit, register, formState, reset } = useForm<PostDraft>();
+    const posts = useAppSelector(state => state.profile.posts);
+    const dispatch = useAppDispatch();
+    const [content, setContent] = useState('');
+    const editorRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if(id) {
-            const post = posts.find(p => p.id === id)
+            const post = posts.find(p => p.id === id);
             if (post) {
-                reset(post)
+                reset(post);
+                setContent(post.body);
             } else {
                 profileService.getPost(id)
-                    .then(reset)
-                    .catch(alert)
+                    .then((post) => {
+                        reset(post);
+                        setContent(post.body);
+                    })
+                    .catch(alert);
             }
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[])
+    }, [id, posts, reset]);
+
+    const formatText = (command: string, value?: string) => {
+        document.execCommand(command, false, value);
+        if (editorRef.current) {
+            setContent(editorRef.current.innerHTML);
+            editorRef.current.focus();
+        }
+    };
 
     async function submit(draft: PostDraft) {
         try {
             if (id) {
-                const updatedPost = await profileService.update(id, draft);
-                dispatch(update(updatedPost)); 
-                reset(updatedPost); 
+                const updatedPost = await profileService.update(id, {
+                    ...draft,
+                    body: content
+                });
+                dispatch(update(updatedPost));
+                reset(updatedPost);
+                setContent(updatedPost.body);
             }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
@@ -1120,44 +1163,73 @@ export default function EditPost() {
         <div className="EditPost">
             <h2>Edit Post</h2>
             <form onSubmit={handleSubmit(submit)}>
-                <input
-                    type="text"
-                    placeholder="Title"
-                    {...register('title', {
-                        required: {
-                            value: true,
-                            message: 'You must enter a title',
-                        },
-                        minLength: {
-                            value: 10,
-                            message: 'Title must be at least 10 characters',
-                        },
-                    })}
-                />
-                {formState.touchedFields.title && formState.errors.title && (
-                    <span className="error">{formState.errors.title.message}</span>
-                )}
-                <textarea
-                    placeholder="Content"
-                    {...register('body', {
-                        required: {
-                            value: true,
-                            message: 'You must enter a body',
-                        },
-                        minLength: {
-                            value: 20,
-                            message: 'Body must be at least 20 characters',
-                        },
-                    })}
-                ></textarea>
-                {formState.touchedFields.body && formState.errors.body && (
-                    <span className="error">{formState.errors.body.message}</span>
-                )}
-                <button type="submit" disabled={formState.isSubmitting}>Update Post</button>
+                <div className="edit-title-section">
+                    <input
+                        type="text"
+                        placeholder="Title"
+                        className="title-input"
+                        {...register('title', {
+                            required: {
+                                value: true,
+                                message: 'You must enter a title',
+                            },
+                            minLength: {
+                                value: 10,
+                                message: 'Title must be at least 10 characters',
+                            },
+                        })}
+                    />
+                    {formState.touchedFields.title && formState.errors.title && (
+                        <span className="error">{formState.errors.title.message}</span>
+                    )}
+                </div>
+                
+                <div className="editor-container">
+                    <div className="toolbar">
+                        <button type="button" onClick={() => formatText('bold')} className="tool-button">
+                            B
+                        </button>
+                        <button type="button" onClick={() => formatText('italic')} className="tool-button">
+                            I
+                        </button>
+                        <button type="button" onClick={() => formatText('underline')} className="tool-button">
+                            U
+                        </button>
+                        <span className="divider">|</span>
+                        <button type="button" onClick={() => formatText('justifyLeft')} className="tool-button">
+                            ←
+                        </button>
+                        <button type="button" onClick={() => formatText('justifyCenter')} className="tool-button">
+                            ≡
+                        </button>
+                        <button type="button" onClick={() => formatText('justifyRight')} className="tool-button">
+                            →
+                        </button>
+                    </div>
+                    <div
+                        ref={editorRef}
+                        className="edit-content"
+                        contentEditable={true}
+                        dangerouslySetInnerHTML={{ __html: content }}
+                        onInput={(e) => setContent(e.currentTarget.innerHTML)}
+                        role="textbox"
+                        aria-label="Content editor"
+                    />
+                </div>
+
+                <div className="actions">
+                    <button 
+                        type="submit" 
+                        disabled={formState.isSubmitting}
+                        className="update-button"
+                    >
+                        {formState.isSubmitting ? 'Updating...' : 'Update Post'}
+                    </button>
+                </div>
             </form>
             {formState.isSubmitting && <ButtonLoading />}
         </div>
-    )
+    );
 }
 # components/posts/editPost/EditPost.css
 .EditPost {
@@ -1166,8 +1238,8 @@ export default function EditPost() {
     border-radius: 12px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     margin: 20px auto;
-    padding: 20px;
-    max-width: 700px;
+    padding: 30px;
+    max-width: 800px;
     box-sizing: border-box;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -1177,112 +1249,129 @@ export default function EditPost() {
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
 }
 
-.EditPost h1 {
-    font-size: 1.8rem;
-    color: #333333;
-    text-align: center;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #007bff;
-    padding-bottom: 10px;
-}
-
-.EditPost form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.EditPost label {
-    font-size: 1rem;
-    color: #555555;
+.EditPost h2 {
+    font-size: 2rem;
     font-weight: bold;
+    color: #333333;
+    margin-bottom: 25px;
+    text-align: center;
+    border-bottom: 2px solid #4caf50;
+    padding-bottom: 15px;
 }
 
-.EditPost input[type="text"],
-.EditPost textarea {
+.edit-title-section {
+    margin-bottom: 20px;
+}
+
+.title-input {
     width: 100%;
-    padding: 10px 15px;
-    font-size: 1rem;
-    border: 1px solid #cccccc;
+    padding: 15px;
+    font-size: 1.2rem;
+    border: 2px solid #e0e0e0;
     border-radius: 8px;
     background-color: #f9f9f9;
-    box-sizing: border-box;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    font-family: 'Arial', sans-serif;
+    transition: all 0.3s ease;
 }
 
-.EditPost input[type="text"]:focus,
-.EditPost textarea:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+.title-input:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.2);
+    outline: none;
+    background-color: #ffffff;
+}
+
+.editor-container {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.toolbar {
+    padding: 10px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.tool-button {
+    padding: 8px 12px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.tool-button:hover {
+    background: #4caf50;
+    color: white;
+    border-color: #4caf50;
+}
+
+.divider {
+    margin: 0 10px;
+    color: #888;
+}
+
+.edit-content {
+    min-height: 300px;
+    padding: 20px;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    background-color: #ffffff;
     outline: none;
 }
 
-.EditPost textarea {
-    resize: vertical;
-    min-height: 100px;
-    line-height: 1.5;
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
 }
 
-.EditPost button {
-    background: #e8f5e9;
-    border: 1px solid #4caf50;
-    color: #2e7d32;
-    padding: 10px 15px;
+.update-button {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 12px 30px;
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    position: relative;
-    gap: 8px;
-    min-width: 100px;
 }
 
-.EditPost button:hover {
-    background: #4caf50;
-    color: white;
+.update-button:hover {
+    background: #45a049;
+    transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
-    transform: scale(1.05);
+}
+
+.update-button:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.error {
+    color: #f44336;
+    font-size: 0.9rem;
+    margin-top: 8px;
+    display: block;
+    background: #ffebee;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border-left: 4px solid #f44336;
 }
 
 .ButtonLoading {
-    display: inline-flex;
+    display: flex;
     justify-content: center;
-    align-items: center;
-    color: #2e7d32;
-    font-size: 1rem;
-}
-
-.ButtonLoading::after {
-    content: '';
-    width: 16px;
-    height: 16px;
-    margin-left: 8px;
-    border: 2px solid transparent;
-    border-top: 2px solid #2e7d32;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-h2 {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #333333;
-    margin-bottom: 15px;
+    margin-top: 15px;
 }
 # components/posts/editComment/EditComment.tsx
 import { useForm } from 'react-hook-form';
@@ -1453,6 +1542,124 @@ export default function App(): JSX.Element {
 .App {
     height: 100%;
 }
+# components/auth/Login/Login.tsx
+import './Login.css';
+export default function Login() {
+    return (
+        <div className='Login'>
+            <h1>Login</h1>
+            <form>
+                <label htmlFor='username'>Username</label>
+                <input id='username' type='text' />
+                <label htmlFor='password'>Password</label>
+                <input id='password' type='password' />
+                <button type='submit'>Login</button>
+            </form>
+        </div>
+    )
+}
+# components/auth/Login/Login.css
+.Login {
+    background: linear-gradient(135deg, #ffffff, #f9f9f9);
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.Login:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.Login h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333333;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 3px solid #007bff;
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+.Login form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.Login label {
+    font-size: 1rem;
+    color: #555555;
+    font-weight: bold;
+    text-align: left;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.Login input {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 2px solid #cccccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.Login input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    outline: none;
+    background-color: #ffffff;
+}
+
+.Login button {
+    background: linear-gradient(90deg, #4caf50, #81c784);
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.Login button:hover {
+    background: linear-gradient(90deg, #388e3c, #66bb6a);
+    transform: scale(1.05);
+}
+
+.Login button:active {
+    transform: scale(0.95);
+}
+
+.Login button:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+@media (max-width: 500px) {
+    .Login {
+        padding: 20px;
+    }
+
+    .Login h1 {
+        font-size: 1.8rem;
+    }
+
+    .Login button {
+        font-size: 0.9rem;
+    }
+}
 # components/layout/followers/Followers.css
 .Followers {
     display: flex;
@@ -1507,6 +1714,7 @@ export default function NotFound() {
     )
 }
 # components/layout/layout/Layout.tsx
+import Login from '../../auth/Login/Login'
 import Followers from '../../follows/followers/Followers'
 import Following from '../../follows/following/Following'
 import Footer from '../footer/Footer'
@@ -1515,8 +1723,13 @@ import Routing from '../routing/Routing'
 import './Layout.css'
 
 export default function Layout() {
+
+    const isLoggedIn: boolean = false;
+
     return (
         <div className='Layout'>
+
+        {isLoggedIn && <>
             <header>
                 <Header />                
             </header>                
@@ -1532,6 +1745,11 @@ export default function Layout() {
             <footer>
                 <Footer />
             </footer>
+        </>}
+
+        {!isLoggedIn && <>
+            <Login />
+        </>}
         </div>
     )
 }
@@ -2469,10 +2687,24 @@ export const profileSlice = createSlice({
     initialState,
     reducers: {
         init: (state, action: PayloadAction<Post[]>) => {
-            state.posts = action.payload;
+            state.posts = action.payload.map(post => ({
+                ...post,
+                isNew: false
+            }));
         },
         newPost: (state, action: PayloadAction<Post>) => {
-            state.posts.unshift(action.payload);
+            const postWithNew = {
+                ...action.payload,
+                isNew: true
+            };
+            state.posts.unshift(postWithNew);
+        },
+        // פעולה חדשה שמאפסת את הדגל isNew
+        resetNewFlags: (state) => {
+            state.posts = state.posts.map(post => ({
+                ...post,
+                isNew: false
+            }));
         },
         removePost: (state, action: PayloadAction<string>) => {
             state.posts = state.posts.filter(p => p.id !== action.payload);
@@ -2480,7 +2712,10 @@ export const profileSlice = createSlice({
         update: (state, action: PayloadAction<Post>) => {
             const index = state.posts.findIndex(p => p.id === action.payload.id);
             if (index > -1) {
-                state.posts[index] = action.payload;
+                state.posts[index] = {
+                    ...action.payload,
+                    isNew: false
+                };
             }
         },
         addComment: (state, action: PayloadAction<Comment>) => {
@@ -2501,6 +2736,7 @@ export const profileSlice = createSlice({
 export const { 
     init, 
     newPost, 
+    resetNewFlags,  
     removePost, 
     update, 
     addComment, 
@@ -2749,3 +2985,17 @@ class Profile {
 // singleton
 const profile = new Profile();
 export default profile;
+# services/auth.ts
+import axios from "axios";
+import Login from "../models/user/Login";
+
+class Auth {
+
+    async login(login: Login): Promise <string>{
+        const response = await axios.post<{jwt: string}>(`${import.meta.env.VITE_REST_SERVER_URL}/auth/login`, login);
+        return response.data.jwt;
+    }
+}
+
+const auth = new Auth();
+export default auth;

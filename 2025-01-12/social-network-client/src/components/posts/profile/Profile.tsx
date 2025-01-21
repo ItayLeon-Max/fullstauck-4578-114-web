@@ -4,7 +4,7 @@ import LoaddingPageForProfile from "../../common/LoaddingPageForProfile/Loadding
 import NewPost from "../new/NewPost";
 import Post from "../post/Post";
 import profile from "../../../services/profile";
-import { init } from "../../../redux/profileSlice";
+import { init, resetNewFlags } from "../../../redux/profileSlice";  // הוספנו את resetNewFlags
 import useTitle from "../../../hooks/useTitle";
 import { AnimatePresence } from 'framer-motion'
 
@@ -14,7 +14,11 @@ export default function Profile(): JSX.Element {
     const posts = useAppSelector(state => state.profile.posts);
     const dispatch = useAppDispatch();
     const [isLoading, setIsLoading] = useState(true);
-    console.log(isLoading)
+    console.log(isLoading);
+
+    useEffect(() => {
+        dispatch(resetNewFlags());
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         let isMounted = true;
