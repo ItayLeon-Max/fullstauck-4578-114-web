@@ -1,7 +1,18 @@
 import { NavLink } from 'react-router-dom'
 import './Header.css'
-
+import useUsername from '../../../hooks/useUsername';
+import { useContext } from 'react';
+import { AuthContext } from '../../auth/auth/Auth';
 export default function Header() {
+
+    const name = useUsername();
+
+    const { logout } = useContext(AuthContext)!;
+
+    function logMeOut() {
+        logout();
+    }
+
     return (
         <div className='Header'>
             <div>
@@ -13,7 +24,10 @@ export default function Header() {
                     <NavLink to="/feed">feed</NavLink>
                     <NavLink to="/search">search</NavLink>
                 </nav>
-            </div>          
+            </div>  
+            <div>
+                Hello {name} | <button className='logout' onClick={logMeOut}>Logout</button>
+            </div>        
         </div>
     )
 }
