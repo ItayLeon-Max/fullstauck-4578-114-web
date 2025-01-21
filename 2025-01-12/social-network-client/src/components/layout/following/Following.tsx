@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import User from '../../../models/user/User'
 import Follow from '../../follows/follow/Follow'
 import useService from '../../../hooks/useService'
-import FollowingService from '../../../services/auth-aware/Following'
+import FollowingService from '../../../services/auth-aware/following'
 
 export default function Following() {
     const [following, setFollowing] = useState<User[]>([])

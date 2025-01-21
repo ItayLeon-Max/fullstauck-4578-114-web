@@ -18,14 +18,13 @@ export default function Followers() {
         followersService.getFollowers()
             .then(followers => {
                 dispatch(initFollowers(followers));
-                // קצת דיליי מלאכותי כדי שנראה את אפקט הטעינה
                 setTimeout(() => setIsLoading(false), 1000);
             })
             .catch(error => {
                 alert(error);
                 setIsLoading(false);
             });
-    }, [dispatch]);
+    }, []);
 
     if (isLoading) {
         return <div className="Followers"><FollowSkeleton /></div>;

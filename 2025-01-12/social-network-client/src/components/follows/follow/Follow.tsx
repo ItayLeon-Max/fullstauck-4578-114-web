@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 import { updateFollowStatus } from '../../../redux/followingSlice';
 import { removeFollower, addFollower } from '../../../redux/followersSlice';
-import followingService from '../../../services/auth-aware/Following';
+import FollowingService from '../../../services/auth-aware/following';
 import { setHasNewPosts }  from '../../../redux/feedSlice';
+import useService from '../../../hooks/useService';
 
 
 interface FollowProps {
@@ -15,6 +16,8 @@ interface FollowProps {
 export default function Follow({ user }: FollowProps) {
     const { id, name } = user;
     const [loading, setLoading] = useState(false);
+
+    const followingService = useService(FollowingService);
 
     const dispatch = useAppDispatch();
     const isFollowing = useAppSelector(state => 
