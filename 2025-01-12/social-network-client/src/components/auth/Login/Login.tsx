@@ -4,6 +4,7 @@ import LoginModel from '../../../models/user/Login';
 import auth from '../../../services/auth';
 import { useContext } from 'react';
 import { AuthContext } from '../auth/Auth';
+
 export default function Login() {
 
     const {register, handleSubmit} = useForm<LoginModel>();
@@ -24,7 +25,7 @@ export default function Login() {
                 <label htmlFor='password'>Password</label>
                 <input id='password' type='password' {...register('password')} />
                 <button type='submit'>Login</button>
-                <button type='button'>Register</button>
+                <button type='button'>SignUp</button>
                 <button type='button'>Forgot Password</button>
             </form>
         </div>

@@ -58,6 +58,13 @@ export default interface Login {
     username: string,
     password: string,
 }
+# models/user/SignUp.ts
+export default interface SignUp {
+    username: string,
+    email: string,
+    password: string,
+    name: string,
+}
 # models/user/User.ts
 import { ReactNode } from "react";
 import Login from "./Login";
@@ -1526,13 +1533,16 @@ import { Provider } from 'react-redux';
 import store from '../../redux/store';
 import { BrowserRouter } from 'react-router-dom';
 import Layout from '../layout/layout/Layout';
+import Auth from '../auth/auth/Auth';
 
 export default function App(): JSX.Element {
     return (
         <div className="App">
             <BrowserRouter>
                 <Provider store={store}>
-                    <Layout />
+                    <Auth>
+                        <Layout />
+                    </Auth>
                 </Provider>
             </BrowserRouter>
         </div>
@@ -1542,18 +1552,287 @@ export default function App(): JSX.Element {
 .App {
     height: 100%;
 }
+# components/auth/auth/Auth.tsx
+import { PropsWithChildren, useState } from 'react';
+import './Auth.css';
+import React from 'react';
+
+
+interface AuthContextInterFace {
+    jwt: string,
+    newLogin: (jwt: string) => void,
+    logout (): void
+}
+
+export const AuthContext = React.createContext<AuthContextInterFace | null>(null);
+
+export default function Auth(props: PropsWithChildren) {
+
+    const JWT_KEY_NAME = 'jwt';
+
+    const [ jwt, setJwt ] = useState<string>(localStorage.getItem(JWT_KEY_NAME) || '');
+
+    const { children } = props;
+
+    function newLogin(jwt: string) {
+        setJwt(jwt);
+        localStorage.setItem(JWT_KEY_NAME, jwt);
+    }
+
+    function logout(){
+        localStorage.removeItem(JWT_KEY_NAME);
+        setJwt('');
+    }
+
+    return (
+        <AuthContext.Provider value={ { jwt, newLogin, logout } }>
+            {children}
+        </AuthContext.Provider>
+    )
+}
+# components/auth/SignUp/SignUp.tsx
+import { useForm } from 'react-hook-form';
+import './SignUp.css';
+import Register from '../../../models/user/SignUp';
+import { useContext, useState } from 'react';
+import { AuthContext } from '../auth/Auth';
+import auth from '../../../services/auth';
+import { useNavigate } from 'react-router-dom';
+
+export default function SignUp() {
+    const { register, handleSubmit, formState: { errors } } = useForm<Register>();
+    const [isLoading, setIsLoading] = useState(false);
+    const { newLogin } = useContext(AuthContext)!;
+    const navigate = useNavigate();
+
+    async function submit(registerData: Register) {
+        try {
+            setIsLoading(true);
+            const jwt = await auth.signUp(registerData);
+            newLogin(jwt);
+            navigate('/profile');
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            alert('Registration failed. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    return (
+        <div className='SignUp'>
+            <h1>Sign Up</h1>
+            <form onSubmit={handleSubmit(submit)}>
+                <div className="form-group">
+                    <label htmlFor='username'>Username</label>
+                    <input
+                        id='username'
+                        type='text'
+                        {...register('username', {
+                            required: 'Username is required',
+                            minLength: {
+                                value: 3,
+                                message: 'Username must be at least 3 characters'
+                            }
+                        })}
+                    />
+                    {errors.username && <span className="error">{errors.username.message}</span>}
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor='name'>Full Name</label>
+                    <input
+                        id='name'
+                        type='text'
+                        {...register('name', {
+                            required: 'Full name is required',
+                            minLength: {
+                                value: 2,
+                                message: 'Name must be at least 2 characters'
+                            }
+                        })}
+                    />
+                    {errors.name && <span className="error">{errors.name.message}</span>}
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor='email'>Email</label>
+                    <input
+                        id='email'
+                        type='email'
+                        {...register('email', {
+                            required: 'Email is required',
+                            pattern: {
+                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                message: 'Invalid email address'
+                            }
+                        })}
+                    />
+                    {errors.email && <span className="error">{errors.email.message}</span>}
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor='password'>Password</label>
+                    <input
+                        id='password'
+                        type='password'
+                        {...register('password', {
+                            required: 'Password is required',
+                            minLength: {
+                                value: 6,
+                                message: 'Password must be at least 6 characters'
+                            }
+                        })}
+                    />
+                    {errors.password && <span className="error">{errors.password.message}</span>}
+                </div>
+
+                <button type='submit' disabled={isLoading}>
+                    {isLoading ? 'Signing up...' : 'Sign Up'}
+                </button>
+
+                <div className="login-link">
+                    Already have an account? <span onClick={() => navigate('/login')}>Login here</span>
+                </div>
+            </form>
+        </div>
+    );
+}
+# components/auth/SignUp/SignUp.css
+.SignUp {
+    background: linear-gradient(135deg, #ffffff, #f9f9f9);
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.SignUp:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.SignUp h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333333;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 3px solid #007bff;
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+.SignUp form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+.SignUp label {
+    font-size: 1rem;
+    color: #555555;
+    font-weight: bold;
+    align-self: flex-start;
+    margin-bottom: 5px;
+}
+
+.SignUp input {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 2px solid #cccccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.SignUp input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    outline: none;
+    background-color: #ffffff;
+}
+
+.SignUp button {
+    background: linear-gradient(90deg, #4caf50, #81c784);
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.SignUp button:hover {
+    background: linear-gradient(90deg, #388e3c, #66bb6a);
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.SignUp button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.SignUp button:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+@media (max-width: 500px) {
+    .SignUp {
+        padding: 20px;
+    }
+
+    .SignUp h1 {
+        font-size: 1.8rem;
+    }
+
+    .SignUp button {
+        font-size: 0.9rem;
+    }
+}
 # components/auth/Login/Login.tsx
+import { useForm } from 'react-hook-form';
 import './Login.css';
+import LoginModel from '../../../models/user/Login';
+import auth from '../../../services/auth';
+import { useContext } from 'react';
+import { AuthContext } from '../auth/Auth';
+import { Link } from 'react-router-dom'; // הוספת הייבוא
+
 export default function Login() {
+    const {register, handleSubmit} = useForm<LoginModel>();
+    const { newLogin } = useContext(AuthContext)!;
+
+    async function submit(login: LoginModel){
+        const Jwt = await auth.login(login);
+        newLogin(Jwt);
+    }
+
     return (
         <div className='Login'>
             <h1>Login</h1>
-            <form>
+            <form onSubmit={handleSubmit(submit)}>
                 <label htmlFor='username'>Username</label>
-                <input id='username' type='text' />
+                <input id='username' {...register('username')} type='text' />
                 <label htmlFor='password'>Password</label>
-                <input id='password' type='password' />
+                <input id='password' type='password' {...register('password')} />
                 <button type='submit'>Login</button>
+                <Link to="/signup" className="signup-link">Don't have an account? Sign up here</Link>
+                <button type='button'>Forgot Password</button>
             </form>
         </div>
     )
@@ -1647,6 +1926,21 @@ export default function Login() {
     cursor: not-allowed;
 }
 
+.signup-link {
+    display: block;
+    text-align: center;
+    color: #4CAF50;
+    text-decoration: none;
+    margin: 15px 0;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.signup-link:hover {
+    color: #388E3C;
+    text-decoration: underline;
+}
+
 @media (max-width: 500px) {
     .Login {
         padding: 20px;
@@ -1714,6 +2008,7 @@ export default function NotFound() {
     )
 }
 # components/layout/layout/Layout.tsx
+import { useContext } from 'react'
 import Login from '../../auth/Login/Login'
 import Followers from '../../follows/followers/Followers'
 import Following from '../../follows/following/Following'
@@ -1721,15 +2016,18 @@ import Footer from '../footer/Footer'
 import Header from '../header/Header'
 import Routing from '../routing/Routing'
 import './Layout.css'
+import { AuthContext } from '../../auth/auth/Auth'
 
 export default function Layout() {
 
-    const isLoggedIn: boolean = false;
+    const { jwt } = useContext(AuthContext)!;
+    const isLoggedIn: boolean = !!jwt;
 
     return (
-        <div className='Layout'>
-
+        <div>
         {isLoggedIn && <>
+            <div className='Layout'>
+
             <header>
                 <Header />                
             </header>                
@@ -1745,7 +2043,9 @@ export default function Layout() {
             <footer>
                 <Footer />
             </footer>
+            </div>
         </>}
+
 
         {!isLoggedIn && <>
             <Login />
@@ -1821,6 +2121,7 @@ import Profile from "../../posts/profile/Profile";
 import Feed from "../../posts/feed/Feed";
 import NotFound from "../not-found/NotFound";
 import EditPost from "../../posts/editPost/EditPost";
+import SignUp from "../../auth/SignUp/SignUp";
 
 export default function Routing(): JSX.Element {
     return (
@@ -1831,14 +2132,26 @@ export default function Routing(): JSX.Element {
             <Route path="/feed" element={<Feed />} />
             <Route path="/edit/:id" element={<EditPost />} />
             <Route path="*" element={<NotFound />} />
+            <Route path="/signup" element={<SignUp />} />
         </Routes>
     )   
 }
 # components/layout/header/Header.tsx
 import { NavLink } from 'react-router-dom'
 import './Header.css'
-
+import useUsername from '../../../hooks/useUsername';
+import { useContext } from 'react';
+import { AuthContext } from '../../auth/auth/Auth';
 export default function Header() {
+
+    const name = useUsername();
+
+    const { logout } = useContext(AuthContext)!;
+
+    function logMeOut() {
+        logout();
+    }
+
     return (
         <div className='Header'>
             <div>
@@ -1850,7 +2163,10 @@ export default function Header() {
                     <NavLink to="/feed">feed</NavLink>
                     <NavLink to="/search">search</NavLink>
                 </nav>
-            </div>          
+            </div>  
+            <div>
+                Hello {name} | <button className='logout' onClick={logMeOut}>Logout</button>
+            </div>        
         </div>
     )
 }
@@ -1906,6 +2222,49 @@ export default function Header() {
     background-color: #0056b3;
     color: #ffeeba;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.logout {
+    background: linear-gradient(90deg, #ff4d4f, #ff6f6d);
+    color: white;
+    padding: 10px 20px;
+    border: 2px solid #ff4d4f;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease, color 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logout:hover {
+    background: linear-gradient(90deg, #e0393f, #e25f5d);
+    color: #ffeeba;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+}
+
+.logout:active {
+    background: linear-gradient(90deg, #cc3237, #d14542);
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.logout:focus {
+    outline: none;
+    box-shadow: 0 0 8px rgba(255, 77, 79, 0.6);
+}
+
+.logout:disabled {
+    background: #f5f5f5;
+    border-color: #e0e0e0;
+    color: #aaaaaa;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 # components/common/loading/Loading.css
 .Loading {
@@ -2623,6 +2982,23 @@ export default function useTitle(title: string) {
         document.title = title
     }, [ title ])
 }
+# hooks/useUsername.ts
+import { jwtDecode } from "jwt-decode";
+import { useContext, useMemo } from "react";
+import User from "../models/user/User";
+import { AuthContext } from "../components/auth/auth/Auth";
+
+export default function useUsername() {
+    const { jwt } = useContext(AuthContext)!;
+        // const { name } = jwtDecode<User>(jwt);
+    
+        const name = useMemo(() => {
+            const { name } = jwtDecode<User>(jwt);
+            return name;
+        }, [ jwt ]);
+
+    return name;
+}
 # redux/followersSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import User from "../models/user/User";
@@ -2988,11 +3364,17 @@ export default profile;
 # services/auth.ts
 import axios from "axios";
 import Login from "../models/user/Login";
+import SignUp from "../models/user/SignUp";
 
 class Auth {
 
     async login(login: Login): Promise <string>{
         const response = await axios.post<{jwt: string}>(`${import.meta.env.VITE_REST_SERVER_URL}/auth/login`, login);
+        return response.data.jwt;
+    }
+
+    async signUp(signup: SignUp): Promise<string>{
+        const response = await axios.post<{jwt: string}>(`${import.meta.env.VITE_REST_SERVER_URL}/auth/signup`, signup);
         return response.data.jwt;
     }
 }
