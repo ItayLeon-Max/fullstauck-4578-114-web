@@ -9,5 +9,6 @@ export default interface Post extends PostDraft {
     createdAt: string,
     updatedAt: string,
     user: User
-    comments: Comment[]
+    comments: Comment[],
+    isNew?: boolean
 }

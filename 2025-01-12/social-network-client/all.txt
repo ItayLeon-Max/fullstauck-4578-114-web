@@ -141,20 +141,20 @@ export default function Post(props: PostProps): JSX.Element {
 
     async function saveEdit() {
         try {
-            setIsDeleting(true); // הצגת מצב טעינה על הכפתור
+            setIsDeleting(true);
             const updatedPost = await profileService.update(post.id, {
                 title: draftTitle,
                 body: draftBody,
             });
+    
             dispatch(update(updatedPost));
             setDraftTitle(updatedPost.title);
             setDraftBody(updatedPost.body);
-            setIsEditing(false); 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            setIsEditing(false);
         } catch (e) {
             alert('Failed to save post changes');
         } finally {
-            setIsDeleting(false); 
+            setIsDeleting(false);
         }
     }
 
@@ -187,9 +187,9 @@ export default function Post(props: PostProps): JSX.Element {
                         className="edit-textarea"
                     ></textarea>
                     <div className="actions">
-                    <button onClick={saveEdit} className="save-button" disabled={isDeleting}>
+                        <button onClick={saveEdit} className="save-button" disabled={isDeleting}>
                             {isDeleting ? <span className="spinner"></span> : 'Save'}
-                    </button>
+                        </button>
                         <button onClick={() => setIsEditing(false)} className="cancel-button">
                             Cancel
                         </button>
@@ -256,6 +256,21 @@ export default function Post(props: PostProps): JSX.Element {
     max-width: 700px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     position: relative;
+}
+
+.Post.new-post {
+    animation: highlight 2s ease-out;
+}
+
+@keyframes highlight {
+    0% {
+        background-color: #f0f8ff;
+        transform: scale(0.98) rotate(-2deg);
+    }
+    100% {
+        background-color: white;
+        transform: scale(1) rotate(0);
+    }
 }
 
 .Post:hover {
@@ -334,160 +349,6 @@ export default function Post(props: PostProps): JSX.Element {
     border-radius: 50px;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.Post .edit-button:hover {
-    background: #2196f3;
-    color: white;
-    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
-}
-
-.Post .delete-button {
-    background: #ffebee;
-    border: 1px solid #f44336;
-    color: #b71c1c;
-    padding: 8px 15px;
-    border-radius: 50px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.Post .delete-button:hover {
-    background: #f44336;
-    color: white;
-    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
-}
-
-.Post .delete-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-.Post .like-count {
-    color: #666;
-    font-size: 0.9rem;
-    min-width: 70px;
-}
-
-/* Edit post form styling */
-.edit-post-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    background: #ffffff;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-}
-
-.edit-post-form input,
-.edit-post-form textarea {
-    width: 100%;
-    padding: 15px;
-    font-size: 1rem;
-    border: 1px solid #cccccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    box-sizing: border-box;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.edit-post-form input:focus,
-.edit-post-form textarea:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-    outline: none;
-    background-color: #ffffff;
-}
-
-.edit-post-form textarea {
-    resize: vertical;
-    min-height: 120px;
-    line-height: 1.6;
-}
-
-.edit-post-form .button-container {
-    display: flex;
-    justify-content: flex-start;
-    gap: 10px;
-}
-
-.edit-post-form .save-button {
-    background: #e8f5e9;
-    border: 1px solid #4caf50;
-    color: #2e7d32;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.edit-post-form .save-button:hover {
-    background: #4caf50;
-    color: white;
-}
-
-.edit-post-form .cancel-button {
-    background: #ffebee;
-    border: 1px solid #f44336;
-    color: #b71c1c;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.edit-post-form .cancel-button:hover {
-    background: #f44336;
-    color: white;
-}
-
-.save-button {
-    position: relative;
-    background: #e8f5e9;
-    border: 1px solid #4caf50;
-    color: #2e7d32;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-}
-
-.save-button:disabled {
-    background: #dcedc8;
-    color: #a5d6a7;
-    cursor: not-allowed;
-}
-
-.save-button .spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid transparent;
-    border-top: 2px solid #2e7d32;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
 }
 # components/posts/comment/Comment.tsx
 import { useState } from 'react';
@@ -884,6 +745,7 @@ export default function Profile(): JSX.Element {
     const dispatch = useAppDispatch();
     const [isLoading, setIsLoading] = useState(true);
     console.log(isLoading)
+
     useEffect(() => {
         let isMounted = true;
         (async () => {
@@ -906,29 +768,30 @@ export default function Profile(): JSX.Element {
         })();
         return () => { isMounted = false; };
     }, [posts.length, dispatch]);
+
     return (
         <div className='Profile'>
-    { posts.length === 0 && <LoaddingPageForProfile />}
+            {posts.length === 0 && <LoaddingPageForProfile />}
 
-    { posts.length > 0 && <>
-      <NewPost />
-      <AnimatePresence>
-        {posts.map(p =>
-          <Post
-            key={p.id}
-            post={p}
-            isAllowActions={true}
-          />
-        )}
-      </AnimatePresence>
-    </>}
-  </div>
+            {posts.length > 0 && <>
+                <NewPost />
+                <AnimatePresence>
+                    {posts.map(p =>
+                        <Post
+                            key={p.id}
+                            post={p}
+                            isAllowActions={true}
+                            isNew={false}
+                        />
+                    )}
+                </AnimatePresence>
+            </>}
+        </div>
     );
 }
 # components/posts/feed/Feed.tsx
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import './Feed.css'
-import PostModel from '../../../models/post/Post'
 import feed from '../../../services/feed'
 import Post from '../post/Post'
 import CommentModel from '../../../models/comment/Comment'
@@ -979,7 +842,7 @@ export default function Feed() {
             {posts.map(p => <Post 
                             key={p.id} 
                             post={p}
-                            addComment={addComment}
+                            // addComment={addComment}
                             isAllowActions={false}
                             ></Post>)}
         </div>
@@ -1058,16 +921,15 @@ export default function NewPost() {
     });
 
     const [isLoading, setIsLoading] = useState(false);
-
     const dispatch = useAppDispatch();
 
     async function submit(draft: PostDraft) {
         try {
             setIsLoading(true);
             const newPostFromServer = await profile.create(draft);
-            dispatch(newPost(newPostFromServer))
+            const postWithNew = { ...newPostFromServer, isNew: true };
+            dispatch(newPost(postWithNew));
             reset();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             alert('Failed to add post');
         } finally {
@@ -1210,7 +1072,7 @@ export default function NewPost() {
     width: fit-content; 
 }
 # components/posts/editPost/EditPost.tsx
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import './EditPost.css';
 import { useEffect } from 'react';
 import profileService from '../../../services/profile';
@@ -1224,7 +1086,6 @@ export default function EditPost() {
 
     const { id } = useParams<'id'>()
     const {handleSubmit, register, formState, reset} = useForm<PostDraft>()
-    const navigate = useNavigate()
     const posts = useAppSelector(state => state.profile.posts)
     const dispatch = useAppDispatch()
 
@@ -1243,14 +1104,15 @@ export default function EditPost() {
     },[])
 
     async function submit(draft: PostDraft) {
-        try{
+        try {
             if (id) {
-                const updatedPost = await profileService.update(id, draft)
-                dispatch(update(updatedPost))
-                navigate('/profile')
+                const updatedPost = await profileService.update(id, draft);
+                dispatch(update(updatedPost)); 
+                reset(updatedPost); 
             }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
-            alert(e)
+            alert('Failed to save changes');
         }
     }
 
@@ -2329,7 +2191,7 @@ import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 import { updateFollowStatus } from '../../../redux/followingSlice';
 import { removeFollower, addFollower } from '../../../redux/followersSlice';
 import followingService from '../../../services/following';
-import setHasNewPosts  from '../../../redux/feedSlice';
+import { setHasNewPosts }  from '../../../redux/feedSlice';
 
 
 interface FollowProps {

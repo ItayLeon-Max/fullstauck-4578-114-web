@@ -15,14 +15,13 @@ export default function Profile(): JSX.Element {
     const dispatch = useAppDispatch();
     const [isLoading, setIsLoading] = useState(true);
     console.log(isLoading)
+
     useEffect(() => {
         let isMounted = true;
         (async () => {
             try {
-                console.log("Fetching profile posts...");
                 if (posts.length === 0 && isMounted) {
                     const postsFromServer = await profile.getProfile();
-                    console.log("Posts fetched:", postsFromServer);
                     dispatch(init(postsFromServer));
                 }
             } catch (e) {
@@ -31,28 +30,28 @@ export default function Profile(): JSX.Element {
             } finally {
                 if (isMounted) {
                     setIsLoading(false);
-                    console.log("Loading finished");
                 }
             }
         })();
         return () => { isMounted = false; };
     }, [posts.length, dispatch]);
+
     return (
         <div className='Profile'>
-    { posts.length === 0 && <LoaddingPageForProfile />}
+            {posts.length === 0 && <LoaddingPageForProfile />}
 
-    { posts.length > 0 && <>
-      <NewPost />
-      <AnimatePresence>
-        {posts.map(p =>
-          <Post
-            key={p.id}
-            post={p}
-            isAllowActions={true}
-          />
-        )}
-      </AnimatePresence>
-    </>}
-  </div>
+            {posts.length > 0 && <>
+                <NewPost />
+                <AnimatePresence>
+                    {posts.map(p =>
+                        <Post
+                            key={p.id}
+                            post={p}
+                            isAllowActions={true}
+                        />
+                    )}
+                </AnimatePresence>
+            </>}
+        </div>
     );
 }

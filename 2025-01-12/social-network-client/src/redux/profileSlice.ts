@@ -15,10 +15,17 @@ export const profileSlice = createSlice({
     initialState,
     reducers: {
         init: (state, action: PayloadAction<Post[]>) => {
-            state.posts = action.payload;
+            state.posts = action.payload.map(post => ({
+                ...post,
+                isNew: false  
+            }));
         },
         newPost: (state, action: PayloadAction<Post>) => {
-            state.posts.unshift(action.payload);
+            const postWithNew = {
+                ...action.payload,
+                isNew: true  
+            };
+            state.posts.unshift(postWithNew);
         },
         removePost: (state, action: PayloadAction<string>) => {
             state.posts = state.posts.filter(p => p.id !== action.payload);
@@ -26,7 +33,10 @@ export const profileSlice = createSlice({
         update: (state, action: PayloadAction<Post>) => {
             const index = state.posts.findIndex(p => p.id === action.payload.id);
             if (index > -1) {
-                state.posts[index] = action.payload;
+                state.posts[index] = {
+                    ...action.payload,
+                    isNew: false
+                };
             }
         },
         addComment: (state, action: PayloadAction<Comment>) => {

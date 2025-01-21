@@ -10,11 +10,11 @@ import { motion } from 'framer-motion';
 interface PostProps {
     post: PostModel;
     isAllowActions?: boolean;
-    isNew?: boolean;
 }
 
 export default function Post(props: PostProps): JSX.Element {
-    const { post, isAllowActions = false, isNew = false } = props;
+    const { post, isAllowActions = false } = props;
+    const isNew = post.isNew || false;
     const dispatch = useAppDispatch();
     const [liked, setLiked] = useState(false);
     const [likeCount, setLikeCount] = useState(0);
@@ -40,21 +40,21 @@ export default function Post(props: PostProps): JSX.Element {
 
     async function saveEdit() {
         try {
-            setIsDeleting(true); // הצגת מצב טעינה
+            setIsDeleting(true);
             const updatedPost = await profileService.update(post.id, {
                 title: draftTitle,
                 body: draftBody,
             });
     
-            dispatch(update(updatedPost)); 
+            dispatch(update(updatedPost));
             setDraftTitle(updatedPost.title);
             setDraftBody(updatedPost.body);
-            setIsEditing(false); 
+            setIsEditing(false);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             alert('Failed to save post changes');
         } finally {
-            setIsDeleting(false); 
+            setIsDeleting(false);
         }
     }
 
@@ -66,10 +66,28 @@ export default function Post(props: PostProps): JSX.Element {
     return (
         <motion.div
             className={`Post ${isNew ? 'new-post' : ''}`}
-            initial={{ opacity: 0, scale: 0.8, rotate: -5, backgroundColor: '#f0f8ff' }}
-            animate={{ opacity: 1, scale: 1, rotate: 0, backgroundColor: 'white' }}
-            exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+            initial={isNew ? {
+                opacity: 0,
+                scale: 0.8,
+                rotate: -5,
+                backgroundColor: '#f0f8ff'
+            } : false}
+            animate={isNew ? {
+                opacity: 1,
+                scale: 1,
+                rotate: 0,
+                backgroundColor: 'white'
+            } : {}}
+            exit={isNew ? {
+                opacity: 0,
+                scale: 0.8,
+                rotate: 5
+            } : {}}
+            transition={isNew ? {
+                type: 'spring',
+                stiffness: 260,
+                damping: 20
+            } : {}}
         >
             {isEditing ? (
                 <div className="edit-post-form">
@@ -87,9 +105,9 @@ export default function Post(props: PostProps): JSX.Element {
                         className="edit-textarea"
                     ></textarea>
                     <div className="actions">
-                    <button onClick={saveEdit} className="save-button" disabled={isDeleting}>
+                        <button onClick={saveEdit} className="save-button" disabled={isDeleting}>
                             {isDeleting ? <span className="spinner"></span> : 'Save'}
-                    </button>
+                        </button>
                         <button onClick={() => setIsEditing(false)} className="cancel-button">
                             Cancel
                         </button>

@@ -12,14 +12,14 @@ export default function NewPost() {
     });
 
     const [isLoading, setIsLoading] = useState(false);
-
     const dispatch = useAppDispatch();
 
     async function submit(draft: PostDraft) {
         try {
             setIsLoading(true);
             const newPostFromServer = await profile.create(draft);
-            dispatch(newPost(newPostFromServer))
+            const postWithNew = { ...newPostFromServer, isNew: true };
+            dispatch(newPost(postWithNew));
             reset();
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
