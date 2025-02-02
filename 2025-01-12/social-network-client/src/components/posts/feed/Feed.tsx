@@ -21,7 +21,7 @@ export default function Feed() {
         feed.getFeed()
             .then(posts => dispatch(init(posts)))
             .catch(alert)
-    }, [dispatch])
+    }, [dispatch, hasNewPosts]) // תלות בhasNewPosts כדי לטעון מחדש כשיש שינויים
 
     function addComment(comment: CommentModel): void {
         const postToAddCommentTo = posts.find(post => post.id === comment.postId)

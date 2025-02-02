@@ -1827,7 +1827,7 @@ import { useEffect, useState } from 'react'
 import User from '../../../models/user/User'
 import Follow from '../../follows/follow/Follow'
 import useService from '../../../hooks/useService'
-import FollowingService from '../../../services/auth-aware/Following'
+import FollowingService from '../../../services/auth-aware/following'
 
 export default function Following() {
     const [following, setFollowing] = useState<User[]>([])
@@ -2471,14 +2471,13 @@ export default function Followers() {
         followersService.getFollowers()
             .then(followers => {
                 dispatch(initFollowers(followers));
-                // קצת דיליי מלאכותי כדי שנראה את אפקט הטעינה
                 setTimeout(() => setIsLoading(false), 1000);
             })
             .catch(error => {
                 alert(error);
                 setIsLoading(false);
             });
-    }, [dispatch]);
+    }, []);
 
     if (isLoading) {
         return <div className="Followers"><FollowSkeleton /></div>;
@@ -2503,8 +2502,9 @@ import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 import { updateFollowStatus } from '../../../redux/followingSlice';
 import { removeFollower, addFollower } from '../../../redux/followersSlice';
-import followingService from '../../../services/auth-aware/Following';
+import FollowingService from '../../../services/auth-aware/following';
 import { setHasNewPosts }  from '../../../redux/feedSlice';
+import useService from '../../../hooks/useService';
 
 
 interface FollowProps {
@@ -2514,6 +2514,8 @@ interface FollowProps {
 export default function Follow({ user }: FollowProps) {
     const { id, name } = user;
     const [loading, setLoading] = useState(false);
+
+    const followingService = useService(FollowingService);
 
     const dispatch = useAppDispatch();
     const isFollowing = useAppSelector(state => 
@@ -2656,53 +2658,34 @@ export default function Follow({ user }: FollowProps) {
     box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
 }
 # components/follows/following/Following.tsx
-import './Following.css';
-import { useEffect, useState } from 'react';
-import FollowingService from '../../../services/auth-aware/Following';
-import Follow from '../follow/Follow';
-import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
-import { init } from '../../../redux/followingSlice';
-import FollowSkeleton from '../../common/LoaddingPageEffect-followers/LoaddingPageEffect';
-import useService from '../../../hooks/useService';
+import './Following.css'
+import { useEffect, useState } from 'react'
+import User from '../../../models/user/User'
+import Follow from '../follow/Follow'
+import useService from '../../../hooks/useService'
+import FollowingService from '../../../services/auth-aware/following'
 
 export default function Following() {
-    const following = useAppSelector(state => state.following.following);
-    const dispatch = useAppDispatch();
-    const [isLoading, setIsLoading] = useState(true);
-    
-    const followingService = useService(FollowingService);
+    const [following, setFollowing] = useState<User[]>([])
+    const followingService = useService(FollowingService)
 
     useEffect(() => {
         followingService.getFollowing()
-            .then(following => {
-                setTimeout(() => {
-                    dispatch(init(following));
-                    setIsLoading(false);
-                }, 1500); 
-            })
-            .catch(error => {
-                alert(error);
-                setIsLoading(false);
-            });
-    }, [dispatch]);
+            .then(setFollowing)
+            .catch(alert)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     return (
-        <div className="Following">
-            {isLoading ? (
-                <FollowSkeleton />
-            ) : (
-                <>
-                    <h2>Following</h2>
-                    {following.map(user => (
-                        <Follow
-                            key={user.id}
-                            user={user}
-                        />
-                    ))}
-                </>
-            )}
-        </div>
-    );
+       <div className='Following'>
+           {following.map(follow => 
+               <Follow 
+                   key={follow.id} 
+                   user={follow}
+               />
+           )}
+       </div>
+    )
 }
 # components/follows/following/Following.css
 .Followers {
