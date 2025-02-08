@@ -1,8 +1,14 @@
-const generatePassword = (length) => {
-    const possibleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const generatePassword = (length, allowSpecialChars) => {
+    let possibleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const specialChars = '!@#$%^&*()_+~`|}{[]\:;?><,./-=';
+
+    if (allowSpecialChars) possibleChars += specialChars;
+
     let password = '';
+    
     for (let i = 0; i < length; i++) {
-        password += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
+        const randomIndex = Math.floor(Math.random() * possibleChars.length);
+        password += possibleChars[randomIndex];
     }
     return password;
 }
