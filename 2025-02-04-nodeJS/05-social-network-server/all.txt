@@ -1,0 +1,138 @@
+# app.ts
+import express from 'express';
+import config from 'config'
+import sequelize from './db/sequelize';
+
+
+const PORT = config.get<string>('app.port');
+const name = config.get<string>('app.name');
+
+const app = express();
+
+sequelize.sync()
+
+
+app.listen(PORT, ()=> console.log(`${name} Server is running on port ${PORT}`));
+# models/Follows.ts
+import { AllowNull, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import User from './User';
+
+@Table({
+    underscored: true,
+    timestamps: false
+})  
+export default class Follows extends Model {
+
+    @AllowNull(false)
+    @ForeignKey(() => User)
+    @Column(DataType.UUID)
+    follower_id: string
+
+    @AllowNull(false)
+    @ForeignKey(() => User)
+    @Column(DataType.UUID)
+    followee_id: string
+
+}
+# models/Comment.ts
+import { AllowNull, Column, DataType, Default, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import Post from './Post';
+import User from './User';
+
+@Table({
+    underscored: true
+})
+export default class Comment extends Model {
+
+    @PrimaryKey
+    @Default(DataType.UUID)
+    @Column(DataType.UUID)
+    id: string
+
+    @ForeignKey(() => Post)
+    @Column(DataType.UUID)
+    post_id: string
+
+    @ForeignKey(() => User)
+    @Column(DataType.UUID)
+    user_id: string
+
+    @AllowNull(false)
+    @Column(DataType.TEXT)
+    body: string
+
+}
+# models/User.ts
+import { DataTypes, UUID } from "sequelize";
+import { AllowNull, Column, DataType, Default, Model, PrimaryKey, Table } from "sequelize-typescript";
+
+@Table({
+    underscored: true
+})
+export default class User extends Model {
+
+    @PrimaryKey
+    @Default(DataType.UUIDV4)
+    @Column(DataType.UUID)
+    id: string
+
+    @AllowNull(false)
+    @Column(DataType.STRING(40))
+    name: string
+
+    @AllowNull(false)
+    @Column(DataType.STRING(40))
+    username: string
+
+    @AllowNull(false)
+    @Column(DataType.STRING(40))
+    password: string
+}
+# models/Post.ts
+import { AllowNull, Column, DataType, Default, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import User from './User';
+
+@Table({
+    underscored: true
+})
+export default class Post extends Model {
+
+    @PrimaryKey
+    @Default(DataType.UUIDV4)
+    @Column(DataType.UUID)
+    id: string
+
+    @ForeignKey(() => User)
+    @AllowNull(false)
+    @Column(DataType.UUID)
+    user_id: string
+
+    @AllowNull(false)
+    @Column(DataType.STRING(255))
+    title: string
+
+    @AllowNull(false)
+    @Column(DataType.TEXT)
+    body: string
+}
+# db/sequelize.ts
+import { Sequelize } from "sequelize-typescript";
+import User from "../models/User";
+import config from 'config'
+import Post from "../models/Post";
+import Comment from "../models/Comment";
+import Follows from "../models/Follows";
+
+const sequelize = new Sequelize({
+    models: [
+         User,
+         Post, 
+         Comment, 
+         Follows 
+        ],
+    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    dialect: 'mysql',
+    ...config.get('db')
+})
+
+export default sequelize;

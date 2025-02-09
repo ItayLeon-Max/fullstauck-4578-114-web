@@ -9,5 +9,11 @@
         "username": "root",
         "password": "",
         "database": "twitter"
+    },
+    "sequelize": {
+        "logging": true,
+        "sync": {
+            "force": false
+        }
     }
 }
