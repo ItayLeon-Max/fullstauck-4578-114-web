@@ -1,9 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../../models/user";
-import { post } from "axios";
 import Post from "../../models/post";
 import Comment from "../../models/comment";
-import c from "config";
 
 export async function getProfile(req: Request, res: Response, next: NextFunction) {
     try {
@@ -93,7 +91,7 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
         const { title, body } = req.body;
         post.title = title;
         post.body = body;
-        await post.save();
+        await post.save(); 
         res.json(post);
     } catch (error) {
         next(error);
