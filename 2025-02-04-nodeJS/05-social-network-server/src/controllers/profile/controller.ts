@@ -23,7 +23,7 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
     }
 }
 
-export async function getPost(req: Request, res: Response, next: NextFunction) {
+export async function getPost(req: Request<{ id: string }>, res: Response, next: NextFunction) {
     try {
         const post = await Post.findByPk(req.params.id, {
             include: [ User, {
@@ -37,7 +37,7 @@ export async function getPost(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-export async function deletePost(req: Request, res: Response, next: NextFunction) {
+export async function deletePost(req: Request<{ id: string }>, res: Response, next: NextFunction) {
     try {
         // const post = await Post.findByPk(req.params.id);
         // await post.destroy();
@@ -59,7 +59,7 @@ export async function deletePost(req: Request, res: Response, next: NextFunction
 
 export async function createPost(req: Request, res: Response, next: NextFunction) {
     try {
-        const userId = '1230ae30-dc4f-4752-bd84-092956f5c633';
+        const userId = 'f500eabc-7451-4327-b4f3-afdc2a442c73';
 
         const post = await Post.create({ ...req.body, userId });
         await post.reload({
@@ -77,7 +77,7 @@ export async function createPost(req: Request, res: Response, next: NextFunction
     }
 }
 
-export async function updatePost(req: Request, res: Response, next: NextFunction) {
+export async function updatePost(req: Request<{ id: string }>, res: Response, next: NextFunction) {
     try {
         const post = await Post.findByPk(req.params.id, {
                 include: [ 

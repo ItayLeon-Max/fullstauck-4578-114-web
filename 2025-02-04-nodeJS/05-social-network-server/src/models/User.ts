@@ -2,6 +2,8 @@ import { DataTypes, UUID } from "sequelize";
 import { AllowNull, BelongsToMany, Column, DataType, Default, HasMany, Index, Model, PrimaryKey, Table } from "sequelize-typescript";
 import Post from "./post";
 import Follow from "./follow";
+import { has } from "config";
+import Comment from "./comment";
 
 @Table({
     underscored: true
@@ -33,6 +35,9 @@ export default class User extends Model {
     //HasMany Post
     @HasMany(() => Post)
     posts: Post[];
+
+    @HasMany(() => Comment)
+    comments: Comment[];
 
     @BelongsToMany(() => User, () => Follow, 'followeeId', 'followerId')
     followers: User[];

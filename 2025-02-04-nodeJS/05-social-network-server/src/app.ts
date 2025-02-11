@@ -5,6 +5,9 @@ import profileRouter from './routers/profile';
 import errorLogger from './middlewares/error/error-logger';
 import errorResponder from './middlewares/error/error-responder';
 import notFound from './middlewares/not-found';
+import commentsRouter from './routers/comments';
+import followsRouter from './routers/follows';
+import feedRouter from './routers/feed';
 
 
 const PORT = config.get<string>('app.port');
@@ -20,6 +23,9 @@ const app = express();
     app.use(json());
 
     app.use('/profile', profileRouter);
+    app.use('/comments', commentsRouter);
+    app.use('/follows', followsRouter);
+    app.use('/feed', feedRouter);
 
     // special not-found middleware
     app.use(notFound);

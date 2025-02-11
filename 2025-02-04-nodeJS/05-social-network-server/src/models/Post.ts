@@ -19,13 +19,6 @@ export default class Post extends Model {
     @Column(DataType.UUID)
     userId: string
 
-    @BelongsTo(() => User, { 
-        foreignKey: 'userId', 
-        onDelete: 'CASCADE', 
-        onUpdate: 'CASCADE'
-     })
-    user: User;
-
     //title
     @AllowNull(false)
     @Column(DataType.STRING(40))
@@ -40,6 +33,9 @@ export default class Post extends Model {
     @AllowNull(true)
     @Column(DataType.STRING(255))
     imageUrl: string
+
+    @BelongsTo(() => User)
+    user: User;
 
     //HasMany Comment
     @HasMany(() => Comment)

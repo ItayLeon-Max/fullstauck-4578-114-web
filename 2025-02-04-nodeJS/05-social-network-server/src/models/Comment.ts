@@ -9,29 +9,29 @@ export default class Comment extends Model {
 
     //id
     @PrimaryKey
-    @Default(DataType.UUID)
+    @Default(DataType.UUIDV4)
     @Column(DataType.UUID)
     id: string
 
     //postId
     @ForeignKey(() => Post)
+    @AllowNull(false)
     @Column(DataType.UUID)
     postId: string
 
-    @BelongsTo(() => Post, { foreignKey: 'postId' })
-    post: Post;
-
-    //userId
     @ForeignKey(() => User)
+    @AllowNull(false)
     @Column(DataType.UUID)
     userId: string
-
-    @BelongsTo(() => User, { foreignKey: 'userId' })
-    user: User;
 
     //body
     @AllowNull(false)
     @Column(DataType.TEXT)
     body: string
 
+    @BelongsTo(() => Post)
+    post: Post;
+
+    @BelongsTo(() => User)
+    user: User;
 }

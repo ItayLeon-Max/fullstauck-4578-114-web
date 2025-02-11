@@ -136,3 +136,481 @@ const sequelize = new Sequelize({
 })
 
 export default sequelize;
+# routers/comments.ts
+import { create } from "axios";
+import { Router } from "express";
+import { createComment, getAllComments, getPerPost, removeCommen, updateComment } from "../controllers/comments/controller";
+import validation from "../middlewares/validation";
+import { editCommentValidator, newCommentValidator } from "../controllers/comments/validator";
+
+const commentsRouter = Router();
+
+
+commentsRouter.get('/', getAllComments)
+commentsRouter.get('/:postId', getPerPost)
+commentsRouter.delete('/:id', removeCommen)
+commentsRouter.patch('/:id', validation(editCommentValidator), updateComment)
+commentsRouter.post('/:postId', validation(newCommentValidator) ,createComment)
+
+
+export default commentsRouter;
+
+// f500eabc-7451-4327-b4f3-afdc2a442c73 --> postID
+# routers/profile.ts
+import { Router } from "express";
+import { createPost, deletePost, getPost, getProfile, updatePost } from "../controllers/profile/controller";
+import validation from "../middlewares/validation";
+import { newPostValidator, updatePostValidator } from "../controllers/profile/validator";
+
+const profileRouter = Router();
+
+profileRouter.get('/', getProfile);
+profileRouter.get('/:id', getPost);
+profileRouter.delete('/:id', deletePost);
+profileRouter.post('/', validation(newPostValidator) ,createPost);
+profileRouter.post('/:id', validation(updatePostValidator) ,updatePost);
+
+export default profileRouter;
+# app.ts
+import express, { json } from 'express';
+import config from 'config'
+import sequelize from './db/sequelize';
+import profileRouter from './routers/profile';
+import errorLogger from './middlewares/error/error-logger';
+import errorResponder from './middlewares/error/error-responder';
+import notFound from './middlewares/not-found';
+import commentsRouter from './routers/comments';
+
+
+const PORT = config.get<string>('app.port');
+const name = config.get<string>('app.name');
+const force = config.get<boolean>('sequelize.sync.force')
+
+const app = express();
+
+(async () => {
+    await sequelize.sync({ force });
+
+    //middlewares
+    app.use(json());
+
+    app.use('/profile', profileRouter);
+    app.use('/comments', commentsRouter);
+
+    // special not-found middleware
+    app.use(notFound);
+
+    // Error handling middleware
+    app.use(errorLogger);
+    app.use(errorResponder);
+
+    app.listen(PORT, ()=> console.log(`${name} Server is running on port ${PORT}`));
+})();
+
+# middlewares/validation.ts
+import { NextFunction, Request, Response } from "express";
+import { ObjectSchema } from "joi";
+
+export default function validation(validator: ObjectSchema){
+    return async function (req: Request, res: Response, next: NextFunction) {
+        try {
+            req.body = await validator.validateAsync(req.body);
+            next();
+        } catch (error) {
+            next({
+                status: 422, //422 for unprocessable entity
+                message: error.message
+            });
+        }
+    }
+}
+# middlewares/not-found.ts
+import { Request, Response } from 'express';
+
+export default function notFound(req: Request, res: Response, next: Function) {
+    next({
+        status: 404,
+        message: `Not Found - ${req.originalUrl}`
+    })  
+}
+# middlewares/error/error-responder.ts
+import { NextFunction, Request, Response } from "express";
+
+export default function errorResponder(err: Error, req: Request, res: Response, next: NextFunction) {
+    res.status(500).send(err.message);
+}
+# middlewares/error/error-logger.ts
+import { NextFunction, Request, Response } from "express";
+
+export default function errorLogger(err: Error, req: Request, res: Response, next: NextFunction) {
+    console.error(err.message);
+    next(err);
+}
+# models/follow.ts
+import { AllowNull, BelongsTo, BelongsToMany, Column, DataType, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import User from './user';
+
+@Table({
+    underscored: true
+})  
+export default class Follow extends Model {
+
+    //followerId
+    @ForeignKey(() => User)
+    @PrimaryKey
+    @Column(DataType.UUID)
+    followerId: string
+
+    //followeeId
+    @ForeignKey(() => User)
+    @PrimaryKey
+    @Column(DataType.UUID)
+    followeeId: string
+
+}
+# models/comment.ts
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import Post from './post';
+import User from './user';
+
+@Table({
+    underscored: true
+})
+export default class Comment extends Model {
+
+    //id
+    @PrimaryKey
+    @Default(DataType.UUID)
+    @Column(DataType.UUID)
+    id: string
+
+    //postId
+    @ForeignKey(() => Post)
+    @Column(DataType.UUID)
+    postId: string
+
+    @BelongsTo(() => Post, { foreignKey: 'postId' })
+    post: Post;
+
+    //userId
+    @ForeignKey(() => User)
+    @Column(DataType.UUID)
+    userId: string
+
+    @BelongsTo(() => User, { foreignKey: 'userId' })
+    user: User;
+
+    //body
+    @AllowNull(false)
+    @Column(DataType.TEXT)
+    body: string
+
+}
+# models/user.ts
+import { DataTypes, UUID } from "sequelize";
+import { AllowNull, BelongsToMany, Column, DataType, Default, HasMany, Index, Model, PrimaryKey, Table } from "sequelize-typescript";
+import Post from "./post";
+import Follow from "./follow";
+
+@Table({
+    underscored: true
+})
+export default class User extends Model {
+
+    //id
+    @PrimaryKey
+    @Default(DataType.UUIDV4)
+    @Column(DataType.UUID)
+    id: string
+
+    //name
+    @AllowNull(false)
+    @Column(DataType.STRING(40))
+    name: string
+
+    //username
+    @Index({unique: true})
+    @AllowNull(false)
+    @Column(DataType.STRING(40))
+    username: string
+
+    //password
+    @AllowNull(false)
+    @Column(DataType.STRING(64))
+    password: string
+
+    //HasMany Post
+    @HasMany(() => Post)
+    posts: Post[];
+
+    @BelongsToMany(() => User, () => Follow, 'followeeId', 'followerId')
+    followers: User[];
+
+    @BelongsToMany(() => User, () => Follow, 'followerId', 'followeeId')
+    following: User[];
+
+}
+# models/post.ts
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, HasMany, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import User from './user';
+import Comment from './comment';
+
+@Table({
+    underscored: true
+})
+export default class Post extends Model {
+
+    //id
+    @PrimaryKey
+    @Default(DataType.UUIDV4)
+    @Column(DataType.UUID)
+    id: string
+
+    //userId
+    @ForeignKey(() => User)
+    @AllowNull(false)
+    @Column(DataType.UUID)
+    userId: string
+
+    @BelongsTo(() => User, { 
+        foreignKey: 'userId', 
+        onDelete: 'CASCADE', 
+        onUpdate: 'CASCADE'
+     })
+    user: User;
+
+    //title
+    @AllowNull(false)
+    @Column(DataType.STRING(40))
+    title: string
+
+    //body
+    @AllowNull(false)
+    @Column(DataType.TEXT)
+    body: string
+
+    //imageUrl
+    @AllowNull(true)
+    @Column(DataType.STRING(255))
+    imageUrl: string
+
+    //HasMany Comment
+    @HasMany(() => Comment)
+    comments: Comment[];
+}
+# db/sequelize.ts
+import { Sequelize } from "sequelize-typescript";
+import User from "../models/user";
+import config from 'config'
+import Post from "../models/post";
+import Comment from "../models/comment";
+import Follow from "../models/follow";
+
+const logging = config.get<boolean>('sequelize.logging') ? console.log : false;
+
+const sequelize = new Sequelize({
+    models: [
+         User,
+         Post, 
+         Comment, 
+         Follow
+        ],
+    dialect: 'mysql',
+    ...config.get('db'),
+    logging,
+})
+
+export default sequelize;
+# controllers/comments/controller.ts
+import { NextFunction, Request, Response } from "express";
+import Comment from "../../models/comment";
+import User from "../../models/user";
+
+
+export async function getAllComments(req: Request, res: Response, next: NextFunction){
+    try {
+        const comments = await Comment.findAll({
+            include: User
+        });
+        res.json(comments);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function getPerPost(req: Request, res: Response, next: NextFunction){
+    try {
+        const comments = await Comment.findAll({
+            where: {
+                postId: req.params.postId
+            }
+        });
+        res.json(comments);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function removeCommen(req: Request, res: Response, next: NextFunction){
+    try {
+        await Comment.destroy({
+            where: {
+                id: req.params.id
+            }
+        });
+        res.json({
+            message: 'Comment deleted successfully'
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function updateComment(req: Request, res: Response, next: NextFunction){
+    try {
+        await Comment.update(req.body, {
+            where: {
+                id: req.params.id
+            }
+        });
+        res.json({
+            message: 'Comment updated successfully'
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function createComment(req: Request, res: Response, next: NextFunction){
+    const userId = '4b1193cc-7ba1-462c-99c5-2e3ea4ab6d14';
+    const postId = req.params.postId;
+    try {
+        const comment = await Comment.create({
+            ...req.body,
+            userId,
+            postId
+        });
+        res.json(comment);
+    } catch (error) {
+        next(error);
+    }
+}
+
+# controllers/comments/validator.ts
+import Joi from "joi";
+
+export const newCommentValidator = Joi.object({
+    body: Joi.string().min(10).max(40).required()
+})
+
+export const editCommentValidator = newCommentValidator;
+# controllers/profile/controller.ts
+import { NextFunction, Request, Response } from "express";
+import User from "../../models/user";
+import Post from "../../models/post";
+import Comment from "../../models/comment";
+
+export async function getProfile(req: Request, res: Response, next: NextFunction) {
+    try {
+        const userId = '1230ae30-dc4f-4752-bd84-092956f5c633';
+
+        const user = await User.findByPk(userId, {
+            include: [ {
+                model: Post,
+                include: [ {
+                    model: Comment,
+                    include: [ User ]
+                }, User ]
+            } ]
+        });
+        console.log(user.get({ plain: true }));
+        res.json(user.posts);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function getPost(req: Request, res: Response, next: NextFunction) {
+    try {
+        const post = await Post.findByPk(req.params.id, {
+            include: [ User, {
+                model: Comment,
+                include: [ User ]
+            } ]
+        });
+        res.json(post);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function deletePost(req: Request, res: Response, next: NextFunction) {
+    try {
+        // const post = await Post.findByPk(req.params.id);
+        // await post.destroy();
+        const id = req.params.id;
+        const deletedRaws = await Post.destroy({
+             where: { id } 
+            });
+            if(deletedRaws === 0) return next({
+                status: 404,
+                message: `Post with id ${id} not found`
+            })
+            res.json({
+                success: true
+            })
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function createPost(req: Request, res: Response, next: NextFunction) {
+    try {
+        const userId = '1230ae30-dc4f-4752-bd84-092956f5c633';
+
+        const post = await Post.create({ ...req.body, userId });
+        await post.reload({
+            include: [ 
+                User,
+                {
+                    model: Comment,
+                    include: [ User ]
+                }
+             ]
+        })
+        res.json(post);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function updatePost(req: Request, res: Response, next: NextFunction) {
+    try {
+        const post = await Post.findByPk(req.params.id, {
+                include: [ 
+                    User,
+                    {
+                        model: Comment,
+                        include: [ User ]
+                    }
+                 ]
+        });
+        const { title, body } = req.body;
+        post.title = title;
+        post.body = body;
+        await post.save(); 
+        res.json(post);
+    } catch (error) {
+        next(error);
+    }
+}
+
+# controllers/profile/validator.ts
+import Joi from "joi";
+
+export const newPostValidator = Joi.object({
+   title: Joi.string().min(10).max(40).required(),
+   body: Joi.string().min(20).max(40).required()
+})
+
+export const updatePostValidator = newPostValidator;
