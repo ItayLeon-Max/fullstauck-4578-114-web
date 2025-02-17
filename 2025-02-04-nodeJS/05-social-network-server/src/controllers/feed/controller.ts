@@ -2,42 +2,42 @@ import { NextFunction, Request, Response } from "express";
 import Post from "../../models/post";
 import User from "../../models/user";
 import Comment from "../../models/comment";
+import sequelize from "../../db/sequelize";
 
 export async function getUserFeed(req: Request, res: Response, next: NextFunction) {
     try {
         const userId = '1230ae30-dc4f-4752-bd84-092956f5c633';
-        const user = await User.findByPk(userId, {
-            include: [{
-                model: User,
-                as: 'following',
-                attributes: ['id'] //?
-            }]
-        });
+        
+        // const user = await User.findByPk(userId, {
+        //     include: [ {
+        //         model: User,
+        //         as: 'following',
+        //         include: [ {
+        //             model: Post,
+        //             include: [ Comment ]
+        //         } ]
+        //     } ]
+        // });
 
-        if (!user) {
-            return next({
-                status: 404,
-                message: 'User not found'
+        // const feed = user.following.reduce((cumulative: Post[], { posts }) => {
+        //     return [...cumulative, ...posts];
+        // },[]).sort((a: Post, b: Post) => a.createdAt < b.createdAt ? -1 : 1);
+
+        // res.json(user);
+
+        const feed = await sequelize.query(`
+            SELECT posts.*
+            FROM posts
+            JOIN follows ON follows.followee_id = posts.user_id
+            AND follows.follower_id = ?
+            ORDER BY posts.created_at DESC
+            `, {
+                replacements: [ userId ],
+                model: Post,
             });
-        }
 
-        const followingIds = user.following.map(following => following.id);
+        await Promise.all(feed.map(post => post.reload({ include: [ Comment ] })));            
 
-        const feed = await Post.findAll({
-            where: {
-                userId: followingIds
-            },
-            include: [
-                {
-                    model: User,
-                },
-                {
-                    model: Comment,
-                    include: [User]
-                }
-            ],
-            order: [['createdAt', 'DESC']]
-        });
         res.json(feed);
     } catch (e) {
         next(e);

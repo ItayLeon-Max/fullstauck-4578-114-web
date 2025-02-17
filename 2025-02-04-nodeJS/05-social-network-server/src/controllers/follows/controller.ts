@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../../models/user";
 import Follow from "../../models/follow";
+import { col } from "sequelize";
 
 export async function getFollower(req: Request, res: Response, next: NextFunction){
     try {
@@ -9,7 +10,8 @@ export async function getFollower(req: Request, res: Response, next: NextFunctio
             include: [{
                 model: User,
                 as: 'followers'
-            }]
+            }],
+            order: [[col('followers.name'), 'ASC']]
         })
         res.json(user.followers);
     } catch (error) {
