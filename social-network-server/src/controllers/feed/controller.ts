@@ -1,46 +1,34 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
+import { AuthenticatedRequest } from "../../middlewares/auth";
 import User from "../../models/user";
 import Post from "../../models/post";
 import postIncludes from "../common/post-includes";
-import sequelize from "../../db/sequelize";
+import TwitterError from "../../errors/twitter-erros";
+import statusCode from "http-status-codes";
 
-export async function getFeed(req: Request, res: Response, next: NextFunction) {
+export async function getFeed(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-        const userId = '1230ae30-dc4f-4752-bd84-092956f5c633'
-
-        const user = await User.findByPk(userId, {
-            include: [ { 
+        const user = await User.findByPk(req.userId, {
+            include: [{ 
                 model: User,
                 as: 'following',
-                include: [ { 
+                include: [{ 
                     model: Post,
                     ...postIncludes
-                } ]
-            } ]
-        })
+                }]
+            }]
+        });
 
-        const feed = user.following.reduce((cumulative: Post[], { posts }) => {
-            return [...cumulative, ...posts]
-        }, []).sort((a: Post, b: Post) => a.createdAt < b.createdAt ? 1 : -1)
+        if (!user) {
+            return next(new TwitterError(statusCode.NOT_FOUND, "User not found"));
+        }
 
-        res.json(feed)        
+        const feed = user.following
+            .reduce((cumulative: Post[], { posts }) => [...cumulative, ...posts], [])
+            .sort((a: Post, b: Post) => b.createdAt.getTime() - a.createdAt.getTime()); 
 
-        // example how to do the same with RAW QUERY using sequelize:
-        // const feed = await sequelize.query(`
-        //     select	posts.*
-        //     from 	posts
-        //     JOIN	follows on posts.user_id = follows.followee_id
-        //     AND		follows.follower_id = ?
-        //     ORDER BY created_at DESC
-        // `, {
-        //     replacements: [ userId ],
-        //     model: Post
-        // })        
-
-        // await Promise.all(feed.map(post => post.reload({...postIncludes})))
-
-        // res.json(feed)
+        res.json(feed);  
     } catch (e) {
-        next(e)
+        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
     }
 }
