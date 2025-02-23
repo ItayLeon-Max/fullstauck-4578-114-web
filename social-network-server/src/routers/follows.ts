@@ -2,8 +2,11 @@ import { Router } from "express";
 import { follow, getFollowers, getFollowing, unfollow } from "../controllers/follows/controller";
 import paramsValidation from "../middlewares/params-validation";
 import { followValidator, unfollowValidator } from "../controllers/follows/validator";
+import authenticate from "../middlewares/auth";
 
 const router = Router()
+
+// router.use(authenticate);
 
 router.get('/followers', getFollowers)
 router.get('/following', getFollowing)

@@ -1,4 +1,4 @@
-import express, { json } from "express";
+import express, { json, NextFunction, Request, Response } from "express";
 import config from "config";
 import sequelize from "./db/sequelize";
 import profileRouter from "./routers/profile";
@@ -23,12 +23,9 @@ const app = express();
 
     app.use(json());
 
-    app.use((req, res, next) => {
-        if (!req.path.startsWith('/auth')) {
-            authenticate(req, res, next);
-        } else {
-            next();
-        }
+    app.use((req: Request, res: Response, next: NextFunction) => {
+        if (!req.path.startsWith('/auth')) authenticate(req, res, next);
+        else next();
     });
 
     app.use("/profile", requireAuth, profileRouter);
