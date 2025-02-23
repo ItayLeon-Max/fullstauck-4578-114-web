@@ -128,12 +128,12 @@ export default function validation(validator: ObjectSchema) {
 
 # middlewares/require-auth.ts
 import { NextFunction, Response } from "express";
-import TwitterError from "../errors/twitter-erros";
+import AppError from "../errors/twitter-erros";
 import { AuthenticatedRequest } from "./auth";
 
 export default function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     if (!req.userId) {
-        return next(new TwitterError(401, "Unauthorized - please login first"));
+        return next(new AppError(401, "Unauthorized - please login first"));
     }
     next();
 }
@@ -166,10 +166,10 @@ export default function paramsValidation(validator: ObjectSchema) {
 
 # middlewares/error/error-responder.ts
 import { NextFunction, Request, Response } from "express";
-import TwitterError from "../../errors/twitter-erros";
+import AppError from "../../errors/twitter-erros";
 
 export default function errorResponder(err: Error, req: Request, res: Response, next: NextFunction) {
-    if(err instanceof TwitterError) res.status(err.status).send(err.message)
+    if(err instanceof AppError) res.status(err.status).send(err.message)
     else res.status(500).send(err.message)
 }
 # middlewares/error/error-logger.ts
@@ -183,7 +183,7 @@ export default function errorLogger(err: Error, req: Request, res: Response, nex
 import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
 import config from "config";
-import TwitterError from "../errors/twitter-erros";
+import AppError from "../errors/twitter-erros";
 
 export interface AuthenticatedRequest extends Request {
     userId?: string;
@@ -194,20 +194,20 @@ export default function authenticate(req: AuthenticatedRequest, res: Response, n
         const authHeader = req.headers.authorization;
 
         if (!authHeader) {
-            return next(new TwitterError(401, "Authorization header is missing"));
+            return next(new AppError(401, "Authorization header is missing"));
         }
 
         const token = authHeader.split(" ")[1]; 
         const decoded = verify(token, config.get<string>("app.jwtSecret"));
 
         if (typeof decoded !== "object" || !("id" in decoded)) {
-            return next(new TwitterError(401, "Invalid token"));
+            return next(new AppError(401, "Invalid token"));
         }
 
         req.userId = decoded.id; 
         next();
     } catch (error) {
-        next(new TwitterError(401, "Invalid or expired token"));
+        next(new AppError(401, "Invalid or expired token"));
     }
 }
 # models/follow.ts
@@ -629,7 +629,7 @@ INSERT INTO follows (follower_id, followee_id,created_at,updated_at) VALUES ('bf
 
 
 # errors/twitter-erros.ts
-export default class TwitterError extends Error {
+export default class AppError extends Error {
     constructor(public status: number, message: string) {
         super(message)
     }
@@ -638,7 +638,7 @@ export default class TwitterError extends Error {
 import { NextFunction, Request, Response } from "express";
 import Comment from "../../models/comment";
 import User from "../../models/user";
-import TwitterError from "../../errors/twitter-erros";
+import AppError from "../../errors/twitter-erros";
 import { ValidationError, ForeignKeyConstraintError } from 'sequelize';
 import Post from "../../models/post";
 import statusCode from "http-status-codes";
@@ -651,7 +651,7 @@ export async function createComment(req: AuthenticatedRequest, res: Response, ne
 
         const post = await Post.findByPk(postId);
         if (!post) {
-            return next(new TwitterError(statusCode.NOT_FOUND, "Post not found"));
+            return next(new AppError(statusCode.NOT_FOUND, "Post not found"));
         }
 
         const comment = await Comment.create({
@@ -664,7 +664,7 @@ export async function createComment(req: AuthenticatedRequest, res: Response, ne
 
         res.json(comment);
     } catch (error) {
-        next(new TwitterError(statusCode.BAD_REQUEST, error.message));
+        next(new AppError(statusCode.BAD_REQUEST, error.message));
     }
 }
 # controllers/comments/validator.ts
@@ -683,7 +683,7 @@ import User from "../../models/user";
 import { createHmac } from "crypto";
 import config from "config";
 import { sign } from "jsonwebtoken";
-import TwitterError from "../../errors/twitter-erros";
+import AppError from "../../errors/twitter-erros";
 import statusCode from "http-status-codes";
 
 function hashPassword(password: string): string {
@@ -699,17 +699,17 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             where: { username, password: hashPassword(password) }
         });
 
-        if (!user) return next(new TwitterError(statusCode.UNAUTHORIZED, 'Invalid username or password'));// 401
+        if (!user) return next(new AppError(statusCode.UNAUTHORIZED, 'Invalid username or password'));// 401
 
         const isPasswordValid = user.password === hashPassword(password);
         if (!isPasswordValid) {
-            return next(new TwitterError(statusCode.UNAUTHORIZED, 'Invalid username or password'));// 401
+            return next(new AppError(statusCode.UNAUTHORIZED, 'Invalid username or password'));// 401
         }
 
         const jwt = sign(user.get({ plain: true }), config.get<string>('app.jwtSecret'));
         res.json({ jwt });
     } catch (error) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));// 500
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));// 500
     }
 }
 
@@ -717,10 +717,10 @@ export async function register(req: Request, res: Response, next: NextFunction) 
     const { username, password, name, email } = req.body;
 
     if (!username || !password || !name || !email) {
-        return next(new TwitterError(statusCode.BAD_REQUEST, 'Missing required fields'));// 400
+        return next(new AppError(statusCode.BAD_REQUEST, 'Missing required fields'));// 400
     }
     if (password.length < 6) {
-        return next(new TwitterError(statusCode.BAD_REQUEST, 'Password must be at least 6 characters long'));// 400
+        return next(new AppError(statusCode.BAD_REQUEST, 'Password must be at least 6 characters long'));// 400
     }
 
     try {
@@ -736,9 +736,9 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         res.json({ jwt });
     } catch (error) {
         if (error.name === 'SequelizeUniqueConstraintError') {
-            return next(new TwitterError(statusCode.BAD_REQUEST, `Username: ${username} or email: ${email} already exists`));// 400
+            return next(new AppError(statusCode.BAD_REQUEST, `Username: ${username} or email: ${email} already exists`));// 400
         }
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));// 500
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));// 500
     }
 }
 
@@ -749,7 +749,7 @@ export async function forgetPassword(req: Request, res: Response, next: NextFunc
             where: { username, email }
         });
 
-        if (!user) return next(new TwitterError(404, 'User not found'));
+        if (!user) return next(new AppError(404, 'User not found'));
 
         const resetToken = sign({ id: user.id }, config.get<string>('app.jwtSecret'), { expiresIn: '15m' });
 
@@ -757,7 +757,7 @@ export async function forgetPassword(req: Request, res: Response, next: NextFunc
 
         res.json({ message: 'Password reset link sent to your email' });
     } catch (error) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));// 500
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));// 500
     }
 }
 # controllers/auth/validator.ts
@@ -788,7 +788,7 @@ import User from "../../models/user";
 import Post from "../../models/post";
 import Comment from "../../models/comment";
 import postIncludes from "../common/post-includes";
-import TwitterError from "../../errors/twitter-erros";
+import AppError from "../../errors/twitter-erros";
 import statusCode from "http-status-codes";
 import { AuthenticatedRequest } from "../../middlewares/auth";
 
@@ -804,7 +804,7 @@ export async function getProfile(req: AuthenticatedRequest, res: Response, next:
 
         res.json(user?.posts || []);
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));
     }
 }
 
@@ -813,7 +813,7 @@ export async function getPost(req: Request<{id: string}>, res: Response, next: N
         const post = await Post.findByPk(req.params.id, postIncludes)
         res.json(post)
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'))   
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'))   
     }
 }
 
@@ -824,14 +824,14 @@ export async function deletePost(req: Request<{id: string}>, res: Response, next
             where: { id }
         })
 
-        if(deletedRows === 0) return next(new TwitterError(statusCode.NOT_FOUND, 'Post not found'))
+        if(deletedRows === 0) return next(new AppError(statusCode.NOT_FOUND, 'Post not found'))
 
         res.json({
             success: true
         })
 
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'))
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'))
     }
 }
 
@@ -844,7 +844,7 @@ export async function createPost(req: AuthenticatedRequest, res: Response, next:
         await post.reload(postIncludes);
         res.json(post);
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));
     }
 }
 
@@ -862,7 +862,7 @@ export async function updatePost(req: Request<{id: string}>, res: Response, next
         res.json(post)
 
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'))
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'))
     }
 }
 # controllers/profile/validator.ts
@@ -880,7 +880,7 @@ import { AuthenticatedRequest } from "../../middlewares/auth";
 import User from "../../models/user";
 import Post from "../../models/post";
 import postIncludes from "../common/post-includes";
-import TwitterError from "../../errors/twitter-erros";
+import AppError from "../../errors/twitter-erros";
 import statusCode from "http-status-codes";
 
 export async function getFeed(req: AuthenticatedRequest, res: Response, next: NextFunction) {
@@ -897,7 +897,7 @@ export async function getFeed(req: AuthenticatedRequest, res: Response, next: Ne
         });
 
         if (!user) {
-            return next(new TwitterError(statusCode.NOT_FOUND, "User not found"));
+            return next(new AppError(statusCode.NOT_FOUND, "User not found"));
         }
 
         const feed = user.following
@@ -906,7 +906,7 @@ export async function getFeed(req: AuthenticatedRequest, res: Response, next: Ne
 
         res.json(feed);  
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
     }
 }
 # controllers/follows/controller.ts
@@ -914,7 +914,7 @@ import { NextFunction, Request, Response } from "express";
 import User from "../../models/user";
 import Follow from "../../models/follow";
 import { col } from "sequelize";
-import TwitterError from "../../errors/twitter-erros";
+import AppError from "../../errors/twitter-erros";
 import statusCode from "http-status-codes";
 import { AuthenticatedRequest } from "../../middlewares/auth";
 
@@ -926,7 +926,7 @@ export async function getFollowers(req: AuthenticatedRequest, res: Response, nex
         });
         res.json(user?.followers || []);
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
     }
 }
 
@@ -937,7 +937,7 @@ export async function getFollowing(req: Request, res: Response, next: NextFuncti
         });
         res.json(user?.following || []);
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
     }
 }
 
@@ -950,7 +950,7 @@ export async function follow(req: AuthenticatedRequest, res: Response, next: Nex
         });
         res.json(follow);
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
     }
 }
 
@@ -964,13 +964,13 @@ export async function unfollow(req: AuthenticatedRequest, res: Response, next: N
         });
 
         if (!follow) {
-            return next(new TwitterError(statusCode.NOT_FOUND, "Follow not found"));
+            return next(new AppError(statusCode.NOT_FOUND, "Follow not found"));
         }
 
         await follow.destroy();
         res.json({ message: "Unfollowed" });
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
     }
 }
 # controllers/follows/validator.ts

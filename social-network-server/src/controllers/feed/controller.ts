@@ -3,7 +3,7 @@ import { AuthenticatedRequest } from "../../middlewares/auth";
 import User from "../../models/user";
 import Post from "../../models/post";
 import postIncludes from "../common/post-includes";
-import TwitterError from "../../errors/twitter-erros";
+import AppError from "../../errors/AppError";
 import statusCode from "http-status-codes";
 
 export async function getFeed(req: AuthenticatedRequest, res: Response, next: NextFunction) {
@@ -20,7 +20,7 @@ export async function getFeed(req: AuthenticatedRequest, res: Response, next: Ne
         });
 
         if (!user) {
-            return next(new TwitterError(statusCode.NOT_FOUND, "User not found"));
+            return next(new AppError(statusCode.NOT_FOUND, "User not found"));
         }
 
         const feed = user.following
@@ -29,6 +29,6 @@ export async function getFeed(req: AuthenticatedRequest, res: Response, next: Ne
 
         res.json(feed);  
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, "Internal server error"));
     }
 }

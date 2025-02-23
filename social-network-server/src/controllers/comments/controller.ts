@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import Comment from "../../models/comment";
 import User from "../../models/user";
-import TwitterError from "../../errors/twitter-erros";
+import AppError from "../../errors/AppError";
 import { ValidationError, ForeignKeyConstraintError } from 'sequelize';
 import Post from "../../models/post";
 import statusCode from "http-status-codes";
@@ -14,7 +14,7 @@ export async function createComment(req: AuthenticatedRequest, res: Response, ne
 
         const post = await Post.findByPk(postId);
         if (!post) {
-            return next(new TwitterError(statusCode.NOT_FOUND, "Post not found"));
+            return next(new AppError(statusCode.NOT_FOUND, "Post not found"));
         }
 
         const comment = await Comment.create({
@@ -27,6 +27,6 @@ export async function createComment(req: AuthenticatedRequest, res: Response, ne
 
         res.json(comment);
     } catch (error) {
-        next(new TwitterError(statusCode.BAD_REQUEST, error.message));
+        next(new AppError(statusCode.BAD_REQUEST, error.message));
     }
 }

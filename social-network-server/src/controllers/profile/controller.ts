@@ -3,7 +3,7 @@ import User from "../../models/user";
 import Post from "../../models/post";
 import Comment from "../../models/comment";
 import postIncludes from "../common/post-includes";
-import TwitterError from "../../errors/twitter-erros";
+import AppError from "../../errors/AppError";
 import statusCode from "http-status-codes";
 import { AuthenticatedRequest } from "../../middlewares/auth";
 
@@ -19,7 +19,7 @@ export async function getProfile(req: AuthenticatedRequest, res: Response, next:
 
         res.json(user?.posts || []);
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));
     }
 }
 
@@ -28,7 +28,7 @@ export async function getPost(req: Request<{id: string}>, res: Response, next: N
         const post = await Post.findByPk(req.params.id, postIncludes)
         res.json(post)
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'))   
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'))   
     }
 }
 
@@ -39,14 +39,14 @@ export async function deletePost(req: Request<{id: string}>, res: Response, next
             where: { id }
         })
 
-        if(deletedRows === 0) return next(new TwitterError(statusCode.NOT_FOUND, 'Post not found'))
+        if(deletedRows === 0) return next(new AppError(statusCode.NOT_FOUND, 'Post not found'))
 
         res.json({
             success: true
         })
 
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'))
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'))
     }
 }
 
@@ -59,7 +59,7 @@ export async function createPost(req: AuthenticatedRequest, res: Response, next:
         await post.reload(postIncludes);
         res.json(post);
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'));
     }
 }
 
@@ -77,6 +77,6 @@ export async function updatePost(req: Request<{id: string}>, res: Response, next
         res.json(post)
 
     } catch (e) {
-        next(new TwitterError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'))
+        next(new AppError(statusCode.INTERNAL_SERVER_ERROR, 'Internal server error'))
     }
 }

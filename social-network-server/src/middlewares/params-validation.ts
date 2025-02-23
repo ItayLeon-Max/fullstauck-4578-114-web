@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ObjectSchema } from "joi";
-import TwitterError from "../errors/twitter-erros";
+import AppError from "../errors/AppError";
 import statusCode from "http-status-codes";
 
 
@@ -10,7 +10,7 @@ export default function paramsValidation(validator: ObjectSchema) {
             req.params = await validator.validateAsync(req.params)
             next()
         } catch (e) {
-            next(new TwitterError(statusCode.BAD_REQUEST, e.message))
+            next(new AppError(statusCode.BAD_REQUEST, e.message))
         }
     }
 }
