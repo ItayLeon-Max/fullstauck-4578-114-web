@@ -8,6 +8,7 @@ import cors from 'cors'
 import developmentGrouprouter from "./routers/developmentGroup"
 import meetingRouter from "./routers/meetings"
 import reminderRouter from "./routers/reminder"
+import authRouter from "./routers/auth"
 
 const port = config.get<string>('app.port')
 const name = config.get<string>('app.name')
@@ -26,6 +27,7 @@ const app = express();
     app.use('/developmentGroup', developmentGrouprouter)
     app.use('/meeting', meetingRouter)
     app.use('/reminder', reminderRouter)
+    app.use('/auth', authRouter)
     
 
     // special notFound middleware

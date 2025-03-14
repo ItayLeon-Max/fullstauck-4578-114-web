@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import Meetings from "../../models/Meeting";
+import AppError from "../../errors/app-error";
+import { StatusCodes } from "http-status-codes";
 
 //get all meetings functions
 
@@ -9,7 +11,7 @@ export async function getAllMeetings(req: Request, res: Response, next: NextFunc
         res.status(200).json(meetings);
         console.log(`Meetings: ${meetings.length}`);
     } catch (error) {
-        next(error);
+        next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));
     }
 }
 
@@ -21,7 +23,7 @@ export async function getAllMeetingPerdevelopmentGroupID(req: Request<{developme
        const meetings = await Meetings.findAll({ where: { developmentGroupId } });
          res.status(200).json(meetings);
     } catch (error) {
-        next(error);
+        next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));
     }
 }
 
@@ -40,7 +42,7 @@ export async function addMeeting(req: Request<{developmentGroupId: string, start
         res.status(201).json(meeting);
         console.log(`created new meeting with id: ${meeting.id}`);
     } catch (error) {
-        next(error);
+        next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));
     }
 }
 
@@ -58,7 +60,7 @@ export async function deleteMeeting(req: Request<{id: string}>, res: Response, n
         res.status(204).end();
         console.log(`meeting with id: ${id} deleted`);
     } catch (error) {
-        next(error);
+        next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));
     }
 }
 
@@ -82,7 +84,7 @@ export async function updateMeeting(req: Request<{id: string, developmentGroupId
         res.status(200).json(meeting);
         console.log(`meeting with id: ${id} updated`);
     } catch (error) {
-        next(error);
+        next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));
     }   
 }
 
