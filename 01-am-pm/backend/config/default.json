@@ -1,7 +1,7 @@
 {
     "app": {
         "port": "3000",
-        "name": "Am:Pm",
+        "name": "meetingApp",
         "secret": "MySecret",
         "jwtSecret": "MyJwtSecret"
     },
@@ -10,7 +10,7 @@
         "port": 3306,
         "username": "root",
         "password": "",
-        "database": "AM_PM_Store"
+        "database": "meetingApp"
     },
     "sequelize": {
         "logging": true,
