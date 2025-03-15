@@ -4,12 +4,12 @@ import validation from "../middlewares/validation";
 import { newDevelopmentGroupValidator, updateDevelopmentGroupValidator } from "../controllers/developmentGroup/validation";
 
 
-const developmentGrouprouter = Router()
+const developmentGroupRouter = Router()
 
 //developmentGroup routes
-developmentGrouprouter.get('/', getAllDevelopmentGroups)
-developmentGrouprouter.post('/', validation(newDevelopmentGroupValidator) ,addDevelopmentGroup)
-developmentGrouprouter.delete('/:id', deleteDevelopmentGroup)
-developmentGrouprouter.put('/:id', validation(updateDevelopmentGroupValidator) ,updateDevelopmentGroup)
+developmentGroupRouter.get('/', getAllDevelopmentGroups)
+developmentGroupRouter.post('/', validation(newDevelopmentGroupValidator) ,addDevelopmentGroup)
+developmentGroupRouter.delete('/:id', deleteDevelopmentGroup)
+developmentGroupRouter.put('/:id', validation(updateDevelopmentGroupValidator) ,updateDevelopmentGroup)
 
-export default developmentGrouprouter
+export default developmentGroupRouter
