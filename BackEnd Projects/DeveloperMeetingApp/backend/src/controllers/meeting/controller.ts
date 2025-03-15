@@ -17,7 +17,7 @@ export async function getAllMeetings(req: Request, res: Response, next: NextFunc
 
 // getAllMeetingPerdevelopmentGroup functions
 
-export async function getAllMeetingPerdevelopmentGroupID(req: Request<{developmentGroupId: string}>, res: Response, next: NextFunction) {
+export async function getAllMeetingPerDevelopmentGroupID(req: Request<{developmentGroupId: string}>, res: Response, next: NextFunction) {
     try {
        const { developmentGroupId } = req.params;
        const meetings = await Meetings.findAll({ where: { developmentGroupId } });
