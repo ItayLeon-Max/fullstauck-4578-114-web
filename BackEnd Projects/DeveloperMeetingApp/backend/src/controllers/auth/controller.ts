@@ -6,12 +6,14 @@ import User from "../../models/user";
 import AppError from "../../errors/app-error";
 import { StatusCodes } from "http-status-codes";
 
+// hash password
 function hashPassword(password: string): string {
     return createHmac('sha256', config.get<string>('app.secret'))
             .update(password)
             .digest('hex')
 }
 
+// get all users
 export async function getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
         const users = await User.findAll();
@@ -21,6 +23,7 @@ export async function getAllUsers(req: Request, res: Response, next: NextFunctio
     }
 }
 
+// login
 export async function login(req: Request<{}, {}, {username: string, password: string}>, res: Response, next: NextFunction) {
     try {
         const { username, password } = req.body;
@@ -39,6 +42,7 @@ export async function login(req: Request<{}, {}, {username: string, password: st
     }
 }
 
+// register
 export async function register(req: Request<{}, {}, {name: string, username: string, password: string, email: string, role: string}>, res: Response, next: NextFunction) {
     try {
         const { name, username, password, email, role } = req.body;
@@ -56,6 +60,7 @@ export async function register(req: Request<{}, {}, {name: string, username: str
     }
 }
 
+// delete user
 export async function deleteUser(req: Request<{id: string}, {}, {}>, res: Response, next: NextFunction) {
     try {
         const { id } = req.params;
@@ -70,6 +75,7 @@ export async function deleteUser(req: Request<{id: string}, {}, {}>, res: Respon
     }
 }
 
+// update user
 export async function updateUser(req: Request<{id: string}, {}, {name: string, username: string, password: string, email: string, role: string}>, res: Response, next: NextFunction) {
     try {
         const { id } = req.params;
