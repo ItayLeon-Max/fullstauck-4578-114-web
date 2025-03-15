@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { addMeeting, deleteMeeting, getAllMeetingPerdevelopmentGroupID, getAllMeetings, updateMeeting } from "../controllers/meteeing/controller";
+import { addMeeting, deleteMeeting, getAllMeetingPerdevelopmentGroupID, getAllMeetings, updateMeeting } from "../controllers/meeting/controller";
 import validation from "../middlewares/validation";
-import { addMeetingValidator, updateMeetingValidator } from "../controllers/meteeing/validator";
+import { addMeetingValidator, updateMeetingValidator } from "../controllers/meeting/validator";
 
 
 const meetingRouter = Router()
