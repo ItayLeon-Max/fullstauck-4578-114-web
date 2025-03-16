@@ -22,10 +22,6 @@ export default class Tasks extends Model {
     @Column(DataType.UUID)
     id: string;
 
-    @AllowNull(false)
-    @Column(DataType.STRING)
-    description: string;
-
     @ForeignKey(() => Meetings)
     @AllowNull(true) 
     @Column(DataType.UUID)
@@ -34,6 +30,15 @@ export default class Tasks extends Model {
     @ForeignKey(() => User)
     @AllowNull(false)
     @Column(DataType.UUID)
+    sentFrom: string;
+
+    @AllowNull(false)
+    @Column(DataType.STRING)
+    description: string;
+
+    @ForeignKey(() => User)
+    @AllowNull(false)
+    @Column(DataType.STRING)
     assignedTo: string; 
 
     @AllowNull(false)

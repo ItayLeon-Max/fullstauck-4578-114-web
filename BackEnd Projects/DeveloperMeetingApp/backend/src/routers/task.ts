@@ -11,6 +11,6 @@ taskRouter.get('/:id', getTaskById)
 taskRouter.post('/', validation(createTaskValidator) ,addTask)
 taskRouter.put('/:id', validation(updateTaskValidator) ,updateTask)
 taskRouter.delete('/:id', deleteTask)
-taskRouter.post('/send/:id', sendTask)
+taskRouter.post('/reminder/:id', sendTask)
 
 export default taskRouter;

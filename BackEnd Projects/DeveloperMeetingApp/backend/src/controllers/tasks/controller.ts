@@ -8,20 +8,18 @@ import { verify } from "jsonwebtoken";
 import config from "config";
 import Reminder from "../../models/reminder";
 
-// Get all tasks
 export async function getAllTasks(req: Request, res: Response, next: NextFunction) {
     try {
-        const tasks = await Tasks.findAll();
+        const tasks = await Tasks.findAll({ include: [User, Meetings] });
         res.json(tasks);
     } catch (error) {
         next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));
     }
 }
 
-// Get a task by id
 export async function getTaskById(req: Request, res: Response, next: NextFunction) {
     try {
-        const task = await Tasks.findByPk(req.params.id);
+        const task = await Tasks.findByPk(req.params.id, { include: [User, Meetings] });
         if (!task) {
             res.status(404).json({ message: "Task not found" });
         } else {
@@ -32,7 +30,6 @@ export async function getTaskById(req: Request, res: Response, next: NextFunctio
     }
 }
 
-// Add a task
 export async function addTask(req: Request, res: Response, next: NextFunction) {
     try {
         const authHeader = req.headers.authorization;
@@ -61,30 +58,28 @@ export async function addTask(req: Request, res: Response, next: NextFunction) {
             description,
             meetingId: meetingId || null,
             assignedTo,
+            sentFrom: decoded.id,
             status: status || 'open',
             deadline: new Date(deadline),
         });
 
         res.status(StatusCodes.CREATED).json(task);
-        console.log(`Created new task with id: ${task.id}`);
-
     } catch (error) {
         next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));
     }
 }
 
-// Update a task
 export async function updateTask(req: Request, res: Response, next: NextFunction) {
     try {
         const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return next(new AppError(StatusCodes.UNAUTHORIZED, 'Token not provided'));
 
-        if (!authHeader || !authHeader.startsWith('Bearer '))  return next(new AppError(StatusCodes.UNAUTHORIZED, 'Token not provided'));
         const token = authHeader.split(' ')[1];
         const decoded = verify(token, config.get<string>('app.jwtSecret')) as { id: string, role: string };
 
         if (decoded.role.toLowerCase() !== 'admin') return next(new AppError(StatusCodes.FORBIDDEN, 'Only admins can update tasks.'));
-        const task = await Tasks.findByPk(req.params.id);
 
+        const task = await Tasks.findByPk(req.params.id);
         if (!task) return next(new AppError(StatusCodes.NOT_FOUND, `Task with id ${req.params.id} not found`));
 
         const { description, meetingId, assignedTo, status, deadline } = req.body;
@@ -105,14 +100,11 @@ export async function updateTask(req: Request, res: Response, next: NextFunction
 
         await task.save();
         res.json(task);
-        console.log(`Updated task with id: ${task.id}`);
-
     } catch (error) {
         next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));
     }
 }
 
-// Delete a task
 export async function deleteTask(req: Request, res: Response, next: NextFunction) {
     try {
         const authHeader = req.headers.authorization;
@@ -128,46 +120,34 @@ export async function deleteTask(req: Request, res: Response, next: NextFunction
 
         await task.destroy();
         res.json({ message: "Task deleted" });
-        console.log(`Deleted task with id: ${task.id}`);
-
     } catch (error) {
         next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));
     }
 }
 
-// send a task to a user
 export async function sendTask(req: Request, res: Response, next: NextFunction) {
     try {
         const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return next(new AppError(StatusCodes.UNAUTHORIZED, 'Token not provided'));
-        }
+        if (!authHeader || !authHeader.startsWith('Bearer ')) return next(new AppError(StatusCodes.UNAUTHORIZED, 'Token not provided'));
 
         const token = authHeader.split(' ')[1];
         const decoded = verify(token, config.get<string>('app.jwtSecret')) as { id: string, role: string };
 
-        if (decoded.role.toLowerCase() !== 'admin') {
-            return next(new AppError(StatusCodes.FORBIDDEN, 'Only admins can assign tasks.'));
-        }
+        if (decoded.role.toLowerCase() !== 'admin') return next(new AppError(StatusCodes.FORBIDDEN, 'Only admins can assign tasks.'));
 
         const { userId } = req.body;
         const { id } = req.params;
 
-        if (!userId) {
-            return next(new AppError(StatusCodes.BAD_REQUEST, "userId is required"));
-        }
+        if (!userId) return next(new AppError(StatusCodes.BAD_REQUEST, "userId is required"));
 
         const task = await Tasks.findByPk(id);
-        if (!task) {
-            return next(new AppError(StatusCodes.NOT_FOUND, `Task with id ${id} not found`));
-        }
+        if (!task) return next(new AppError(StatusCodes.NOT_FOUND, `Task with id ${id} not found`));
 
         const user = await User.findByPk(userId);
-        if (!user) {
-            return next(new AppError(StatusCodes.NOT_FOUND, `User with id ${userId} not found`));
-        }
+        if (!user) return next(new AppError(StatusCodes.NOT_FOUND, `User with id ${userId} not found`));
 
         task.assignedTo = user.id;
+        task.sentFrom = decoded.id;
         await task.save();
 
         await Reminder.create({
@@ -176,15 +156,10 @@ export async function sendTask(req: Request, res: Response, next: NextFunction) 
         });
 
         res.status(StatusCodes.OK).json({
-            message: `Task assigned successfully to ${user.name}`,
+            message: `Task reminder sent to ${user.name} by ${decoded.id}`,
             task,
         });
-
-        console.log(`Task with id: ${task.id} assigned to user with id: ${user.id}`);
-
     } catch (error) {
         next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));
     }
 }
-
-

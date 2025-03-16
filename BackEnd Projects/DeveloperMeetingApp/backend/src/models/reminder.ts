@@ -1,5 +1,6 @@
 import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, Model, PrimaryKey, Table } from "sequelize-typescript";
 import Meetings from "./Meeting";
+import User from "./user";
 
 @Table({
     underscored: true,
