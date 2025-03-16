@@ -30,6 +30,15 @@ export async function getTaskById(req: Request, res: Response, next: NextFunctio
     }
 }
 
+export async function getTasksByUser(req: Request, res: Response, next: NextFunction) {
+    try {
+        const tasks = await Tasks.findAll({ where: { assignedTo: req.params.userId }, include: [User, Meetings] });
+        res.json(tasks);
+    } catch (error) {
+        next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));
+    }
+}
+
 export async function addTask(req: Request, res: Response, next: NextFunction) {
     try {
         const authHeader = req.headers.authorization;

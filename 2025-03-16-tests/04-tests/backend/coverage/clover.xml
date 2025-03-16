@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1742130515531" clover="3.2.0">
+  <project timestamp="1742130515531" name="All files">
+    <metrics statements="42" coveredstatements="20" conditionals="5" coveredconditionals="1" methods="5" coveredmethods="3" elements="52" coveredelements="24" complexity="0" loc="42" ncloc="42" packages="3" files="3" classes="3"/>
+    <package name="controllers.auth">
+      <metrics statements="24" coveredstatements="10" conditionals="2" coveredconditionals="0" methods="3" coveredmethods="1"/>
+      <file name="controller.ts" path="/Users/itayleon/Documents/git/my-jb-fullstuck-4578-114/2025-03-16-tests/04-tests/backend/src/controllers/auth/controller.ts">
+        <metrics statements="24" coveredstatements="10" conditionals="2" coveredconditionals="0" methods="3" coveredmethods="1"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="11" count="6" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="19" count="0" type="stmt"/>
+        <line num="26" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="29" count="0" type="stmt"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="32" count="0" type="stmt"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="37" count="0" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="40" count="0" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="54" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="60" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="errors">
+      <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <file name="app-error.ts" path="/Users/itayleon/Documents/git/my-jb-fullstuck-4578-114/2025-03-16-tests/04-tests/backend/src/errors/app-error.ts">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="middlewares">
+      <metrics statements="15" coveredstatements="7" conditionals="3" coveredconditionals="1" methods="1" coveredmethods="1"/>
+      <file name="enforce-auth.ts" path="/Users/itayleon/Documents/git/my-jb-fullstuck-4578-114/2025-03-16-tests/04-tests/backend/src/middlewares/enforce-auth.ts">
+        <metrics statements="15" coveredstatements="7" conditionals="3" coveredconditionals="1" methods="1" coveredmethods="1"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="21" count="1" type="cond" truecount="1" falsecount="0"/>
+        <line num="23" count="0" type="stmt"/>
+        <line num="25" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="26" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="28" count="0" type="stmt"/>
+        <line num="29" count="0" type="stmt"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="31" count="0" type="stmt"/>
+        <line num="33" count="0" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
