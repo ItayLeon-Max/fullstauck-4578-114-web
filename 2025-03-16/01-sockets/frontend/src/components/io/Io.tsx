@@ -4,6 +4,7 @@ import { useAppDispatch } from "../../redux/hooks";
 import { newPost } from "../../redux/profileSlice";
 import Post from "../../models/post/Post";
 import { v4 } from "uuid";
+import SocketMessage from "socket-enums-itayleon";
 
 interface SocketContextInterface {
     xClientId: string
@@ -28,7 +29,7 @@ export default function Io(props: PropsWithChildren): JSX.Element {
 
             if(payload.form !== xClientId) {
                 switch(eventName) {
-                    case 'newPost':
+                    case SocketMessage.NEW_POST:
                         // eslint-disable-next-line no-case-declarations
                         const newPostPayload = payload.data as Post
                         dispatch(newPost(newPostPayload))

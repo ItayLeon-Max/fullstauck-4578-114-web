@@ -27,6 +27,7 @@ export async function getAllUsers(req: Request, res: Response, next: NextFunctio
 export async function login(req: Request<{}, {}, {username: string, password: string}>, res: Response, next: NextFunction) {
     try {
         const { username, password } = req.body;
+
         const user = await User.findOne({
             where: {
                 userName: username, 
@@ -36,7 +37,10 @@ export async function login(req: Request<{}, {}, {username: string, password: st
 
         if (!user) return next(new AppError(StatusCodes.UNAUTHORIZED, 'wrong credentials'));
         const jwt = sign(user.get({ plain: true }), config.get<string>('app.jwtSecret'));
-        res.json({ jwt });
+        res.json({ 
+            jwt,
+            messages: `Welcome ${user.name}!` 
+        });
     } catch (e) {
         next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, e.message));
     }
