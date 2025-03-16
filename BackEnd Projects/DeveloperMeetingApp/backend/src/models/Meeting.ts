@@ -12,6 +12,7 @@ import {
 } from "sequelize-typescript";
 import DevelopmentGroups from "./developmentGroup";
 import Reminder from "./reminder";
+import Tasks from "./task";
 
 @Table({
     underscored: true,
@@ -49,4 +50,7 @@ export default class Meetings extends Model {
 
     @HasMany(() => Reminder)
     reminder: Reminder[];
+
+    @HasMany(() => Tasks)
+    tasks: Tasks[];
 }

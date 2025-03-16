@@ -9,6 +9,7 @@ import developmentGrouprouter from "./routers/developmentGroup"
 import meetingRouter from "./routers/meetings"
 import reminderRouter from "./routers/reminder"
 import authRouter from "./routers/auth"
+import taskRouter from "./routers/task"
 
 const port = config.get<string>('app.port')
 const name = config.get<string>('app.name')
@@ -28,6 +29,7 @@ const app = express();
     app.use('/meeting', meetingRouter)
     app.use('/reminder', reminderRouter)
     app.use('/auth', authRouter)
+    app.use('/task', taskRouter)
     
 
     // special notFound middleware
