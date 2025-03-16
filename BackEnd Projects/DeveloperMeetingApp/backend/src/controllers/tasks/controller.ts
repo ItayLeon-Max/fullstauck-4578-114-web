@@ -6,6 +6,7 @@ import Meetings from "../../models/Meeting";
 import User from "../../models/user";
 import { verify } from "jsonwebtoken";
 import config from "config";
+import Reminder from "../../models/reminder";
 
 // Get all tasks
 export async function getAllTasks(req: Request, res: Response, next: NextFunction) {
@@ -128,6 +129,58 @@ export async function deleteTask(req: Request, res: Response, next: NextFunction
         await task.destroy();
         res.json({ message: "Task deleted" });
         console.log(`Deleted task with id: ${task.id}`);
+
+    } catch (error) {
+        next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));
+    }
+}
+
+// send a task to a user
+export async function sendTask(req: Request, res: Response, next: NextFunction) {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return next(new AppError(StatusCodes.UNAUTHORIZED, 'Token not provided'));
+        }
+
+        const token = authHeader.split(' ')[1];
+        const decoded = verify(token, config.get<string>('app.jwtSecret')) as { id: string, role: string };
+
+        if (decoded.role.toLowerCase() !== 'admin') {
+            return next(new AppError(StatusCodes.FORBIDDEN, 'Only admins can assign tasks.'));
+        }
+
+        const { userId } = req.body;
+        const { id } = req.params;
+
+        if (!userId) {
+            return next(new AppError(StatusCodes.BAD_REQUEST, "userId is required"));
+        }
+
+        const task = await Tasks.findByPk(id);
+        if (!task) {
+            return next(new AppError(StatusCodes.NOT_FOUND, `Task with id ${id} not found`));
+        }
+
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return next(new AppError(StatusCodes.NOT_FOUND, `User with id ${userId} not found`));
+        }
+
+        task.assignedTo = user.id;
+        await task.save();
+
+        await Reminder.create({
+            meetingId: task.meetingId,
+            reminderTo: user.email, 
+        });
+
+        res.status(StatusCodes.OK).json({
+            message: `Task assigned successfully to ${user.name}`,
+            task,
+        });
+
+        console.log(`Task with id: ${task.id} assigned to user with id: ${user.id}`);
 
     } catch (error) {
         next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));

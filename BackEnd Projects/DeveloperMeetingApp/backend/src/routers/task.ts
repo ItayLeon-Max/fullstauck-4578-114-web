@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addTask, deleteTask, getAllTasks, getTaskById, updateTask } from "../controllers/tasks/controller";
+import { addTask, deleteTask, getAllTasks, getTaskById, sendTask, updateTask } from "../controllers/tasks/controller";
 import validation from "../middlewares/validation";
 import { createTaskValidator, updateTaskValidator } from "../controllers/tasks/validator";
 
@@ -11,5 +11,6 @@ taskRouter.get('/:id', getTaskById)
 taskRouter.post('/', validation(createTaskValidator) ,addTask)
 taskRouter.put('/:id', validation(updateTaskValidator) ,updateTask)
 taskRouter.delete('/:id', deleteTask)
+taskRouter.post('/send/:id', sendTask)
 
 export default taskRouter;
