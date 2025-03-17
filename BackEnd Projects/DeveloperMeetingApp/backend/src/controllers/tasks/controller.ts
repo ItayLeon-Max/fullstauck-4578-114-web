@@ -32,7 +32,10 @@ export async function getTaskById(req: Request, res: Response, next: NextFunctio
 
 export async function getTasksByUser(req: Request, res: Response, next: NextFunction) {
     try {
-        const tasks = await Tasks.findAll({ where: { assignedTo: req.params.userId }, include: [User, Meetings] });
+        const tasks = await Tasks.findAll({ 
+            where: { assignedTo: req.params.userId }
+        });
+
         res.json(tasks);
     } catch (error) {
         next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, error.message));

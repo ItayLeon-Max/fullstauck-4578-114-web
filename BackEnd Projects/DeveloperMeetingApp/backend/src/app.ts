@@ -17,7 +17,7 @@ const force = config.get<boolean>('sequelize.sync.force')
 
 const app = express();
 
-(async () => {
+export async function start() {
     await sequelize.sync({ force })
 
     // middlewares
@@ -25,6 +25,7 @@ const app = express();
 
     app.use(json()) // a middleware to extract the post/put/patch data and save it to the request object in case the content type of the request is application/json
 
+    // routers
     app.use('/developmentGroup', developmentGrouprouter)
     app.use('/meeting', meetingRouter)
     app.use('/reminder', reminderRouter)
@@ -39,5 +40,7 @@ const app = express();
     app.use(errorLogger)
     app.use(errorResponder)
 
-    app.listen(port, () => console.log(`${name} started on port ${port}...`))
-})()
+    // app.listen(port, () => console.log(`${name} started on port ${port}...`))
+}
+
+export default app
