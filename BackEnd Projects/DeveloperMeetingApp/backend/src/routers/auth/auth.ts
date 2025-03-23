@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { deleteUser, getAllUsers, login, register, updateUser } from '../controllers/auth/controller';
-import validation from '../middlewares/validation';
-import { deleteUserValidator, loginValidator, registerValidator, updateUserValidator } from '../controllers/auth/validator';
+import { deleteUser, getAllUsers, login, register, updateUser } from '../../controllers/auth/controller';
+import validation from '../../middlewares/validation';
+import { deleteUserValidator, loginValidator, registerValidator, updateUserValidator } from '../../controllers/auth/validator';
 
 const authRouter = Router();
 

@@ -8,7 +8,7 @@ import cors from 'cors'
 import developmentGrouprouter from "./routers/developmentGroup"
 import meetingRouter from "./routers/meetings"
 import reminderRouter from "./routers/reminder"
-import authRouter from "./routers/auth"
+import authRouter from "./routers/auth/auth"
 import taskRouter from "./routers/task"
 
 const port = config.get<string>('app.port')
