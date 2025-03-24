@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { addDevelopmentGroup, deleteDevelopmentGroup, getAllDevelopmentGroups, updateDevelopmentGroup } from "../controllers/developmentGroup/controller";
-import validation from "../middlewares/validation";
-import { newDevelopmentGroupValidator, updateDevelopmentGroupValidator } from "../controllers/developmentGroup/validation";
+import { addDevelopmentGroup, deleteDevelopmentGroup, getAllDevelopmentGroups, updateDevelopmentGroup } from "../../controllers/developmentGroup/controller";
+import validation from "../../middlewares/validation";
+import { newDevelopmentGroupValidator, updateDevelopmentGroupValidator } from "../../controllers/developmentGroup/validation";
 
 
 const developmentGroupRouter = Router()

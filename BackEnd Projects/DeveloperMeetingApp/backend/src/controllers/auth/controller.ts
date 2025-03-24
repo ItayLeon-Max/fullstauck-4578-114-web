@@ -5,6 +5,8 @@ import { Request, Response, NextFunction } from 'express';
 import User from "../../models/user";
 import AppError from "../../errors/app-error";
 import { StatusCodes } from "http-status-codes";
+import socket from "../../io/io";
+
 
 // hash password
 export function hashPassword(password: string): string {
@@ -37,6 +39,15 @@ export async function login(req: Request<{}, {}, {username: string, password: st
 
         if (!user) return next(new AppError(StatusCodes.UNAUTHORIZED, 'wrong credentials'));
         const jwt = sign(user.get({ plain: true }), config.get<string>('app.jwtSecret'));
+
+        socket.emit("user:login", {
+            id: user.id,
+            name: user.name,
+            username: user.userName,
+            time: new Date().toISOString(),
+          });
+      
+
         res.json({ 
             jwt,
             messages: `Welcome ${user.name}!` 
@@ -97,6 +108,37 @@ export async function updateUser(req: Request<{id: string}, {}, {name: string, u
         await user.save();
         res.json(user);
     } catch (e) {
+        next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, e.message));
+    }
+}
+
+// logout with userId
+
+export async function logout(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+    try {
+        const { id: userId } = req.params;
+
+        if (!userId) return next(new AppError(StatusCodes.BAD_REQUEST, 'Missing userId'));
+
+        const user = await User.findByPk(userId);
+        if (!user) return next(new AppError(StatusCodes.NOT_FOUND, 'User not found'));
+
+        socket.emit("user:login", {
+            id: user.id,
+            name: user.name,
+            username: user.userName,
+            time: new Date().toISOString(),
+          });
+          
+          socket.emit("user:online", {
+            id: user.id,
+            name: user.name,
+            username: user.userName,
+            time: new Date().toISOString(),
+          });
+
+        res.json({ message: `User ${user.name} logged out` });
+    } catch (e: any) {
         next(new AppError(StatusCodes.INTERNAL_SERVER_ERROR, e.message));
     }
 }
