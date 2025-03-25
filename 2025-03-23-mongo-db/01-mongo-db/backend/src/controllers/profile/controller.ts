@@ -28,22 +28,12 @@ export async function getPost(req: Request<{id: string}>, res: Response, next: N
 
 export async function deletePost(req: Request<{id: string}>, res: Response, next: NextFunction) {
         try {
-        // this is how you delete an EXISTING object:
-        // const post = await Post.findByPk(req.params.id)
-        // await post.destroy() 
+            const _id = req.params.id
+            const deleteResponse = await PostModel.deleteOne({ _id })
 
-        // this is how you delete, using a static function,
-        // when you don't already have a sequelize object:
-        // const id = req.params.id
-        // const deletedRows = await Post.destroy({
-        //     where: { id }
-        // })
+            if(deleteResponse.deletedCount === 0) return next(new AppError(StatusCodes.NOT_FOUND, 'post not found'))
 
-        // if(deletedRows === 0) return next(new AppError(StatusCodes.NOT_FOUND, 'the post you were trying to delete does not exist'))
-
-        // res.json({
-        //     success: true
-        // })
+            res.json({ message: 'post deleted' })    
 
     } catch (e) {
         next(e)
@@ -76,16 +66,16 @@ export async function createPost(req: Request, res: Response, next: NextFunction
 
 export async function updatePost(req: Request<{id: string}>, res: Response, next: NextFunction) {
     try {
-        // const post = await Post.findByPk(req.params.id, postIncludes)
+        const post = await PostModel.findById(req.params.id)
 
         // // an example to findAll
         // // const pos2 = await Post.findAll({where: {name: 'Gustav'}})
 
-        // const { title, body } = req.body
-        // post.title = title
-        // post.body = body
-        // await post.save() // <= this command generates the actual SQL UPDATE
-        // res.json(post)
+        const { title, body } = req.body
+        post.title = title
+        post.body = body
+        await post.save() // <= this command generates the actual SQL UPDATE
+        res.json(post.toObject())
 
     } catch (e) {
         next(e)
